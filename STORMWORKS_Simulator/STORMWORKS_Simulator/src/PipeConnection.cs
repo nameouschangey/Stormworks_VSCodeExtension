@@ -7,6 +7,8 @@ using System.IO;
 using System.Windows.Controls;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Threading;
+using System.Windows;
 
 namespace STORMWORKS_Simulator
 {
@@ -18,49 +20,83 @@ namespace STORMWORKS_Simulator
 
     public class PipeConnection
     {
+        public event EventHandler OnPipeClosed;
+
         public bool IsActive { get; set; } = true;
 
+        private DateTime _StartTime = DateTime.UtcNow;
         private MainVM _Viewmodel;
+        private IAsyncResult RunningTask;
 
         [ImportMany(typeof(IPipeCommandHandler))]
         private IEnumerable<Lazy<IPipeCommandHandler>> _CommandHandlers;
 
-        public PipeConnection(string pipeName, MainVM viewmodel)
+        public PipeConnection(MainVM viewmodel)
         {
+
             _Viewmodel = viewmodel;
-           LoadMEFCommands();
+            LoadMEFCommands();
 
-           Task.Run(() =>
-           {
-               var server = new NamedPipeServerStream(pipeName);
-
-               StreamReader reader = new StreamReader(server);
-               server.WaitForConnection();
-
-               while (IsActive)
+            RunningTask = Task.Run(() =>
+            {
+               while (true)
                {
-                   var line = reader.ReadLine();
-                   OnLineRead(line);
+                   var line = Console.In.ReadLine();
+
+                   if (line == null)
+                   {
+                       Thread.Sleep(1000);
+                   }
+                   else if (line.StartsWith("END_PIPE"))
+                   {
+                       IsActive = false;
+                   }
+                   else
+                   {
+                       OnLineRead(line);
+                   }
                }
-           });
+
+               OnPipeClosed?.Invoke(this, new EventArgs());
+            });
+        }
+
+        public void WriteDataBack(StormworksMonitor monitor)
+        {
+            var pipePath = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            pipePath += "/_SWSimulator.pipe";
+
+            var output = $"{monitor.Size.X}|{monitor.Size.Y}|{(DateTime.UtcNow - _StartTime).TotalMilliseconds}";
+            File.WriteAllText(pipePath, output);
         }
 
         public void OnLineRead(string line)
         {
-            // format is: COMMAND|PARAM|PARAM|PARAM|...
-            var splits = line.Split('|');
-            if(splits.Length < 1)
+            try
             {
-                return;
-            }
-
-            var command = splits[0];
-            foreach(var commandHandler in _CommandHandlers)
-            {
-                if (commandHandler.Value.CanHandle(command))
+                // format is: COMMAND|PARAM|PARAM|PARAM|...
+                var splits = line.Split('|');
+                if (splits.Length < 1)
                 {
-                    commandHandler.Value.Handle(_Viewmodel, splits);
+                    return;
                 }
+
+                var command = splits[0];
+                foreach (var commandHandler in _CommandHandlers)
+                {
+                    if (commandHandler.Value.CanHandle(command))
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            commandHandler.Value.Handle(_Viewmodel, splits);
+                        }));
+                    }
+                }
+
+            }
+            catch(Exception e)
+            {
+                // keep the UI running, despite any issue that arise
             }
         }
 

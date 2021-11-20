@@ -1,18 +1,18 @@
 ﻿STORMWORKS_Simulator
 
 
-winexe
+exe
 C#
 .cs
-C:\personal\STORMWORKS_Simulator\STORMWORKS_Simulator\STORMWORKS_Simulator\obj\Debug\
+C:\personal\STORMWORKS_VSCodeExtension\STORMWORKS_Simulator\STORMWORKS_Simulator\obj\Debug\
 STORMWORKS_Simulator
 none
 false
 DEBUG;TRACE
-C:\personal\STORMWORKS_Simulator\STORMWORKS_Simulator\STORMWORKS_Simulator\App.xaml
+C:\personal\STORMWORKS_VSCodeExtension\STORMWORKS_Simulator\STORMWORKS_Simulator\App.xaml
 21199954920
 
-10530295063
+11-230203639
 15737949576
 AppStyles.xaml;MainWindow.xaml;
 

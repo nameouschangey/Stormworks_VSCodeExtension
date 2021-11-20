@@ -26,18 +26,16 @@ namespace STORMWORKS_Simulator
             InitializeComponent();
 
             ViewModel = new MainVM(DrawableCanvas);
-            Pipe = new PipeConnection("Unnnamed", ViewModel);
-
+            Pipe = new PipeConnection(ViewModel);
+            Pipe.OnPipeClosed += Pipe_OnPipeClosed;
             ViewModel.OnViewReset += (x, e) => CanvasContainer.Reset();
 
             DataContext = ViewModel;
+        }
 
-            //Pipe.OnLineRead("RECT|1|10|5|15|25");
-            //Pipe.OnLineRead("LINE|1|1|32|32");
-            Pipe.OnLineRead("COLOUR|255|255|255|100");
-            Pipe.OnLineRead("TRIANGLE|1|1|1|1|10|32|32");
-            Pipe.OnLineRead("TEXT|0|0|1234567812345678");
-            Pipe.OnLineRead("TEXT|0|5|234567890123123123");
+        private void Pipe_OnPipeClosed(object sender, EventArgs e)
+        {
+            Close();
         }
 
         private void OnResetClicked(object sender, RoutedEventArgs e)

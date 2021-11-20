@@ -86,19 +86,6 @@
                     </Canvas.LayoutTransform>
                 </Canvas>
             </local:ZoomBorder>
-            
-            <!-- Playback Controls -->
-            <DockPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button DockPanel.Dock="Left"
-                        Margin="5"
-                        Content="Pause" />
-                <Button DockPanel.Dock="Left"
-                        Margin="5"
-                        Content="Play" />
-                <Button DockPanel.Dock="Left"
-                        Margin="5"
-                        Content="Step" />
-            </DockPanel>
 
         </Grid>
 

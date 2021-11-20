@@ -32,19 +32,34 @@ namespace STORMWORKS_Simulator
 
     public class StormworksMonitor
     {
-        public Point Size { get; set; }
+        public event EventHandler OnMonitorSizeChanged;
+        public Point Size
+        {
+            get
+            {
+                return _Size;
+            }
+            set
+            {
+                _Size = value;
+                OnMonitorSizeChanged?.Invoke(this, new EventArgs());
+            }
+        }
         public SolidColorBrush Color { get; set; }
+
+        private Point _Size;
 
         public StormworksMonitor()
         {
             Size = new Point(32, 32);
-            Color = Brushes.Black;
+            Color = Brushes.White;
         }
     }
 
     public class MainVM : INotifyPropertyChanged
     {
         public readonly double DrawScale = 5.0f;
+
         public event EventHandler OnViewReset;
         public event PropertyChangedEventHandler PropertyChanged;
 
