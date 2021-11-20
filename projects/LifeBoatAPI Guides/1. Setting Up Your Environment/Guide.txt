@@ -1,0 +1,36 @@
+-- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
+-- please see: https://github.com/nameouschangey/STORMWORKS for updates
+
+----------------------
+SETTING UP YOUR WORKSPACE
+----------------------
+Please follow this guide for getting setup, after which working in Stormworks will become far easier for you.
+
+    1. Download and install VSCode: https://code.visualstudio.com/
+
+    2. In VSCode, add the extensions:
+        - "Lua" by sumneko
+        - "Lua Debug" by actboy168
+        - (optionally) "XML Tools" by Josh Johnson 
+
+    4. Download the LifeBoatAPI and LifeBoatAPI Guides from ttps://github.com/nameouschangey/STORMWORKS and place these in a folder:
+        - MyFolder/StormworksProjects/LifeBoatAPI
+        - MyFolder/StormworksProjects/LifeBoatAPI Guides
+
+    3. Download the lua-doc files from 'Nelo, to provide intellisense: https://github.com/Rene-Sackers/StormworksLuaDocsGen. Place these in the same folder:
+        - MyFolder/StormworksProjects/docs-missions.lua
+        - MyFolder/StormworksProjects/docs-vehicles.lua
+
+    5. Open this root folder "StormworksProjects" (or whatever you named it) in VS Code
+
+    6. For each new project you wish to make, just create a new folder, e.g:
+        - MyFolder/StormworksProjects/LifeBoatAPI
+        - MyFolder/StormworksProjects/MySpeedboatMicroController
+        - MyFolder/StormworksProjects/BigMissileGuidanceComputer
+
+    7. You can now copy this RunExample.lua file, or edit it here, to specify which files to be minimized
+
+    8. Using F5, you can run the file you're viewing, if you view the RunExample.lua file and press F5 - you will run the minimizer.
+
+    8. Once minimized, you will then simply copy the output file into Stormworks.
+

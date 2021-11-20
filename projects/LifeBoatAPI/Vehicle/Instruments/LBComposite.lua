@@ -1,0 +1,2 @@
+-- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
+-- please see: https://github.com/nameouschangey/STORMWORKS for updates

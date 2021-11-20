@@ -1,0 +1,191 @@
+-- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
+-- please see: https://github.com/nameouschangey/STORMWORKS for updates
+
+
+This minimizer is designed specifically for Stormworks, and to be used alongside the LifeBoat modding framework (WIP)
+
+It is designed to significantly reduce the characters in a file, and allow you to work on projects in the way you would normally
+    do outside the Stormworks environment.
+If you are not familiar with setting up projects; this guide will aid you in setting up a good project structure AND using the Minimizer.
+
+
+----------------------
+RUNNING THE MINIMIZER
+----------------------
+The Minimizer process runs in two parts.
+
+The first is a "Combiner" that merges your files together - using the lua "require" statements to find each subsequent file.
+        This allows you to write code across multiple files, use library files and avoid re-writing the same code multiple times between projects.
+The Combiner is required if you are using the LifeBoatAPI (note; LBAPI may not have been released by the time you are reading this),
+        as this library consists of many files that you will not want to manually copy.
+
+
+The second part is the Minimizer.
+The minimizer reduces the actual character count of a single file; scanning it for Global variables and other renamable elements.
+At the time of writing, the LifeBoatAPI Minimizer far out-performs competing minimizers, such as FlaffyPony IDE and LuaMin.
+As an example, you may expect to minimize approximately 10,000 characters into 4,000 using LifeBoatAPI; but only 6500 characters using LuaMin.
+
+
+(Note: it will be easiest to follow these instructions, alonside the RunExample.lua file.
+It is expected you will just copy the RunExample.lua file, and edit it - and not write this out in full each time)
+
+Setting these up:
+    1. Create a new instance of the Constants Parser - this process is used to tell the combiner and minimizer which variables are owned by Stormworks.
+        a. LBParsingConstantsLoader:new()
+
+        b. loadLibrary(...) is used to specify the system libraries that are allowed by stormworks, such as table, math and scripting
+
+        c. loadNeloDocs(...) uses the previously downloaded doc files from 'Nelo - these contain all Stormworks definitions.
+                You will want to specify whether to load the vehicle doc file, or the mission doc file based on your current project.
+                Note: you will need to use the LBFilepath:new() functionality for filepaths, instead of raw strings.
+
+        d. addRestrictedKeywords(...) call this with either the vehicle table, or the missions table; to specify certain keywords.
+
+
+    2. Create a new instance of the Combiner and run it
+        a. LBCombiner:new()
+
+        b. addRootFolder(...) - specify the root folder, e.g. MyFolder/StormworksProjects/ that contains the /LifeBoatAPI/ folder
+                              - this tells the combiner where to look for source files.
+                              - Note: if you are comfortable with the process, you may call this multiple times to specify multiple source directories, if you
+                                        have split your projects up in such a way. However, it is not recommended to deviate unless you know what you're doing.
+
+        c. combine(...) - specify the input file, and the output file.
+                        - the combiner will now run, and attempt to resolve all the require("...") declarations in the input file.
+                        - Note: only BASIC require functionality is avaiable. e.g. require("...") but not  a = require("...")
+                        - If this process cannot resolve a require it will throw an error. If this happens, it likely means you mistyped a require,
+                            or, the root directory is incorrectly set
+
+
+    3. Create a new instance of the Minimizer and run it
+        a. LBMinimizer:new(constants) where constants is the LBParsingConstantsLoader you loaded earlier
+
+        b. minimizeFile(...) takes the input and outfile filepath, and then minimizes the file
+                             if you recieve a file that does not work, but your "combined" file is correct - please check your ParsingConstants setup
+                        
+        c. Note: minimize(...) which does not create a file, but instead returns the minimized string in lua also exists
+                               if you do not know what you're doing, it is recommended to avoid this
+                               however, it may be useful in the creation of build pipelines - where you may wish to send the minimized data through code,
+                                    e.g. to then insert it directly in the game XML.
+        
+        d. NB: minimize(...) and minimizeFile(...) have an optional argument for "boilerplate". If you provide a string for this, such as a link to your github
+            it will be pasted at the top of the minimized file (if there's enough space to do so, or it gets skipped). This can help with keeping your credit
+            on minimized files when submitting to the Workshop.
+           (A nameouschangey credit is also added AFTER your own boilerplate. Please refrain from removing this, as this minimizer is a significant amount of work,
+            and the creditation helps encourage more people to use tools like this - which improves our community output as a whole. If there is not enough space to
+            fit this after your own boilerplate is added; nameouschangey's credit is not inserted.)
+
+
+You are now all setup.
+It should be far easier to work this way than before; every time you wish to deploy to the game - simply run the script you've written, and copy the contents to
+    Stormworks.
+
+
+TIP:
+    - For best minification, focus on avoiding keywords such as "function", "local" etc.
+        - note that "local" can be achieved by abusing function parameters, as these default to local-scope but cost 0 letters.
+
+    - Avoid renaming the system constants such as input, output, etc. as the minifier will already do it for you - and do a better job than you do manually
+    - Avoid calling functions by string, e.g. _ENV["myFunc"](123) as this will not work and may cause errors
+    - Keep code readable, maintainable, write comments - let the minimizer do the hard work for you!
+
+
+----------------------
+MINIMIZER FEATURE: CODE REMOVAL
+----------------------
+
+The minimizer also features a code remover, that is used internally with the Vehicle part of the LifeBoatAPI.
+This feature allows you to setup libraries so that only the functions and code YOU ACTUALLY USED in a script - are included in the output.
+
+This is a standard feature for people using languages such as C#, and without it - it's nearly impossible to write good code libraries, as their size prohibits
+  their use, without manually stripping all the unused parts out.
+
+
+To use this feature, wrap any piece of code with the following:
+
+---@section MyFunction
+function MyFunction(...)
+    return 123 + 123
+end
+---@endsection
+
+When parsed by the Minimizer, any section surrounded by ---@section <identifier> ---@endsection, will be removed if the <identifier> is not statements
+outside of this block. In other words; if 
+
+For example, in the above, unless the identifier MyFunction is found elsewhere - that function will be stripped from the output.
+In reality, this means; "unless I used the code, I don't pay for it".
+As such, it's encouraged to use this feature for all of your library functions.
+
+Note: ---@section and ---@endsection are very specific, adding spaces etc. will not work as intended.
+
+
+-----------------------------
+MINIMIZER FEATURE: CODE REMOVAL (ADVANCED)
+----------------------------
+The ---@section functionality has this additional functionality:
+
+---@section <identifier>
+---@endsection
+
+or
+
+---@section <idenfifier> <section name> 
+---@endsection <section name>
+
+or
+
+---@section <identifier> <minimum count for deletion> <section name>
+---@endsection <secton name>
+
+or
+
+---@section PATTERN <identifier> <minimum count for deletion> <section name>
+---@endsection <secton name>
+
+
+where:
+PATTERN is an optional argument, which if included (exactly as typed) - will change the search method to "by pattern", rather than "exact match".
+        it's uncommon for this to be beneficial; but it gives you the flexibility if wanted
+
+<identifier> is the identifier we're looking for in the rest of the code, e.g. MyFunctionName or MyClassName
+
+<minimum count for deletion> is an optional argument, specifying how many times we must see <identifier> to keep the section. Default is 1.
+
+<section name> is an name you can give the section, if you wish to use nested sections. This specifies which section ends where - otherwise the next ---@endsection found is used.
+
+
+for example:
+
+---@section MyClass MY_CLASS_SECTION
+MyClass = {
+    -- ... class things
+
+    ---@section myClassFunction
+    myClassFunction = function(...)
+         -- .. function things
+    end;
+    ---@endsection
+};
+---@endsection MY_CLASS_SECTION
+
+In this, the entire class code will be deleted unless some external code called MyClass at least once.
+If the class is used, but the function myClassFunction isn't, then only this function gets removed.
+
+As such, you only "pay" for what you "use".
+And can write code without worrying about the 4K limit.
+
+
+
+
+--- Final Notes 
+The two caveats to this system are:
+1) Don't call functions using string names:
+    - DO, call myFunc(123)
+    - DONT, call _ENV["myFunc"](123)
+
+2) Don't give functions identical names
+    - e.g. Vec2:add, Vec3:add - will be indistinguishable, and may increase code size if either function is used (both will be kept)
+
+3) Check regularly
+    - The longer you go without minimizing, the closer to the 4K limit you may be without realising.
+    - The more often you check, the more comfortable you can be, knowing your code is fine.

@@ -1,0 +1,9 @@
+﻿<Application x:Class="STORMWORKS_Simulator.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:STORMWORKS_Simulator"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary Source="AppStyles.xaml" />
+    </Application.Resources>
+</Application>
