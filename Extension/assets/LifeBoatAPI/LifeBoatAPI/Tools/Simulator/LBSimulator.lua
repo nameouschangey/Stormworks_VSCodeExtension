@@ -1,3 +1,8 @@
+package.path = package.path .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/LifeBoatAPI/?.lua"
+package.path = package.path .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/luasocket/?.lua"
+
+package.cpath = package.cpath .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/luasocket/dll/socket/core.dll"
+package.cpath = package.cpath .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/luasocket/dll/mime/core.dll"
 
 require("LifeBoatAPI.Tools.Utils.LBFilepath")
 require("LifeBoatAPI.Tools.Utils.LBFilesystem")
@@ -184,6 +189,7 @@ LBSimulatorInputs = {
 ---@field simulatorProcess file* currently running simulator process 
 ---@field _handlers table
 ---@field config LBSimulatorInputs
+---@field isInputOutputChanged boolean 
 LBSimulator = {
     ---@param this LBSimulator
     ---@return LBSimulator
@@ -196,7 +202,7 @@ LBSimulator = {
     end;
 
     run = function(this)
-        local simulatorExePath = LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\STORMWORKS_Simulator\STORMWORKS_Simulator\bin\Debug\STORMWORKS_Simulator.exe]])
+        local simulatorExePath = LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\Extension\assets\simulator\STORMWORKS_Simulator.exe]])
         this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
         this.connection = LBSimulatorConnection:new()
 
@@ -246,43 +252,35 @@ LBSimulator = {
         this.connection:close()
     end;
 
+        ---simulate the value an input should have
+    ---@param this LBSimulator
+    ---@param index number
+    ---@param value boolean
     setInputBool = function(this, index, value)
         if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " setting bool ") end
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " setting bool ") end
 
         if value ~= nil and value ~= input.getBool(index) then
-            this.inputsChanged = true
+            this.isInputOutputChanged = true
             input._bools[index] = value
         end
     end;
 
+    ---simulate the value an input should have
+    ---@param this LBSimulator
+    ---@param index number
+    ---@param value number
     setInputNumber = function(this, index, value)
         if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " setting number ") end
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " setting number ") end
 
         if value ~= nil and value ~= input.getNumber(index) then
-            this.inputsChanged = true
+            this.isInputOutputChanged = true
             input._numbers[index] = value
         end
     end;
 
-    ---@param this LBSimulator
-    _sendInOuts = function (this)
-        if(this.inputsChanged) then
-            this.inputsChanged = false
-
-            local inputCommand  = (input._bools[1] and "1" or "0") .. "|" .. input._numbers[1]
-            local outputCommand = (output._bools[1] and "1" or "0") .. "|" .. output._numbers[1]
-            for i=2, 32 do
-                inputCommand  = inputCommand  .. "|" .. (input._bools[i] and "1" or "0") .. "|" .. input._numbers[i]
-                outputCommand = outputCommand .. "|" .. (output._bools[i] and "1" or "0") .. "|" .. output._numbers[i]
-            end
-
-            this.connection:sendCommand("INPUT", inputCommand)
-            this.connection:sendCommand("OUTPUT", outputCommand)
-        end
-    end;
-
+    ---read and handle all messages sent by the simulator server since the last tick
     ---@param this LBSimulator
     readSimulatorMessages = function(this)
         while (this.connection.isAlive and this.connection:hasMessage()) do
@@ -300,8 +298,31 @@ LBSimulator = {
         end
     end;
 
+    ---register a handler to listen for simulator server messages
+    ---only one listener may be registered per command
+    ---@param this LBSimulator
+    ---@param commandName string name of the command to listen for
+    ---@param func fun(...) function taking arbitrary args that are filled in from the simulator params
     registerHandler = function (this, commandName, func)
         this._handlers[commandName] = func
+    end;
+
+        ---helper, send the input and output data to the server
+    ---@param this LBSimulator
+    _sendInOuts = function (this)
+        if(this.isInputOutputChanged or this.isInputOutputChanged) then
+            this.isInputOutputChanged = false
+
+            local inputCommand  = (input._bools[1] and "1" or "0") .. "|" .. input._numbers[1]
+            local outputCommand = (output._bools[1] and "1" or "0") .. "|" .. output._numbers[1]
+            for i=2, 32 do
+                inputCommand  = inputCommand  .. "|" .. (input._bools[i] and "1" or "0") .. "|" .. input._numbers[i]
+                outputCommand = outputCommand .. "|" .. (output._bools[i] and "1" or "0") .. "|" .. output._numbers[i]
+            end
+
+            this.connection:sendCommand("INPUT", inputCommand)
+            this.connection:sendCommand("OUTPUT", outputCommand)
+        end
     end;
 }
 
@@ -424,28 +445,27 @@ LBSimulatedInputHelpers = {
 
 
 simulator = LBSimulator:new()
-screen.SetSimulator(simulator)
+screen.setSimulator(simulator)
+output.setSimulator(simulator)
 
 
 ---@section __IF__IS__SIMULATING__
     ---@param simulator LBSimulator
     function onSimulatorInit(simulator)
-        simulator.config:addBoolHandler(9, LBSimulatedInputHelpers.constantBool(true))
-        simulator.config:addNumberHandler(10, LBSimulatedInputHelpers.oscillatingNumber(-10,10,-0.2,5))
-        simulator.config:addNumberHandler(11, LBSimulatedInputHelpers.wrappingNumber(-10,10,0.2,4))
-        simulator.config:addNumberHandler(12, LBSimulatedInputHelpers.noiseyOscillation(1,0))
-        simulator.config:addNumberHandler(13, LBSimulatedInputHelpers.noiseyIncrement(1, 0, 0))
+        --simulator.config:addBoolHandler(9, LBSimulatedInputHelpers.constantBool(true))
+        --simulator.config:addNumberHandler(10, LBSimulatedInputHelpers.oscillatingNumber(-10,10,-0.2,5))
+        --simulator.config:addNumberHandler(11, LBSimulatedInputHelpers.wrappingNumber(-10,10,0.2,4))
+        --simulator.config:addNumberHandler(12, LBSimulatedInputHelpers.noiseyOscillation(1,0))
+        --simulator.config:addNumberHandler(13, LBSimulatedInputHelpers.noiseyIncrement(1, 0, 0))
     end
     function onSimulatorTick(simulator)end
-    function onSimulatorOutputBoolChanged(index, oldValue, newValue) end
-    function onSimulatorOutputNumberChanged(index, oldValue, newValue) end
+    function onSimulatorOutputBoolChanged(index, oldValue, newValue)
+    end
+    function onSimulatorOutputNumberChanged(index, oldValue, newValue)
+    end
 ---@endsection
 
-function onDraw()
-    output.setBool(4,true)
-    output.setNumber(11, frameCount)
-    screen.drawRectF((frameCount/10) % 32, 10, 15, 15)
-end
 
+require("LifeBoatAPI.Tools.Simulator.ToSim")
 
---simulator:run()
+simulator:run()

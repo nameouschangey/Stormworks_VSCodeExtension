@@ -16,7 +16,7 @@ screen = {
     _Height = 32;
     _simulator = nil;
 
-    SetSimulator = function (simulator)
+    setSimulator = function (simulator)
         screen._simulator = simulator
 
         screen._simulator:registerHandler("SCREENSIZE",
@@ -46,7 +46,7 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setColor = function(r, g, b, a)
-        a = a or 0
+        a = a or 255
         screen._simulator.connection:sendCommand("COLOUR", r, g, b, a)
     end;
 

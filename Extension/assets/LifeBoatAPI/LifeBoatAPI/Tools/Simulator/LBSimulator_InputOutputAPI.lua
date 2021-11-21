@@ -32,9 +32,14 @@ input = {
 ---@class LBSimulator_OutputAPI
 ---@field _numbers number[] array of numbers inputs
 ---@field _bools boolean[] array of boolean inputs
+---@field _simulator LBSimulator current simulator, needed for reducing message count
 output = {
     _numbers = {};
     _bools = {};
+
+    setSimulator = function(this, simulator)
+        output._simulator = simulator
+    end;
 
     --- Set an on/off value on the composite output
     --- @param index number The composite index to write to
@@ -48,6 +53,7 @@ output = {
                 onSimulatorOutputBoolChanged(index, output._bools[index], value)
             end
 
+            output._simulator.isInputOutputChanged = true;
             output._bools[index] = value
         end
     end;
@@ -64,6 +70,7 @@ output = {
                 onSimulatorOutputNumberChanged(index, output._numbers[index], value)
             end
 
+            output._simulator.isInputOutputChanged = true;
             output._numbers[index] = value
         end
     end;
