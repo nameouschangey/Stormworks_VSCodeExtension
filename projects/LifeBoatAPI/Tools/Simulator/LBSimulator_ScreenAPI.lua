@@ -10,11 +10,23 @@
 ---@class LBSimulator_ScreenAPI
 ---@field _Width number screen width in Stormworks pixels
 ---@field _Height number screen height in Stormworks pixels
----@field _Connection LBSimulatorConnection simulator connection
+---@field _simulator LBSimulator simulator connection
 screen = {
     _Width = 32;
     _Height = 32;
-    _Connection = nil;
+    _simulator = nil;
+
+    _OnSimulatorInit = function (simulator)
+        _simulator = simulator
+        
+        _simulator:registerHandler("SCREENSIZE",
+            function(_, width, height)
+                if(screen) then
+                    screen._Width = tonumber(width)
+                    screen._Height = tonumber(height)
+                end
+            end)
+    end;
 
     --- Gets the width of the screen (pixels)
     --- @return number width
@@ -35,12 +47,12 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setColor = function(r, g, b, a)
         a = a or 0
-        screen._Connection:sendCommand("COLOUR", r, g, b, a)
+        screen._simulator.connection:sendCommand("COLOUR", r, g, b, a)
     end;
 
     --- Clear the screen with the current color
     drawClear = function()
-        screen._Connection:sendCommand("CLEAR")
+        screen._simulator.connection:sendCommand("CLEAR")
     end;
 
     --- Draws a line on the screen from x1, y1 to x2, y2
@@ -49,7 +61,7 @@ screen = {
     --- @param x2 number The X coordinate of the end of the line
     --- @param y2 number The Y coordinate of the end of the line
     drawLine = function(x1, y1, x2, y2)
-        screen._Connection:sendCommand("LINE", x1, y1, x2, y2)
+        screen._simulator.connection:sendCommand("LINE", x1, y1, x2, y2)
     end;
 
     --- Draws an outlined circle on the screen
@@ -57,7 +69,7 @@ screen = {
     --- @param y number The Y coordinate of the center of the circle
     --- @param radius number The radius of the circle
     drawCircle = function(x, y, radius)
-        screen._Connection:sendCommand("CIRCLE", "0", x, y, radius)
+        screen._simulator.connection:sendCommand("CIRCLE", "0", x, y, radius)
     end;
 
     --- Draws a filled circle on the screen
@@ -65,7 +77,7 @@ screen = {
     --- @param y number The Y coordinate of the center of the circle
     --- @param radius number The radius of the circle
     drawCircleF = function(x, y, radius)
-        screen._Connection:sendCommand("CIRCLE", "1", x, y, radius)
+        screen._simulator.connection:sendCommand("CIRCLE", "1", x, y, radius)
     end;
 
     --- Draws an outlined rectangle on the screen
@@ -74,7 +86,7 @@ screen = {
     --- @param width number The width of the rectangle
     --- @param height number The height of the rectangle
     drawRect = function(x, y, width, height)
-        screen._Connection:sendCommand("RECT", "0", x, y, width, height)
+        screen._simulator.connection:sendCommand("RECT", "0", x, y, width, height)
     end;
 
     --- Draws a filled rectangle on the screen
@@ -83,7 +95,7 @@ screen = {
     --- @param width number The width of the rectangle
     --- @param height number The height of the rectangle
     drawRectF = function(x, y, width, height)
-        screen._Connection:sendCommand("RECT", "1", x, y, width, height)
+        screen._simulator.connection:sendCommand("RECT", "1", x, y, width, height)
     end;
 
     --- Draws a triangle on the screen
@@ -94,7 +106,7 @@ screen = {
     --- @param x3 number The X coordinate of the third point of the triangle
     --- @param y3 number The Y coordinate of the third point of the triangle
     drawTriangle = function(x1, y1, x2, y2, x3, y3)
-        screen._Connection:sendCommand("TRIANGLE", "0", x1, y1, x2, y2, x3, y3)
+        screen._simulator.connection:sendCommand("TRIANGLE", "0", x1, y1, x2, y2, x3, y3)
     end;
 
     --- Draws a filled triangle on the screen
@@ -105,7 +117,7 @@ screen = {
     --- @param x3 number The X coordinate of the third point of the triangle
     --- @param y3 number The Y coordinate of the third point of the triangle
     drawTriangleF = function(x1, y1, x2, y2, x3, y3)
-        screen._Connection:sendCommand("TRIANGLE", "1", x1, y1, x2, y2, x3, y3)
+        screen._simulator.connection:sendCommand("TRIANGLE", "1", x1, y1, x2, y2, x3, y3)
     end;
 
     --- Draws text on the screen
@@ -113,7 +125,7 @@ screen = {
     --- @param y number The Y coordinate of the top left of the text
     --- @param text string The text to draw
     drawText = function(x, y, text)
-        screen._Connection:sendCommand("TEXT", x, y, text)
+        screen._simulator.connection:sendCommand("TEXT", x, y, text)
     end;
 
     --- Draw text within a rectangle
@@ -125,11 +137,11 @@ screen = {
     --- @param horizontalAlign number How to align the text horizontally (-1 = left, 0 = center, 1 = right)
     --- @param verticalAlign number How to align the text vertically (-1 = top, 0 = center, 1 = bottom)
     drawTextBox = function(x, y, width, height, text, horizontalAlign, verticalAlign)
-        screen._Connection:sendCommand("TEXTBOX", x, y, width, height, horizontalAlign, verticalAlign, text)
+        screen._simulator.connection:sendCommand("TEXTBOX", x, y, width, height, horizontalAlign, verticalAlign, text)
     end;
 
     drawMap = function(x, y, zoom)
-        screen._Connection:sendCommand("MAP", x, y, zoom)
+        screen._simulator.connection:sendCommand("MAP", x, y, zoom)
     end;
 
     --- Sets the color of the ocean on the drawn map

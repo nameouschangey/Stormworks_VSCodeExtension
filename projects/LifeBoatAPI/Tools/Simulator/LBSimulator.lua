@@ -200,6 +200,9 @@ LBSimulator = {
         this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
         this.connection = LBSimulatorConnection:new()
 
+        onSimulatorInit = onSimulatorInit or empty
+        onSimulatorInit()
+
         -- reliable 60 FPS main thread
         local timeRunning = 0.0
         local lastTime = _socket.gettime()
@@ -420,44 +423,29 @@ LBSimulatedInputHelpers = {
 }
 
 
+simulator = LBSimulator:new()
+simulator:run()
+screen.SetSimulator(simulator)
 
----@param simulator LBSimulator
+
 ---@section __IF__IS__SIMULATING__
-function onSimulate(simulator)
-end
-
-function onOutputBoolChangedListener(index, oldValue, newValue)
-
-end
-
-function onOutputNumberChangedListener(index, oldValue, newValue)
-    if index == 1 then
-        a = 10
+    ---@param simulator LBSimulator
+    function onSimulatorInit(simulator)
+        simulator.config:addBoolHandler(9, LBSimulatedInputHelpers.constantBool(true))
+        simulator.config:addNumberHandler(10, LBSimulatedInputHelpers.oscillatingNumber(-10,10,-0.2,5))
+        simulator.config:addNumberHandler(11, LBSimulatedInputHelpers.wrappingNumber(-10,10,0.2,4))
+        simulator.config:addNumberHandler(12, LBSimulatedInputHelpers.noiseyOscillation(1,0))
+        simulator.config:addNumberHandler(13, LBSimulatedInputHelpers.noiseyIncrement(1, 0, 0))
     end
-end
+    function onSimulatorTick(simulator)end
+    function onSimulatorOutputBoolChanged(index, oldValue, newValue) end
+    function onSimulatorOutputNumberChanged(index, oldValue, newValue) end
 ---@endsection
 
 function onDraw()
     output.setBool(4,true)
     output.setNumber(11, frameCount)
-    simulator.connection:sendCommand("RECT", 1, (frameCount/10) % 32, 10, 15, 15)
+    screen.drawRectF((frameCount/10) % 32, 10, 15, 15)
 end
 
 
-simulator = LBSimulator:new()
-simulator:registerHandler("SCREENSIZE",
-function(sim, command, width, height)
-    if(screen) then
-        screen._Width = tonumber(width)
-        screen._Height = tonumber(height)
-    end
-end)
-
-
-simulator.config:addBoolHandler(9, LBSimulatedInputHelpers.constantBool(true))
-simulator.config:addNumberHandler(10, LBSimulatedInputHelpers.oscillatingNumber(-10,10,-0.2,5))
-simulator.config:addNumberHandler(11, LBSimulatedInputHelpers.wrappingNumber(-10,10,0.2,4))
-simulator.config:addNumberHandler(12, LBSimulatedInputHelpers.noiseyOscillation(1,0))
-simulator.config:addNumberHandler(13, LBSimulatedInputHelpers.noiseyIncrement(1, 0, 0))
-
-simulator:run()
