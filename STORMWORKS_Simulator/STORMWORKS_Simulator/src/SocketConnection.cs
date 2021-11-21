@@ -38,7 +38,6 @@ namespace STORMWORKS_Simulator
         public string ReadNextMessage(NetworkStream stream)
         {
             var length = int.Parse(ReadString(stream, 4));
-            System.IO.File.AppendAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", $"Read length: {length}\n");
             return ReadString(stream, length);
         }
 
@@ -53,7 +52,6 @@ namespace STORMWORKS_Simulator
             var bytesRead = 0;
             while(bytesRead < lengthToRead)
             {
-                System.IO.File.AppendAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", $"Reading size: {lengthToRead - bytesRead}\n");
                 bytesRead = stream.Read(Buffer, bytesRead, lengthToRead - bytesRead);
             }
         }
@@ -67,7 +65,6 @@ namespace STORMWORKS_Simulator
         private DateTime _StartTime = DateTime.UtcNow;
         private MainVM _Viewmodel;
         private IAsyncResult _RunningTask;
-        private int _TicksSent = 0;
         private TcpClient Client;
 
         [ImportMany(typeof(IPipeCommandHandler))]
@@ -75,7 +72,6 @@ namespace STORMWORKS_Simulator
 
         public SocketConnection(MainVM viewmodel)
         {
-
             _Viewmodel = viewmodel;
             LoadMEFCommands();
 
@@ -90,11 +86,11 @@ namespace STORMWORKS_Simulator
                     var stream = Client.GetStream();
                     var reader = new SocketReadBuffer(2048);
 
+                    Logger.Log("Beginning Message Loop");
                     while (IsActive)
                     {
-                        System.IO.File.AppendAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", "Running active\n");
                         var message = reader.ReadNextMessage(stream);
-                        System.IO.File.AppendAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", $"Message: {message}\n");
+                        Logger.Log($"Message: {message}");
                         OnLineRead(message);
                     }
                     Client.Close();
@@ -103,7 +99,9 @@ namespace STORMWORKS_Simulator
                 }
                 catch (Exception e)
                 {
-                    System.IO.File.AppendAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", $"exception: {e}\n");
+                    Logger.Log($"Caught Exception: {e}");
+                    OnPipeClosed?.Invoke(this, new EventArgs());
+                    throw e;
                 }
             });
         }
@@ -150,6 +148,8 @@ namespace STORMWORKS_Simulator
             catch(Exception e)
             {
                 // keep the UI running, despite any issue that arise
+                // this will be called when non-standard commands get sent etc.
+                Logger.Log($"Caught Parsing Exception: {e}");
             }
         }
 

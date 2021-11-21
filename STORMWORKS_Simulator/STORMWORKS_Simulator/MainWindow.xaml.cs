@@ -24,7 +24,7 @@ namespace STORMWORKS_Simulator
 
         public MainWindow()
         {
-            System.IO.File.WriteAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", "");
+            Logger.SetLog(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt");
 
             InitializeComponent();
 

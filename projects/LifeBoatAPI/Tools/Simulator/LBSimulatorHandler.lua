@@ -63,10 +63,29 @@ LBSimulatorHandler = {
     end;
 }
 
+
 simulator = LBSimulatorHandler:new()
 simulator:launch(LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\STORMWORKS_Simulator\STORMWORKS_Simulator\bin\Debug\STORMWORKS_Simulator.exe]]))
 
-simulator:sendCommand("RECT", 1, 10, 10, 15, 15)
---simulator:close()
-simulator:sendCommand("RECT", 1, 10, 10, 15, 15)
+local timeToRun = 10.0
+local timeRunning = 0.0
+local lastTime = socket.gettime()
+local timeSinceFrame = 0.0
+local frameCount = 0
+while timeRunning < timeToRun do
+    local time = socket.gettime()
+    timeRunning = timeRunning + (time - lastTime)
+    timeSinceFrame = timeSinceFrame + (time - lastTime)
+    lastTime = time
+
+    if timeSinceFrame > 0.016 then
+        timeSinceFrame = 0.0
+        frameCount = frameCount + 1
+        simulator:sendCommand("CLEAR")
+        simulator:sendCommand("RECT", 1, (frameCount/10) % 32, 10, 15, 15)
+    else
+        socket.sleep(0.001)
+    end
+end
+
 simulator:close()

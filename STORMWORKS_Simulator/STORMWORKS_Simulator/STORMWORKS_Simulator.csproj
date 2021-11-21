@@ -61,6 +61,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="lib\ZoomBorder.cs" />
+    <Compile Include="src\Logger.cs" />
     <Compile Include="src\PipedCommands\ControlCommands.cs" />
     <Compile Include="src\PipedCommands\InputOutputCommands.cs" />
     <Compile Include="src\PipedCommands\DrawingCommands.cs" />

@@ -29,10 +29,10 @@ namespace STORMWORKS_Simulator
             }
 
             var filled = commandParts[1] == "1";
-            var x = int.Parse(commandParts[2]) * vm.DrawScale;
-            var y = int.Parse(commandParts[3]) * vm.DrawScale;
-            var width = int.Parse(commandParts[4]) * vm.DrawScale;
-            var height = int.Parse(commandParts[5]) * vm.DrawScale;
+            var x       = (int)double.Parse(commandParts[2]) * vm.DrawScale;
+            var y       = (int)double.Parse(commandParts[3]) * vm.DrawScale;
+            var width   = (int)double.Parse(commandParts[4]) * vm.DrawScale;
+            var height  = (int)double.Parse(commandParts[5]) * vm.DrawScale;
 
             var shape = new Path
             {
@@ -59,9 +59,9 @@ namespace STORMWORKS_Simulator
             }
 
             var filled = commandParts[1] == "1";
-            var x = int.Parse(commandParts[2]) * vm.DrawScale;
-            var y = int.Parse(commandParts[3]) * vm.DrawScale;
-            var radius = int.Parse(commandParts[4]) * vm.DrawScale;
+            var x       = (int)double.Parse(commandParts[2]) * vm.DrawScale;
+            var y       = (int)double.Parse(commandParts[3]) * vm.DrawScale;
+            var radius  = (int)double.Parse(commandParts[4]) * vm.DrawScale;
 
             var shape = new Path
             {
@@ -87,10 +87,10 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var x = int.Parse(commandParts[1])  * vm.DrawScale;
-            var y = int.Parse(commandParts[2])  * vm.DrawScale;
-            var x2 = int.Parse(commandParts[3]) * vm.DrawScale;
-            var y2 = int.Parse(commandParts[4]) * vm.DrawScale;
+            var x   = (int)double.Parse(commandParts[1])  * vm.DrawScale;
+            var y   = (int)double.Parse(commandParts[2])  * vm.DrawScale;
+            var x2  = (int)double.Parse(commandParts[3])  * vm.DrawScale;
+            var y2  = (int)double.Parse(commandParts[4])  * vm.DrawScale;
 
             var line = new Line();
             line.X1 = x;
@@ -119,8 +119,8 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var x = (int.Parse(commandParts[1])) * vm.DrawScale;
-            var y = (int.Parse(commandParts[2])-1) * vm.DrawScale;
+            var x = (int)(double.Parse(commandParts[1]))   * vm.DrawScale;
+            var y = (int)(double.Parse(commandParts[2])-1) * vm.DrawScale;
             var text = commandParts[3];
 
             var textBlock = new TextBlock();
@@ -150,10 +150,10 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var x = (int.Parse(commandParts[1])) * vm.DrawScale;
-            var y = (int.Parse(commandParts[2])-1) * vm.DrawScale;
-            var width = int.Parse(commandParts[3]) * vm.DrawScale;
-            var height = int.Parse(commandParts[4]) * vm.DrawScale;
+            var x       = (int)(double.Parse(commandParts[1])) * vm.DrawScale;
+            var y       = (int)(double.Parse(commandParts[2])-1) * vm.DrawScale;
+            var width   = (int)double.Parse(commandParts[3]) * vm.DrawScale;
+            var height  = (int)double.Parse(commandParts[4]) * vm.DrawScale;
             var text = commandParts[5];
 
             var textBlock = new TextBlock();
@@ -185,14 +185,14 @@ namespace STORMWORKS_Simulator
             }
 
             var filled = commandParts[1] == "1";
-            var p1x = int.Parse(commandParts[2]) * vm.DrawScale;
-            var p1y = int.Parse(commandParts[3]) * vm.DrawScale;
+            var p1x = (int)double.Parse(commandParts[2]) * vm.DrawScale;
+            var p1y = (int)double.Parse(commandParts[3]) * vm.DrawScale;
                                      
-            var p2x = int.Parse(commandParts[4]) * vm.DrawScale;
-            var p2y = int.Parse(commandParts[5]) * vm.DrawScale;
+            var p2x = (int)double.Parse(commandParts[4]) * vm.DrawScale;
+            var p2y = (int)double.Parse(commandParts[5]) * vm.DrawScale;
                                               
-            var p3x = int.Parse(commandParts[6]) * vm.DrawScale;
-            var p3y = int.Parse(commandParts[7]) * vm.DrawScale;
+            var p3x = (int)double.Parse(commandParts[6]) * vm.DrawScale;
+            var p3y = (int)double.Parse(commandParts[7]) * vm.DrawScale;
 
             var points = new PointCollection();
             points.Add(new Point(p1x, p1y));
@@ -219,12 +219,28 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, int.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, int.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, int.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, int.Parse(commandParts[4]))));
+            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
+            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
+            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
+            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
 
             vm.Monitor.Color = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+        }
+    }
+
+    [Export(typeof(IPipeCommandHandler))]
+    public class ClearScreen : IPipeCommandHandler
+    {
+        public bool CanHandle(string commandName) => commandName == "CLEAR";
+
+        public void Handle(MainVM vm, string[] commandParts)
+        {
+            if (commandParts.Length < 1)
+            {
+                return;
+            }
+
+            vm.ClearScreen();
         }
     }
 }
