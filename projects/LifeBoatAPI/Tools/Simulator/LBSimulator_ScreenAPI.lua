@@ -16,10 +16,10 @@ screen = {
     _Height = 32;
     _simulator = nil;
 
-    _OnSimulatorInit = function (simulator)
-        _simulator = simulator
-        
-        _simulator:registerHandler("SCREENSIZE",
+    SetSimulator = function (simulator)
+        screen._simulator = simulator
+
+        screen._simulator:registerHandler("SCREENSIZE",
             function(_, width, height)
                 if(screen) then
                     screen._Width = tonumber(width)

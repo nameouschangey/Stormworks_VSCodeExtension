@@ -201,7 +201,7 @@ LBSimulator = {
         this.connection = LBSimulatorConnection:new()
 
         onSimulatorInit = onSimulatorInit or empty
-        onSimulatorInit()
+        onSimulatorInit(this)
 
         -- reliable 60 FPS main thread
         local timeRunning = 0.0
@@ -424,7 +424,6 @@ LBSimulatedInputHelpers = {
 
 
 simulator = LBSimulator:new()
-simulator:run()
 screen.SetSimulator(simulator)
 
 
@@ -449,3 +448,4 @@ function onDraw()
 end
 
 
+simulator:run()

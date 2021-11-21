@@ -43,7 +43,17 @@ namespace STORMWORKS_Simulator
         private void OnTickTimer(object state)
         {   // sends simple Alive message once every 100 millis, to ensure the connection is still alive
             // allows the UI to close sooner than it might otherwise, once the debugger ends
-            VSConnection.SendMessage("ALIVE");
+            try
+            {
+                VSConnection.SendMessage("ALIVE");
+            }
+            catch (Exception e)
+            {   // squash the error or it will confuse users in VSCode wondering why there's a bright red error
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Application.Current.Shutdown();
+                });
+            }
         }
 
         private void ViewModel_OnViewReset(object sender, EventArgs e)
