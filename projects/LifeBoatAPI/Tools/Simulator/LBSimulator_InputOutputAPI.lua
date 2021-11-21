@@ -29,11 +29,6 @@ input = {
     end;
 }
 
-for i=1,32 do
-    input._numbers[i] = 0
-    input._bools[i] = false
-end
-
 ---@class LBSimulator_OutputAPI
 ---@field _numbers number[] array of numbers inputs
 ---@field _bools boolean[] array of boolean inputs
@@ -45,25 +40,34 @@ output = {
     --- @param index number The composite index to write to
     --- @param value boolean The on/off value to write
     setBool = function(index, value)
-        output._bools[index] = value
         if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
+
+        if(value ~= nil and value ~= output._bools[index]) then
+            if onOutputBoolChangedListener then -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
+                onOutputBoolChangedListener(index, output._bools[index], value)
+            end
+
+            output._bools[index] = value
+        end
     end;
 
     --- Set a number value on the composite output
     --- @param index number The composite index to write to
     --- @param value number The number value to write
     setNumber = function(index, value)
-        output._numbers[index] = value
         if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
+
+        if(value ~= nil and value ~= output._numbers[index]) then
+            if onOutputNumberChangedListener then  -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
+                onOutputNumberChangedListener(index, output._numbers[index], value)
+            end
+
+            output._numbers[index] = value
+        end
     end;
 }
-
-for i=1,32 do
-    output._numbers[i] = 0
-    output._bools[i] = false
-end
 
 ---@class LBSimulator_PropertiesAPI
 ---@field _numbers table<string, number> number properties by name
@@ -96,3 +100,11 @@ property = {
     end;
 }
 
+--- Pre-processing, the game normally starts with all values at 0/false not nil
+for i=1,32 do
+    input._numbers[i] = 0
+    input._bools[i] = false
+    
+    output._numbers[i] = 0
+    output._bools[i] = false
+end

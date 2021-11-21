@@ -145,20 +145,24 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            if (commandParts.Length < 6)
+            if (commandParts.Length < 8)
             {
                 return;
             }
 
-            var x       = (int)(double.Parse(commandParts[1])) * vm.DrawScale;
-            var y       = (int)(double.Parse(commandParts[2])-1) * vm.DrawScale;
-            var width   = (int)double.Parse(commandParts[3]) * vm.DrawScale;
-            var height  = (int)double.Parse(commandParts[4]) * vm.DrawScale;
-            var text = commandParts[5];
+            var x               = (int)(double.Parse(commandParts[1])) * vm.DrawScale;
+            var y               = (int)(double.Parse(commandParts[2])-1) * vm.DrawScale;
+            var horizontalAlign = int.Parse(commandParts[3]);
+            var verticalAlign   = int.Parse(commandParts[4]);
+            var width           = (int)double.Parse(commandParts[5]) * vm.DrawScale;
+            var height          = (int)double.Parse(commandParts[6]) * vm.DrawScale;
+            var text            = commandParts[7];
 
             var textBlock = new TextBlock();
             textBlock.Text = text;
             textBlock.TextWrapping = TextWrapping.Wrap;
+            textBlock.HorizontalAlignment = (HorizontalAlignment)(horizontalAlign - 1);
+            textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign - 1);
             textBlock.Width = width;
             textBlock.Height = height;
             textBlock.Foreground = vm.Monitor.Color;

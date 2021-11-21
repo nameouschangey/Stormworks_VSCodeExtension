@@ -11,6 +11,7 @@ using System.Threading;
 using System.Windows;
 using System.Net.Sockets;
 using System.Net;
+using System.Linq;
 
 namespace STORMWORKS_Simulator
 {
@@ -99,26 +100,33 @@ namespace STORMWORKS_Simulator
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"Caught Exception: {e}");
+                    Logger.Log($"[Read] Caught Exception: {e}");
                     OnPipeClosed?.Invoke(this, new EventArgs());
                     throw e;
                 }
             });
         }
 
-        public void WriteDataBack(StormworksMonitor monitor)
+        public void SendMessage(string commandName, params object[] args)
         {
             try
             {
-                //var output = $"{_TicksSent++}|{monitor.Size.X}|{monitor.Size.Y}|{(DateTime.UtcNow - _StartTime).TotalMilliseconds}";
-                //
-                //var buffer = System.Text.Encoding.UTF8.GetBytes(output);
-                //var lenBuffer = BitConverter.GetBytes(buffer.Length);
-                //Client.GetStream().Write(lenBuffer, 0, lenBuffer.Length);
-                //Client.GetStream().Write(buffer, 0, buffer.Length);
+                if (Client != null && Client.Connected)
+                {
+                    var stringArgs = string.Join("|", args.Select(x => x.ToString()));
+                    var output = $"{commandName}|{stringArgs}";
+
+                    var buffer = System.Text.Encoding.UTF8.GetBytes(output);
+                    var lenBuffer = System.Text.Encoding.UTF8.GetBytes(buffer.Length.ToString("0000"));
+                    Client.GetStream().Write(lenBuffer, 0, lenBuffer.Length);
+                    Client.GetStream().Write(buffer, 0, buffer.Length);
+                }
             }
             catch (Exception e)
             {
+                Logger.Log($"[Write] Caught Exception: {e}");
+                OnPipeClosed?.Invoke(this, new EventArgs());
+                throw e;
             }
         }
 

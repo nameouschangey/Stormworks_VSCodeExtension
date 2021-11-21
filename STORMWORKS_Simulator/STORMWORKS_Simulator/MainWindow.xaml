@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:STORMWORKS_Simulator"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Style="{StaticResource WindowStyle}">
+        Style="{StaticResource WindowStyle}"
+        MouseLeftButtonUp="DrawableCanvas_MouseUp"
+        MouseRightButtonUp="DrawableCanvas_RMouseUp">
     <Window.Resources>
         <DataTemplate x:Key="SWInOutItemTemplate">
             <DockPanel>
@@ -17,7 +19,7 @@
                                    Width="50"
                                    Text="{Binding BoolValue}"/>
                 <TextBlock DockPanel.Dock="Left"
-                                   Text="{Binding NumberValue}"/>
+                                   Text="{Binding NumberValue, StringFormat={}{0:#,0.0}}"/>
             </DockPanel>
         </DataTemplate>
 
@@ -72,15 +74,23 @@
                           VerticalAlignment="Center"
                           IsChecked="{Binding IsPortrait}"
                           Content="Portrait" />
+                
+                <CheckBox Margin="10,0"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding EnablePan}"
+                          Content="Enable Pan" />
             </DockPanel>
-            <local:ZoomBorder Grid.Row="1" x:Name="CanvasContainer" ClipToBounds="True" Background="Gray">
+            <local:ZoomBorder Grid.Row="1" x:Name="CanvasContainer" ClipToBounds="True" EnablePan="{Binding EnablePan}"  Background="Gray">
                 <Canvas x:Name="DrawableCanvas"
                     Background="Black"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Width="{Binding CanvasSize.X}"
                     Height="{Binding CanvasSize.Y}"
-                        ClipToBounds="True">
+                    MouseLeftButtonDown="DrawableCanvas_MouseDown"
+                    MouseRightButtonDown="DrawableCanvas_RMouseDown"
+                    MouseMove="DrawableCanvas_MouseMove"
+                    ClipToBounds="True">
                     <Canvas.LayoutTransform>
                         <RotateTransform Angle="{Binding CanvasRotation}" />
                     </Canvas.LayoutTransform>

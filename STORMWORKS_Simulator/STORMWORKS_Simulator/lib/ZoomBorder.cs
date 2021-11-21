@@ -58,8 +58,6 @@ namespace STORMWORKS_Simulator
                 this.MouseLeftButtonDown += child_MouseLeftButtonDown;
                 this.MouseLeftButtonUp += child_MouseLeftButtonUp;
                 this.MouseMove += child_MouseMove;
-                this.PreviewMouseRightButtonDown += new MouseButtonEventHandler(
-                    child_PreviewMouseRightButtonDown);
             }
         }
 
@@ -128,16 +126,11 @@ namespace STORMWORKS_Simulator
             }
         }
 
-        void child_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            this.Reset();
-        }
-
         private void child_MouseMove(object sender, MouseEventArgs e)
         {
             if (child != null)
             {
-                if (child.IsMouseCaptured)
+                if (child.IsMouseCaptured && EnablePan)
                 {
                     var tt = GetTranslateTransform(child);
                     Vector v = start - e.GetPosition(this);
@@ -147,6 +140,20 @@ namespace STORMWORKS_Simulator
             }
         }
 
+        #endregion
+
+
+        #region NameousChangeyEdits
+        public static readonly DependencyProperty EnablePanProperty = DependencyProperty.Register(
+            "EnablePan", typeof(bool),
+            typeof(ZoomBorder)
+            );
+
+        public bool EnablePan
+        {
+            get => (bool)GetValue(EnablePanProperty);
+            set => SetValue(EnablePanProperty, value);
+        }
         #endregion
     }
 }

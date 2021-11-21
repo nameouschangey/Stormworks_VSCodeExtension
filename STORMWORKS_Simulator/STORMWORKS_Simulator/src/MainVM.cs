@@ -18,11 +18,31 @@ using System.Collections.Specialized;
 
 namespace STORMWORKS_Simulator
 {
-    public class StormworksInputOutput
+    public class StormworksInputOutput : INotifyPropertyChanged
     {
-        public string Name { get; private set; }
-        public bool  BoolValue { get; set; }
-        public double NumberValue { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Name
+        {
+            get => _Name;
+            set { _Name = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null)); }
+        }
+
+        public bool BoolValue
+        {
+            get => _BoolValue;
+            set { _BoolValue = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null)); }
+        }
+
+        public double NumberValue
+        {
+            get => _NumberValue;
+            set { _NumberValue = value;PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null)); }
+        }
+
+        private string _Name;
+        private bool _BoolValue;
+        private double _NumberValue;
 
         public StormworksInputOutput(string name)
         {
@@ -95,18 +115,28 @@ namespace STORMWORKS_Simulator
             }
         }
 
-        public StormworksMonitor Monitor { get; set; }
+        public bool EnablePan
+        {
+            get { return _EnablePan; }
+            set
+            {
+                _EnablePan = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+            }
+        }
 
+        public StormworksMonitor Monitor { get; set; }
+        public Canvas Canvas; // drawing this way is easier, but annoyingly can't easily bind a child collection to a Canvas
         private bool _IsPortrait;
-        public Canvas _Canvas; // drawing this way is easier, but annoyingly can't easily bind a child collection to a Canvas
+        private bool _EnablePan = true;
 
         public MainVM(Canvas canvas)
         {
-            _Canvas = canvas;
+            Canvas = canvas;
 
             Monitor = new StormworksMonitor();
-            Inputs = new List<StormworksInputOutput>();
-            Outputs = new List<StormworksInputOutput>();
+            Inputs = new ObservableCollection<StormworksInputOutput>();
+            Outputs = new ObservableCollection<StormworksInputOutput>();
 
             for (var i = 0; i < 32; ++i)
             {
@@ -120,12 +150,12 @@ namespace STORMWORKS_Simulator
 
         public void Draw(UIElement shape)
         {
-            _Canvas.Children.Add(shape);
+            Canvas.Children.Add(shape);
         }
 
         public void ClearScreen()
         {
-            _Canvas.Children.Clear();
+            Canvas.Children.Clear();
         }
     }
 }
