@@ -1,0 +1,101 @@
+Running active
+Reading size: 4
+Read length: 19
+Reading size: 19
+Message: RECT|1|10|10|15|15
+
+Running active
+Reading size: 4
+Read length: 19
+Reading size: 19
+Message: RECT|1|10|10|15|15
+
+Running active
+Reading size: 4
+Read length: 10
+Reading size: 10
+Message: SHUTDOWN|
+
+Running active
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4
+Reading size: 4

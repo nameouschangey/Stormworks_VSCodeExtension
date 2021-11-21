@@ -19,23 +19,33 @@ namespace STORMWORKS_Simulator
     {
         public StormworksMonitor Monitor;
         public MainVM ViewModel;
-        public PipeConnection Pipe;
+        public SocketConnection Pipe;
+        public System.Threading.Timer TickTimer;
 
         public MainWindow()
         {
+            System.IO.File.WriteAllText(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt", "");
+
             InitializeComponent();
 
             ViewModel = new MainVM(DrawableCanvas);
-            Pipe = new PipeConnection(ViewModel);
+            Pipe = new SocketConnection(ViewModel);
             Pipe.OnPipeClosed += Pipe_OnPipeClosed;
             ViewModel.OnViewReset += (x, e) => CanvasContainer.Reset();
 
             DataContext = ViewModel;
+
+            TickTimer = new System.Threading.Timer(OnTickTimer, this, 0, 5);
+        }
+
+        private void OnTickTimer(object state)
+        {
+            Pipe.WriteDataBack(ViewModel.Monitor);
         }
 
         private void Pipe_OnPipeClosed(object sender, EventArgs e)
         {
-            Close();
+            Application.Current.Shutdown();
         }
 
         private void OnResetClicked(object sender, RoutedEventArgs e)

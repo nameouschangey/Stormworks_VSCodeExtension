@@ -1,5 +1,18 @@
 {
     "Lua.diagnostics.disable": [
         "lowercase-global"
+    ],
+    "Lua.workspace.library": [
+        "C:/personal/STORMWORKS_VSCodeExtension/libs/lua/"
+    ],
+    "lua.debug.settings.cpath": [
+        "C:/personal/STORMWORKS_VSCodeExtension/libs/lib/socket/core.dll",
+        "C:/personal/STORMWORKS_VSCodeExtension/libs/lib/mime/core.dll"
+    ],
+    "lua.debug.settings.luaArch": "x86",
+    "lua.debug.settings.luaVersion": "5.3",
+    "Lua.runtime.version": "Lua 5.3",
+    "lua.debug.settings.path": [
+        "C:/personal/STORMWORKS_VSCodeExtension/libs/lua/?.lua"
     ]
 }
