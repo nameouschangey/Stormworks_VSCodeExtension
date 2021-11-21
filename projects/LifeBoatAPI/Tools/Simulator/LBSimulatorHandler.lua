@@ -32,46 +32,48 @@ LBSimulatorHandler = {
         this.client:close()
     end;
 
+    hasMessage = function(this)
+        return #(socket.select({this.client}, nil, 0)) > 0
+    end;
+
+    readMessage = function(this)
+
+    end;
+
+    handleMessages = function(this)
+        while this:hasMessage() do
+            local message = this:readMessage()
+
+            -- process message
+        end
+    end;
+
     sendCommand = function (this, commandName, ...)
         local command = commandName .. "|" .. table.concat({...}, "|")
 
-        -- using first 4 characters for length, as it's easier than wrangling lua numbers into bytes into strings
-        -- largest buffer we use right now is 2048 bytes, so no need for ability to send massive data anyway
+        -- using first 4 characters for length
         local lengthString = string.format("%04d", #command + 1)
         this.client:send(lengthString .. command .. "\n");
-        --while true do
-        --    local s, status, partial = this.client:receive()
-        --    print(s or partial)
-        --    if status == "closed" then break end
-        --end
-        
-    end;
-
-    readSetup = function(this)
-        function _readSetup()
-            local text = LBFileSystem_readAllText(this.simulatorOutPipePath)
-            local splits = LBString_split(text, "|")
-            
-            return {
-                width = tonumber(splits[2]),
-                height = tonumber(splits[3]),
-                milliseconds = tonumber(splits[4])
-            }
-        end
-
-        return pcall(_readSetup())
     end;
 }
+
+function empty() end;
+
+function onDraw()
+    simulator:sendCommand("RECT", 1, (frameCount/10) % 32, 10, 15, 15)
+end
+
 
 
 simulator = LBSimulatorHandler:new()
 simulator:launch(LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\STORMWORKS_Simulator\STORMWORKS_Simulator\bin\Debug\STORMWORKS_Simulator.exe]]))
 
+-- reliable 60 FPS main thread
 local timeToRun = 10.0
 local timeRunning = 0.0
 local lastTime = socket.gettime()
 local timeSinceFrame = 0.0
-local frameCount = 0
+frameCount = 0
 while timeRunning < timeToRun do
     local time = socket.gettime()
     timeRunning = timeRunning + (time - lastTime)
@@ -81,8 +83,20 @@ while timeRunning < timeToRun do
     if timeSinceFrame > 0.016 then
         timeSinceFrame = 0.0
         frameCount = frameCount + 1
+
+        -- read server inputs
+        
+        -- run tick
+        onSimulate = onSimulate or empty
+        onTick = onTick or empty
+        onDraw = onDraw or empty
+
+        onSimulate()
+        onTick()
+
         simulator:sendCommand("CLEAR")
-        simulator:sendCommand("RECT", 1, (frameCount/10) % 32, 10, 15, 15)
+        onDraw()
+        
     else
         socket.sleep(0.001)
     end
