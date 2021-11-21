@@ -129,6 +129,7 @@ namespace STORMWORKS_Simulator
         public Canvas Canvas; // drawing this way is easier, but annoyingly can't easily bind a child collection to a Canvas
         private bool _IsPortrait;
         private bool _EnablePan = true;
+        private int NextZIndex = 0;
 
         public MainVM(Canvas canvas)
         {
@@ -150,11 +151,13 @@ namespace STORMWORKS_Simulator
 
         public void Draw(UIElement shape)
         {
+            Panel.SetZIndex(shape, NextZIndex++);
             Canvas.Children.Add(shape);
         }
 
         public void ClearScreen()
         {
+            NextZIndex = 0;
             Canvas.Children.Clear();
         }
     }
