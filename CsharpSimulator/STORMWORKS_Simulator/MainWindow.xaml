@@ -80,21 +80,53 @@
                           IsChecked="{Binding EnablePan}"
                           Content="Enable Pan" />
             </DockPanel>
-            <local:ZoomBorder Grid.Row="1" x:Name="CanvasContainer" ClipToBounds="True" EnablePan="{Binding EnablePan}"  Background="Gray">
-                <Canvas x:Name="DrawableCanvas"
-                    Background="Black"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="{Binding CanvasSize.X}"
-                    Height="{Binding CanvasSize.Y}"
-                    MouseLeftButtonDown="DrawableCanvas_MouseDown"
-                    MouseRightButtonDown="DrawableCanvas_RMouseDown"
-                    MouseMove="DrawableCanvas_MouseMove"
-                    ClipToBounds="True">
-                    <Canvas.LayoutTransform>
-                        <RotateTransform Angle="{Binding CanvasRotation}" />
-                    </Canvas.LayoutTransform>
-                </Canvas>
+            <local:ZoomBorder x:Name="CanvasZoom"
+                              Grid.Row="1"
+                              ClipToBounds="True"
+                              EnablePan="{Binding EnablePan}"
+                              Background="Gray">
+                <ItemsControl x:Name="CanvasContainer"
+                              ItemsSource="{Binding ScreenVMs}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Canvas as ItemControl so we can bind the children easily-->
+                            <ItemsControl ItemsSource="{Binding CanvasChildren}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas
+                                            Width="{Binding CanvasSize.X}"
+                                            Height="{Binding CanvasSize.X}"
+                                            Margin="2"
+                                            VerticalAlignment ="Center"
+                                            HorizontalAlignment="Center"
+                                            Background="Black"
+                                            ClipToBounds = "True"
+                                            Visibility="Visible">  
+                                            <Canvas.LayoutTransform>
+                                                <RotateTransform Angle="{Binding CanvasRotation}"/>
+                                            </Canvas.LayoutTransform>
+                                            <Canvas.Style>
+                                                <Style TargetType="Canvas">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Canvas.Style>
+                                        </Canvas>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </local:ZoomBorder>
 
         </Grid>

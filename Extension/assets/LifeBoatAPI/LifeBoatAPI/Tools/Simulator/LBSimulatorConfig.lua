@@ -15,19 +15,26 @@ LBSimulatorConfig = {
     end;
 
     ---@param this LBSimulatorConfig
+    ---@param screenNumber number screen to configure, if this is not an existing screen - it becomes the next available integer
     ---@param width number
     ---@param height number
     ---@param portrait boolean (optional) true if this screen will be stood on its end in the game
     ---@overload fun(this : LBSimulatorConfig, screenNumber:number, width:number, height:number)
+    ---@return number screenNumber the actual screen number that was created
     configureScreen = function(this, screenNumber, width, height, portrait)
         portrait = portrait or false
-        this.simulator.screens[screenNumber] = this.simulator.screens[screenNumber] or LBSimulatorScreen:new()
+        if not this.simulator.screens[screenNumber] then
+            screenNumber = #this.simulator.screens + 1
+            this.simulator.screens[screenNumber] = LBSimulatorScreen:new()
+        end
         local thisScreen = this.simulator.screens[screenNumber]
         thisScreen.width = width
         thisScreen.height = height
 
         -- send the new screen data to the server
         this.simulator.connection:sendCommand("SCREENCONFIG", screenNumber, width, height, portrait and "1" or "0")
+
+        return screenNumber
     end;
 
     ---@param this LBSimulatorConfig

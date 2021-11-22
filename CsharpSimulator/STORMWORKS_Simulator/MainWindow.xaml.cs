@@ -28,16 +28,19 @@ namespace STORMWORKS_Simulator
 
             InitializeComponent();
 
-            ViewModel = new MainVM(DrawableCanvas);
+            ViewModel = new MainVM(CanvasContainer);
             VSConnection = new SocketConnection(ViewModel);
             VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
-            ViewModel.OnViewReset += (x, e) => CanvasContainer.Reset();
+            ViewModel.OnViewReset += (x, e) => CanvasZoom.Reset();
 
             DataContext = ViewModel;
 
             ViewModel.OnViewReset += ViewModel_OnViewReset;
 
             TickTimer = new System.Threading.Timer(OnTickTimer, null, 100, 100);
+
+            ViewModel.AddScreen(1);
+            ViewModel.AddScreen(2);
         }
 
         private void OnTickTimer(object state)
@@ -58,7 +61,7 @@ namespace STORMWORKS_Simulator
 
         private void ViewModel_OnViewReset(object sender, EventArgs e)
         {
-            VSConnection.SendMessage("SCREENSIZE", ViewModel.Monitor.Size.X, ViewModel.Monitor.Size.Y);
+            //VSConnection.SendMessage("SCREENSIZE", ViewModel.Monitor.Size.X, ViewModel.Monitor.Size.Y);
         }
 
         private void Pipe_OnPipeClosed(object sender, EventArgs e)
@@ -71,86 +74,30 @@ namespace STORMWORKS_Simulator
 
         private void OnResetClicked(object sender, RoutedEventArgs e)
         {
-            CanvasContainer.Reset();
+            CanvasZoom.Reset();
         }
 
 
         // Janky mouse-state handling
-        private string _LastTouchCommand = "";
-        private Point _TouchPosition = new Point(0, 0);
-        private bool _IsDown;
-        private bool _IsRDown;
-
-        private void SendTouchDataIfChanged()
-        {
-            // only send the update if things actually changed
-            var newCommand = $"{ (_IsDown? '1' : '0') }|{ (_IsRDown ? '1' : '0') }|{_TouchPosition.X}|{_TouchPosition.Y}";
-            if (newCommand != _LastTouchCommand)
-            {
-                _LastTouchCommand = newCommand;
-
-                VSConnection.SendMessage("TOUCH", newCommand);
-            }
-        }
-
-        private void UpdateTouchPosition(MouseEventArgs e)
-        {
-            _TouchPosition = e.GetPosition(DrawableCanvas);
-            _TouchPosition.X = Math.Floor(_TouchPosition.X / ViewModel.DrawScale);
-            _TouchPosition.Y = Math.Floor(_TouchPosition.Y / ViewModel.DrawScale);
-
-            if(_TouchPosition.X < 0 || _TouchPosition.X >= ViewModel.Monitor.Size.X
-               || _TouchPosition.Y < 0 || _TouchPosition.Y >= ViewModel.Monitor.Size.Y)
-            {
-                _IsDown = false;
-                _TouchPosition.X = Math.Max(0, Math.Min(ViewModel.Monitor.Size.X-1, _TouchPosition.X));
-                _TouchPosition.Y = Math.Max(0, Math.Min(ViewModel.Monitor.Size.Y-1, _TouchPosition.Y));
-            }
-        }
 
         private void DrawableCanvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            _IsDown = true;
-            UpdateTouchPosition(e);
-            SendTouchDataIfChanged();
         }
 
         private void DrawableCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            _IsDown = false;
-            SendTouchDataIfChanged();
         }
 
         private void DrawableCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            // mouse moved out of canvas
-            if(!DrawableCanvas.IsMouseOver)
-            {
-                _IsDown = false;
-                _IsRDown = false;
-            }
-
-            // Stormworks only updates mouse position while being clicked
-            if (_IsDown || _IsRDown)
-            {
-                UpdateTouchPosition(e);
-            }
-
-            SendTouchDataIfChanged();
         }
 
         private void DrawableCanvas_RMouseDown(object sender, MouseButtonEventArgs e)
         {
-            _IsRDown = true;
-            UpdateTouchPosition(e);
-            SendTouchDataIfChanged();
         }
 
         private void DrawableCanvas_RMouseUp(object sender, MouseButtonEventArgs e)
         {
-            _IsRDown = false;
-            SendTouchDataIfChanged();
         }
-
     }
 }
