@@ -1,9 +1,3 @@
-package.path = package.path .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/LifeBoatAPI/?.lua"
-package.path = package.path .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/luasocket/?.lua"
-
-package.cpath = package.cpath .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/luasocket/dll/socket/core.dll"
-package.cpath = package.cpath .. ";C:/personal/STORMWORKS_VSCodeExtension/Extension/assets/luasocket/dll/mime/core.dll"
-
 require("LifeBoatAPI.Tools.Utils.LBFilepath")
 require("LifeBoatAPI.Tools.Utils.LBFilesystem")
 require("LifeBoatAPI.Missions.Utils.LBString")
@@ -11,184 +5,17 @@ require("LifeBoatAPI.Missions.Utils.LBString")
 require("LifeBoatAPI.Tools.Simulator.LBSimulator_InputOutputAPI")
 require("LifeBoatAPI.Tools.Simulator.LBSimulator_ScreenAPI")
 
-_socket = require("socket")
 
----@class LBSimulatorConnection : LBBaseClass
----@field isAlive boolean whether the connection is current live
----@field client table socket connection
-LBSimulatorConnection = {
-    ---@return LBSimulatorConnection
-    new = function(this)
-        this = LBBaseClass.new(this)
+function Empty() end;
 
-        local host = "127.0.0.1"
-        local port = 14238
-
-        this.client = assert(_socket.tcp())
-        this.client:connect(host, port)
-
-        this.isAlive = true
-
-        return this
-    end;
-
-    ---@param this LBSimulatorConnection
-    close = function (this)
-        this:sendCommand("SHUTDOWN", "")
-        this.client:close()
-    end;
-
-    ---@param this LBSimulatorConnection
-    ---@param commandName string name of the command
-    ---@vararg ... additional string params to send to the simulator
-    sendCommand = function (this, commandName, ...)
-        local command = commandName .. "|" .. table.concat({...}, "|")
-
-        -- using first 4 characters for length
-        local lengthString = string.format("%04d", #command + 1)
-        local bytesSend, err = this.client:send(lengthString .. command .. "\n");
-
-        if err == "closed" then
-            this.isAlive = false
-        elseif err then
-            error(err)
-        end
-    end;
-
-    ---@return boolean messageExists whether a message is ready to be read or not
-    hasMessage = function(this)
-        return #(_socket.select({this.client}, nil, 0)) > 0
-    end;
-
-    ---@return string message reads the next message waiting from the simulator
-    readMessage = function(this)
-        local size, err = this.client:receive(4)
-
-        if err == "closed" then
-            this.isAlive = false
-            return nil
-        elseif err then
-            error(err)
-        end
-
-        size = tonumber(size)
-        local bytesRead = 0
-        local data = ""
-        while bytesRead < size do
-            local buffer, err = this.client:receive(size - bytesRead)
-            bytesRead = bytesRead + #buffer
-            data = data .. buffer
-
-            if err == "closed" then
-                this.isAlive = false
-                return nil
-            elseif err then
-                error(err)
-            end
-        end
-        return data
-    end;    
-}
-
-function empty() end;
-
-
----@class LBSimulatorInputs : LBBaseClass
----@field boolHandlers table<string, fun():boolean> handlers
----@field numberHandlers table<string, fun():number> handlers
----@field touchData table
----@field simulator LBSimulator
-LBSimulatorInputs = {
-    ---@param simulator LBSimulator
-    new = function (this, simulator)
-        this = LBBaseClass.new(this)
-        this.boolHandlers = {}
-        this.numberHandlers = {}
-        this.touchData = {
-            x = 0,
-            y = 0,
-            isDown = false,
-            isRDown = false
-        }
-        this.simulator = simulator
-
-        simulator:registerHandler("TOUCH",
-        function(sim, isDown, isRDown, x, y)
-            this.touchData.isDown = (isDown == "1")
-            this.touchData.isRDown = (isRDown == "1")
-            this.touchData.x = tonumber(x)
-            this.touchData.y = tonumber(y)
-        end)
-
-        -- default handlers
-        --    screen sizes
-        this:addNumberHandler(1, function() return screen.getWidth() end);
-        this:addNumberHandler(2, function() return screen.getHeight() end);
-
-        --    touchscreen isDown and position
-        this:addBoolHandler(1,   function() return this.touchData.isDown end);
-        this:addBoolHandler(2,   function() return this.touchData.isRDown end);
-        this:addNumberHandler(3, function() return this.touchData.x end);
-        this:addNumberHandler(4, function() return this.touchData.y end);
-        return this
-    end;
-
-    ---@param this LBSimulatorInputs
-    ---@param label string name of the property
-    ---@param value string|boolean|number value to set as a property
-    setProperty = function(this, label, value)
-        if type(value) == "string" then
-            property._texts[label] = value
-        elseif type(value) == "boolean" then
-            property._bools[label] = value
-        elseif type(value) == "number" then
-            property._numbers[label] = value
-        else
-            error("Stormworks properties must be Numbers, Strings or Booleans, when you tried to set property: " .. tostring(label))
-        end
-    end;
-
-    ---@param this LBSimulatorInputs
-    ---@param index number index between 1->32 for which input to handle
-    ---@param handler fun():number function that returns a number to set to this index each frame
-    addNumberHandler = function(this, index, handler)
-        if type(index) ~= "number" or index < 1 or index > 32 then
-            error("addNumberHandler can only be set for valid game indexes 1->32")
-        end
-
-        this.numberHandlers[index] = handler
-    end;
-
-    ---@param this LBSimulatorInputs
-    ---@param index number index between 1->32 for which input to handle
-    ---@param handler fun():boolean function that returns a boolean to set to this index each frame
-    addBoolHandler = function(this, index, handler)
-        if type(index) ~= "number" or index < 1 or index > 32 then
-            error("addBoolHandler can only be set for valid game indexes 1->32")
-        end
-
-        this.boolHandlers[index] = handler
-    end;
-
-    ---@param this LBSimulatorInputs
-    onSimulate = function (this)
-        -- handle the touchscreen + screen sizes
-        -- assume the user wants these connected, and they may be overwritten
-        for k,v in pairs(this.boolHandlers) do
-            this.simulator:setInputBool(k,v())
-        end
-
-        for k,v in pairs(this.numberHandlers) do
-            this.simulator:setInputNumber(k,v())
-        end
-    end;
-}
 
 ---@class LBSimulator : LBBaseClass
 ---@field connection LBSimulatorConnection simulator connection handler
 ---@field simulatorProcess file* currently running simulator process 
 ---@field _handlers table
----@field config LBSimulatorInputs
+---@field config LBSimulatorConfig
+---@field screens LBSimulatorScreen[]
+---@field currentScreen LBSimulatorScreen
 ---@field isInputOutputChanged boolean 
 LBSimulator = {
     ---@param this LBSimulator
@@ -196,8 +23,34 @@ LBSimulator = {
     new = function (this)
         this = LBBaseClass.new(this)
         this._handlers = {}
-        this.config = LBSimulatorInputs:new(this)
+        this.config = LBSimulatorConfig:new(this)
         this.timePerFrame = 1/60
+        this.screens = {}
+        this.currentScreen = nil
+
+        this:registerHandler("TOUCH",
+            function(simulator, screenNumber, isDownL, isDownR, x, y)
+                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new()
+                local thisScreen = this.screens[screenNumber]
+                thisScreen.isTouchedL = (isDownL == "1")
+                thisScreen.isTouchedR = (isDownR == "1")
+                thisScreen.touchX = x
+                thisScreen.touchY = y
+            end)
+
+        this:registerHandler("SCREENSIZE",
+            function (simulator, screenNumber, width, height)
+                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new()
+                local thisScreen = this.screens[screenNumber]
+                thisScreen.width  = width
+                thisScreen.height = height
+            end)
+
+        this:registerHandler("REMOVESCREEN",
+            function (simulator, screenNumber)
+                this.screens[screenNumber] = nil
+            end)
+
         return this
     end;
 
@@ -206,8 +59,11 @@ LBSimulator = {
         this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
         this.connection = LBSimulatorConnection:new()
 
-        onSimulatorInit = onSimulatorInit or empty
-        onSimulatorInit(this)
+        -- default screen
+        this.config:configureScreen(1, 32, 32, false)
+
+        onSimulatorInit = onSimulatorInit or Empty
+        onSimulatorInit(this, this.config, LBSimulatorInputHelpers)
 
         -- reliable 60 FPS main thread
         local timeRunning = 0.0
@@ -228,9 +84,9 @@ LBSimulator = {
                 this:readSimulatorMessages()
 
                 -- run tick
-                onSimulate = onSimulate or empty
-                onTick = onTick or empty
-                onDraw = onDraw or empty
+                onSimulate = onSimulate or Empty
+                onTick = onTick or Empty
+                onDraw = onDraw or Empty
 
                 -- possibility that the server has closed connection at any of these points
                 -- in which case, we want to stop processing asap
@@ -241,9 +97,11 @@ LBSimulator = {
 
                 if this.connection.isAlive then this:_sendInOuts() end
 
-                if this.connection.isAlive then this.connection:sendCommand("CLEAR") end
-                if this.connection.isAlive then onDraw() end
-                
+                for screenNumber, screenData in pairs(this.screens) do 
+                    this.currentScreen = screenData
+                    if this.connection.isAlive then this.connection:sendCommand("CLEAR", screenNumber) end
+                    if this.connection.isAlive then onDraw() end
+                end
             else
                 _socket.sleep(0.001)
             end
@@ -252,7 +110,7 @@ LBSimulator = {
         this.connection:close()
     end;
 
-        ---simulate the value an input should have
+    ---simulate the value an input should have
     ---@param this LBSimulator
     ---@param index number
     ---@param value boolean
@@ -326,146 +184,5 @@ LBSimulator = {
     end;
 }
 
-LBSimulatedInputHelpers = {
-    
-    ---Sets this input to a specific value constantly
-    ---@param value boolean
-    ---@return fun():boolean
-    constantBool = function(value)
-        return function() return value and true or false end
-    end;
-
-    ---Sets the input to a constant number value
-    ---@param value boolean
-    ---@return fun():number
-    constantNumber = function(value)
-        return function() return value end
-    end;
-    
-    ---Sets the input to a bool that toggles on and off every so many ticks
-    ---@param togglePeriod number number of ticks between each toggle
-    ---@return fun():boolean
-    togglingBool = function(initialValue, togglePeriod)
-        local ticks = 0
-        local value = initialValue
-        togglePeriod = math.floor(togglePeriod)
-        return function()
-            ticks = ticks + 1
-            if ticks % togglePeriod == 0 then
-                value = not value
-            end
-            return value
-        end
-    end;
-
-    ---Sets the input to a number that wraps around a fixed range
-    ---@param min number min value to wrap at
-    ---@param max number max value to wrap at
-    ---@param increment number amount to increase/decrease each tick
-    ---@param initial number initial value (optional)
-    ---@return fun():number
-    wrappingNumber = function(min, max, increment, initial)
-        initial = initial or min
-        if min > max then
-            min,max = max,min
-        end
-        local value = initial
-        return function ()
-            value = value + increment
-            if value > max then
-                value = min
-            end
-            if value < min then
-                value = max
-            end
-            return value
-        end
-    end;
-
-    ---Increments the current value by an unpredictable amount each tick
-    ---Noise that accumulates
-    ---@param noiseAmount number noise will be produced in the range [0, noiseAmount]
-    ---@param initial number initial value
-    ---@param noiseOffset number constant value to offset by (e.g. to allow something that "constantly rises at a random rate")
-    ---@return fun():number
-    noiseyIncrement = function(noiseAmount, initial, noiseOffset)
-        initial = initial or 0
-        noiseOffset = noiseOffset or 0
-        local value = initial
-        return function ()
-            value = value + ((math.random()-0.5) * noiseAmount) + noiseOffset
-            return value
-        end
-    end;
-
-    ---Gives a value that oscillates around the given point, noise does not accumulate
-    ---@param noiseAmount number noise will be produced in the range [0, noiseAmount]
-    ---@param initial number initial value
-    ---@return fun():number
-    noiseyOscillation = function(noiseAmount, initial)
-        initial = initial or 0
-        local value = initial
-        return function ()
-            return value + ((math.random()-0.5) * noiseAmount)
-        end
-    end;
-
-    ---Gives a value that oscillates steadily between two values
-    ---@param min number min value to wrap at
-    ---@param max number max value to wrap at
-    ---@param increment number amount to increase/decrease each tick
-    ---@param initial number initial value (optional)
-    ---@return fun():number
-    oscillatingNumber = function(min, max, increment, initial)
-        initial = initial or 0
-        if min > max then
-            min,max = max,min
-        end
-        local value = initial
-        local direction = increment >= 0 and 1 or -1
-        increment = increment >= 0 and increment or (-1 * increment)
-        return function ()
-            value = value + (increment * direction)
-            if value > max then
-                local difference = value - max
-                value = max
-                direction = direction * -1
-                value = value + (difference * direction) -- re-add the amount we overshot the edge, to keep it accurate
-            end
-            if value < min then
-                local difference = min - value
-                value = min
-                direction = direction * -1
-                value = value + (difference * direction) -- re-add the amount we overshot the edge, to keep it accurate
-            end
-            return value
-        end
-    end;
-}
 
 
-simulator = LBSimulator:new()
-screen.setSimulator(simulator)
-output.setSimulator(simulator)
-
-
----@section __IF__IS__SIMULATING__
-    ---@param simulator LBSimulator
-    function onSimulatorInit(simulator)
-        --simulator.config:addBoolHandler(9, LBSimulatedInputHelpers.constantBool(true))
-        --simulator.config:addNumberHandler(10, LBSimulatedInputHelpers.oscillatingNumber(-10,10,-0.2,5))
-        --simulator.config:addNumberHandler(11, LBSimulatedInputHelpers.wrappingNumber(-10,10,0.2,4))
-        --simulator.config:addNumberHandler(12, LBSimulatedInputHelpers.noiseyOscillation(1,0))
-        --simulator.config:addNumberHandler(13, LBSimulatedInputHelpers.noiseyIncrement(1, 0, 0))
-    end
-    function onSimulatorTick(simulator)end
-    function onSimulatorOutputBoolChanged(index, oldValue, newValue)
-    end
-    function onSimulatorOutputNumberChanged(index, oldValue, newValue)
-    end
----@endsection
-
-
-require("LifeBoatAPI.Tools.Simulator.ToSim")
-
-simulator:run()

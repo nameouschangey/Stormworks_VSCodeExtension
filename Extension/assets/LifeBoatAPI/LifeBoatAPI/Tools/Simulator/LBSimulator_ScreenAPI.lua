@@ -12,8 +12,6 @@
 ---@field _Height number screen height in Stormworks pixels
 ---@field _simulator LBSimulator simulator connection
 screen = {
-    _Width = 32;
-    _Height = 32;
     _simulator = nil;
 
     setSimulator = function (simulator)
@@ -31,13 +29,13 @@ screen = {
     --- Gets the width of the screen (pixels)
     --- @return number width
     getWidth = function()
-        return screen._Width
+        return screen._simulator.currentScreen.width
     end;
 
     --- Gets the height of the screen (pixels)
     --- @return number height
     getHeight = function()
-        return screen._Height
+        return screen._simulator.currentScreen.height
     end;
 
     --- Set the current drawing color
