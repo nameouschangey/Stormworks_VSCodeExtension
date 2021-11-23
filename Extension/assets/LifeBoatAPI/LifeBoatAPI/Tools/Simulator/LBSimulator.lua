@@ -107,7 +107,11 @@ LBSimulator = {
         local timeRunning = 0.0
         local lastTime = _socket.gettime()
         local timeSinceFrame = 0.0
-        local framesSinceRender = 0
+        local framesSinceRender = 1
+        local framesSinceOut = 1
+        frameRateHistory = {}
+        local rollingIndex = 1
+        local rollingHistoryLength = 10
         while this.connection.isAlive do
             local time = _socket.gettime()
             timeRunning = timeRunning + (time - lastTime)
@@ -115,6 +119,15 @@ LBSimulator = {
             lastTime = time
 
             if timeSinceFrame > this.timePerFrame then
+                frameRateHistory[rollingIndex] = timeSinceFrame
+                rollingIndex = (rollingIndex % rollingHistoryLength) + 1
+
+                local sum = 0
+                for i,v in ipairs(frameRateHistory) do
+                    sum = sum + v
+                end
+                local averageFrameTime = sum / rollingHistoryLength 
+
                 timeSinceFrame = 0.0
                 
                 -- messages incoming from the server
@@ -135,9 +148,15 @@ LBSimulator = {
                 -- we can frame-skip, which means rendering (=>less networking, significant cost reduction)
                 --  can be useful when frame rate is suffering
                 if framesSinceRender%this.renderOnFrames == 0 and this.connection.isAlive then
-                    framesSinceRender = 0
+                    framesSinceRender = 1
 
-                    if this.connection.isAlive then this:_sendInOuts() end
+
+                    if framesSinceOut%60 == 0 then
+                        if this.connection.isAlive then this:_sendInOuts() end
+                        framesSinceOut = 1
+                    else
+                        framesSinceOut = framesSinceOut + 1
+                    end
 
                     for screenNumber, screenData in pairs(this.screens) do 
                         if screenData.poweredOn then
@@ -152,9 +171,9 @@ LBSimulator = {
                 end
             else
                 -- sleep while we idle, to avoid burning through the CPU
-                if(this.sleepBetweenFrames > 0) then
-                    _socket.sleep(this.sleepBetweenFrames)
-                end
+                --if(this.sleepBetweenFrames > 0) then
+                --    _socket.sleep(this.sleepBetweenFrames)
+                --end
             end
         end
 

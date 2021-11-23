@@ -67,7 +67,6 @@
     <Compile Include="src\PipedCommands\SimulationCommands.cs" />
     <Compile Include="src\PipedCommands\ScreenCommands.cs" />
     <Compile Include="src\PipedCommands\InputOutputCommands.cs" />
-    <Compile Include="src\PipedCommands\DrawingCommands.cs" />
     <Compile Include="src\ScreenVM.cs" />
     <Compile Include="src\SocketConnection.cs" />
     <Page Include="AppStyles.xaml">

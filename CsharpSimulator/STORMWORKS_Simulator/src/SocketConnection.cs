@@ -12,12 +12,13 @@ using System.Windows;
 using System.Net.Sockets;
 using System.Net;
 using System.Linq;
+using System.Collections.Concurrent;
 
 namespace STORMWORKS_Simulator
 {
     public interface IPipeCommandHandler
     {
-        bool CanHandle(string commandName);
+        string Commmand { get; }
         void Handle(MainVM vm, string[] commandParts);
     }
 
@@ -63,28 +64,27 @@ namespace STORMWORKS_Simulator
         public event EventHandler OnPipeClosed;
         public bool IsActive { get; set; } = true;
 
+        public ConcurrentQueue<string> MessagesToProcess { get; private set; } = new ConcurrentQueue<string>();
+
         private DateTime _StartTime = DateTime.UtcNow;
         private MainVM _Viewmodel;
-        private IAsyncResult _RunningTask;
-        private TcpClient Client;
-
-        [ImportMany(typeof(IPipeCommandHandler))]
-        private IEnumerable<Lazy<IPipeCommandHandler>> _CommandHandlers;
+        private IAsyncResult _SocketReadTask;
+        private TcpClient _Client;
 
         public SocketConnection(MainVM viewmodel)
         {
             _Viewmodel = viewmodel;
-            LoadMEFCommands();
 
-            _RunningTask = Task.Run(() =>
+
+            _SocketReadTask = Task.Run(() =>
             {
                 try
                 {
                     var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 14238);
                     listener.Start();
 
-                    Client = listener.AcceptTcpClient();
-                    var stream = Client.GetStream();
+                    _Client = listener.AcceptTcpClient();
+                    var stream = _Client.GetStream();
                     var reader = new SocketReadBuffer(2048);
 
                     Logger.Log("Beginning Message Loop");
@@ -92,9 +92,11 @@ namespace STORMWORKS_Simulator
                     {
                         var message = reader.ReadNextMessage(stream);
                         Logger.Log($"Message: {message}");
-                        OnLineRead(message);
+                        MessagesToProcess.Enqueue(message);
+
+                        //OnLineRead(message);
                     }
-                    Client.Close();
+                    _Client.Close();
                     listener.Stop();
                     OnPipeClosed?.Invoke(this, new EventArgs());
                 }
@@ -111,15 +113,15 @@ namespace STORMWORKS_Simulator
         {
             try
             {
-                if (Client != null && Client.Connected)
+                if (_Client != null && _Client.Connected)
                 {
                     var stringArgs = string.Join("|", args.Select(x => x.ToString()));
                     var output = $"{commandName}|{stringArgs}";
 
                     var buffer = System.Text.Encoding.UTF8.GetBytes(output);
                     var lenBuffer = System.Text.Encoding.UTF8.GetBytes(buffer.Length.ToString("0000"));
-                    Client.GetStream().Write(lenBuffer, 0, lenBuffer.Length);
-                    Client.GetStream().Write(buffer, 0, buffer.Length);
+                    _Client.GetStream().Write(lenBuffer, 0, lenBuffer.Length);
+                    _Client.GetStream().Write(buffer, 0, buffer.Length);
                 }
             }
             catch (Exception e)
@@ -132,54 +134,29 @@ namespace STORMWORKS_Simulator
 
         public void OnLineRead(string line)
         {
-            try
-            {
-                // format is: COMMAND|PARAM|PARAM|PARAM|...
-                var splits = line.Split('|');
-                if (splits.Length < 1)
-                {
-                    return;
-                }
-
-                var command = splits[0];
-                foreach (var commandHandler in _CommandHandlers)
-                {
-                    if (commandHandler.Value.CanHandle(command))
-                    {
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            commandHandler.Value.Handle(_Viewmodel, splits);
-                        }));
-                    }
-                }
-            }
-            catch(Exception e)
-            {
-                // keep the UI running, despite any issue that arise
-                // this will be called when non-standard commands get sent etc.
-                Logger.Log($"Caught Parsing Exception: {e}");
-            }
+            //try
+            //{
+            //    // format is: COMMAND|PARAM|PARAM|PARAM|...
+            //    var splits = line.Split('|');
+            //    if (splits.Length < 1)
+            //    {
+            //        return;
+            //    }
+            //
+            //    var command = splits[0];
+            //    if(_CommandHandlersLookup.TryGetValue(command, out var handler))
+            //    {
+            //        handler.Handle(_Viewmodel, splits);
+            //    }
+            //}
+            //catch(Exception e)
+            //{
+            //    // keep the UI running, despite any issue that arise
+            //    // this will be called when non-standard commands get sent etc.
+            //    Logger.Log($"Caught Parsing Exception: {e}");
+            //}
         }
 
-        private void LoadMEFCommands()
-        {
-            CompositionContainer _container;
 
-            try
-            {
-                // An aggregate catalog that combines multiple catalogs.
-                var catalog = new AggregateCatalog();
-                // Adds all the parts found in the same assembly as the Program class.
-                catalog.Catalogs.Add(new AssemblyCatalog(typeof(MainWindow).Assembly));
-
-                // Create the CompositionContainer with the parts in the catalog.
-                _container = new CompositionContainer(catalog);
-                _container.ComposeParts(this);
-            }
-            catch (CompositionException compositionException)
-            {
-                Console.WriteLine(compositionException.ToString());
-            }
-        }
     }
 }

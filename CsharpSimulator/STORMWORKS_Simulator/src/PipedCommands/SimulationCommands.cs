@@ -19,7 +19,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class CloseSimulation : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "SHUTDOWN";
+        public string Commmand => "SHUTDOWN";
 
         public void Handle(MainVM vm, string[] commandParts)
         {

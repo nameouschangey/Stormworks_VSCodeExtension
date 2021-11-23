@@ -119,7 +119,7 @@ namespace STORMWORKS_Simulator
 
         public int ScreenNumber { get; private set; }
 
-        private bool _IsPortrait;
+        private bool _IsPortrait = false;
         private int _NextZIndex = 0;
         private bool _IsPowered = true;
 
@@ -129,8 +129,8 @@ namespace STORMWORKS_Simulator
         public bool IsLDown { get => _IsLDown && _IsInCanvas; }
         public bool IsRDown { get => _IsRDown && _IsInCanvas; }
 
-        private bool _IsLDown;
-        private bool _IsRDown;
+        private bool _IsLDown = false;
+        private bool _IsRDown = false;
         private bool _IsInCanvas = false;
 
         public ScreenVM(int screenNumber)
@@ -161,6 +161,11 @@ namespace STORMWORKS_Simulator
 
         public void Draw(UIElement shape)
         {
+            if (BackBuffer == null || FrontBuffer == null)
+            {
+                return;
+            }
+
             Panel.SetZIndex(shape, _NextZIndex++);
             if(IsFront)
             {
@@ -170,11 +175,15 @@ namespace STORMWORKS_Simulator
             {
                 FrontBuffer.Children.Add(shape);
             }
-           
         }
 
         public void ClearScreen()
         {
+            if(BackBuffer == null || FrontBuffer == null)
+            {
+                return;
+            }
+
             _NextZIndex = 0;
             if (IsFront)
             {

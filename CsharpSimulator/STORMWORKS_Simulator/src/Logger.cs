@@ -9,9 +9,11 @@ namespace STORMWORKS_Simulator
     public static class Logger
     {
         private static string Logfile;
+        public static bool Enabled;
 
-        public static void SetLog(string path)
+        public static void SetLog(string path, bool enabled=true)
         {
+            Enabled = enabled;
             Logfile = path;
 #if DEBUG
             System.IO.File.WriteAllText(Logfile, "");
@@ -20,8 +22,11 @@ namespace STORMWORKS_Simulator
 
         public static void Log(string message)
         {
+            if (Enabled)
+            {
 #if DEBUG
-            System.IO.File.AppendAllText(Logfile, message + "\n");
+                System.IO.File.AppendAllText(Logfile, message + "\n");
+            }
 #endif
         }
     }

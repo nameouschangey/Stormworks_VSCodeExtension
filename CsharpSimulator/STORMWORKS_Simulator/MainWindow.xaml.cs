@@ -12,6 +12,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.Threading;
+using System.Collections;
+using System.IO.Pipes;
+using System.IO;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Net.Sockets;
+using System.Net;
 
 namespace STORMWORKS_Simulator
 {
@@ -20,11 +29,25 @@ namespace STORMWORKS_Simulator
         public StormworksMonitor Monitor;
         public MainVM ViewModel;
         public SocketConnection VSConnection;
-        public System.Threading.Timer KeepAliveTimer;
+        public Timer KeepAliveTimer;
+        public DispatcherTimer ProcessUIMessagesTimer;
+
+        private Dictionary<string, IPipeCommandHandler> _CommandHandlersLookup = new Dictionary<string, IPipeCommandHandler>();
+
+        [ImportMany(typeof(IPipeCommandHandler))]
+        private IEnumerable<Lazy<IPipeCommandHandler>> _CommandHandlers;
 
         public MainWindow()
         {
             Logger.SetLog(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt");
+            Logger.Enabled = false;
+
+            LoadMEFCommands();
+
+            foreach (var handler in _CommandHandlers)
+            {
+                _CommandHandlersLookup[handler.Value.Commmand] = handler.Value;
+            }
 
             InitializeComponent();
 
@@ -39,10 +62,65 @@ namespace STORMWORKS_Simulator
 
             DataContext = ViewModel;
 
-            KeepAliveTimer = new System.Threading.Timer(OnTickTimer, null, 100, 100);
+            KeepAliveTimer = new System.Threading.Timer(OnKeepAliveTimer, null, 100, 100);
+
+            ProcessUIMessagesTimer = new DispatcherTimer();
+            ProcessUIMessagesTimer.Tick += new EventHandler(OnProcessUIMessagesTimer);
+            ProcessUIMessagesTimer.Interval = new TimeSpan(0, 0, 0, 0, 17);
+            ProcessUIMessagesTimer.Start();
+
         }
 
-        private void OnTickTimer(object state)
+        private void LoadMEFCommands()
+        {
+            CompositionContainer _container;
+
+            try
+            {
+                // An aggregate catalog that combines multiple catalogs.
+                var catalog = new AggregateCatalog();
+                // Adds all the parts found in the same assembly as the Program class.
+                catalog.Catalogs.Add(new AssemblyCatalog(typeof(MainWindow).Assembly));
+
+                // Create the CompositionContainer with the parts in the catalog.
+                _container = new CompositionContainer(catalog);
+                _container.ComposeParts(this);
+            }
+            catch (CompositionException compositionException)
+            {
+                Console.WriteLine(compositionException.ToString());
+            }
+        }
+
+        private void OnProcessUIMessagesTimer(object sender, EventArgs args)
+        {
+            try
+            {
+                while(VSConnection.MessagesToProcess.TryDequeue(out var message))
+                {
+                    // format is: COMMAND|PARAM|PARAM|PARAM|...
+                    var splits = message.Split('|');
+                    if (splits.Length < 1)
+                    {
+                        return;
+                    }
+
+                    var command = splits[0];
+                    if (_CommandHandlersLookup.TryGetValue(command, out var handler))
+                    {
+                        handler.Handle(ViewModel, splits);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // keep the UI running, despite any issue that arise
+                // this will be called when non-standard commands get sent etc.
+                Logger.Log($"Caught Parsing Exception: {e}");
+            }
+        }
+
+        private void OnKeepAliveTimer(object state)
         {   // sends simple Alive message once every 100 millis, to ensure the connection is still alive
             // allows the UI to close sooner than it might otherwise, once the debugger ends
             try

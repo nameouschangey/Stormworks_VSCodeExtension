@@ -19,7 +19,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawRect : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "RECT";
+        public string Commmand => "RECT";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -32,10 +32,10 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = (int)double.Parse(commandParts[3]) * screen.DrawScale;
-            var y       = (int)double.Parse(commandParts[4]) * screen.DrawScale;
-            var width   = (int)double.Parse(commandParts[5]) * screen.DrawScale;
-            var height  = (int)double.Parse(commandParts[6]) * screen.DrawScale;
+            var x       = double.Parse(commandParts[3]) * screen.DrawScale;
+            var y       = double.Parse(commandParts[4]) * screen.DrawScale;
+            var width   = double.Parse(commandParts[5]) * screen.DrawScale;
+            var height  = double.Parse(commandParts[6]) * screen.DrawScale;
 
             var shape = new Path
             {
@@ -52,7 +52,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawCircle : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "CIRCLE";
+        public string Commmand => "CIRCLE";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -65,9 +65,9 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = (int)double.Parse(commandParts[3]) * screen.DrawScale;
-            var y       = (int)double.Parse(commandParts[4]) * screen.DrawScale;
-            var radius  = (int)double.Parse(commandParts[5]) * screen.DrawScale;
+            var x       = double.Parse(commandParts[3]) * screen.DrawScale;
+            var y       = double.Parse(commandParts[4]) * screen.DrawScale;
+            var radius  = double.Parse(commandParts[5]) * screen.DrawScale;
 
             var shape = new Path
             {
@@ -84,7 +84,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawLine : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "LINE";
+        public string Commmand => "LINE";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -96,10 +96,10 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x   = (int)double.Parse(commandParts[2])  * screen.DrawScale;
-            var y   = (int)double.Parse(commandParts[3])  * screen.DrawScale;
-            var x2  = (int)double.Parse(commandParts[4])  * screen.DrawScale;
-            var y2  = (int)double.Parse(commandParts[5])  * screen.DrawScale;
+            var x   = double.Parse(commandParts[2])  * screen.DrawScale;
+            var y   = double.Parse(commandParts[3])  * screen.DrawScale;
+            var x2  = double.Parse(commandParts[4])  * screen.DrawScale;
+            var y2  = double.Parse(commandParts[5])  * screen.DrawScale;
 
             var line = new Line();
             line.X1 = x;
@@ -119,7 +119,7 @@ namespace STORMWORKS_Simulator
     {
         public static FontFamily MonitorFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#PixelFont");
 
-        public bool CanHandle(string commandName) => commandName == "TEXT";
+        public string Commmand => "TEXT";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -131,8 +131,8 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x = (int)(double.Parse(commandParts[2]))   * screen.DrawScale;
-            var y = (int)(double.Parse(commandParts[3])-1) * screen.DrawScale;
+            var x = (double.Parse(commandParts[2]))   * screen.DrawScale;
+            var y = (double.Parse(commandParts[3])-1) * screen.DrawScale;
             var text = commandParts[4];
 
             var textBlock = new TextBlock();
@@ -140,6 +140,8 @@ namespace STORMWORKS_Simulator
             textBlock.Foreground = screen.Monitor.Color;
             textBlock.FontSize   = 5 * screen.DrawScale;
             textBlock.FontFamily = MonitorFont;
+            textBlock.HorizontalAlignment = HorizontalAlignment.Left;
+            textBlock.VerticalAlignment = VerticalAlignment.Top;
 
             Canvas.SetLeft(textBlock, x);
             Canvas.SetTop(textBlock, y);
@@ -153,7 +155,7 @@ namespace STORMWORKS_Simulator
     {
         public static FontFamily MonitorFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#PixelFont");
 
-        public bool CanHandle(string commandName) => commandName == "TEXTBOX";
+        public string Commmand => "TEXTBOX";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -165,10 +167,10 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x               = (int)double.Parse(commandParts[2]) * screen.DrawScale;
-            var y               = (int)(double.Parse(commandParts[3])-1) * screen.DrawScale;
-            var width = (int)double.Parse(commandParts[4]) * screen.DrawScale;
-            var height = (int)double.Parse(commandParts[5]) * screen.DrawScale;
+            var x               = double.Parse(commandParts[2]) * screen.DrawScale;
+            var y               = (double.Parse(commandParts[3])-1) * screen.DrawScale;
+            var width           = double.Parse(commandParts[4]) * screen.DrawScale;
+            var height          = double.Parse(commandParts[5]) * screen.DrawScale;
             var horizontalAlign = (int)double.Parse(commandParts[6]);
             var verticalAlign   = (int)double.Parse(commandParts[7]);
             var text            = commandParts[8];
@@ -194,7 +196,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawTriangle : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "TRIANGLE";
+        public string Commmand => "TRIANGLE";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -207,14 +209,14 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[1] == "1";
-            var p1x = (int)double.Parse(commandParts[3]) * screen.DrawScale;
-            var p1y = (int)double.Parse(commandParts[4]) * screen.DrawScale;
+            var p1x = double.Parse(commandParts[3]) * screen.DrawScale;
+            var p1y = double.Parse(commandParts[4]) * screen.DrawScale;
                                      
-            var p2x = (int)double.Parse(commandParts[5]) * screen.DrawScale;
-            var p2y = (int)double.Parse(commandParts[6]) * screen.DrawScale;
+            var p2x = double.Parse(commandParts[5]) * screen.DrawScale;
+            var p2y = double.Parse(commandParts[6]) * screen.DrawScale;
                                               
-            var p3x = (int)double.Parse(commandParts[7]) * screen.DrawScale;
-            var p3y = (int)double.Parse(commandParts[8]) * screen.DrawScale;
+            var p3x = double.Parse(commandParts[7]) * screen.DrawScale;
+            var p3y = double.Parse(commandParts[8]) * screen.DrawScale;
 
             var points = new PointCollection();
             points.Add(new Point(p1x, p1y));
@@ -232,7 +234,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class SetColour : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "COLOUR";
+        public string Commmand => "COLOUR";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -256,7 +258,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class ClearScreen : IPipeCommandHandler
     {
-        public bool CanHandle(string commandName) => commandName == "CLEAR";
+        public string Commmand => "CLEAR";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
