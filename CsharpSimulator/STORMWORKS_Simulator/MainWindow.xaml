@@ -4,11 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:STORMWORKS_Simulator"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Style="{StaticResource WindowStyle}"
-        MouseLeftButtonUp="DrawableCanvas_MouseUp"
-        MouseRightButtonUp="DrawableCanvas_RMouseUp">
+        Style="{StaticResource WindowStyle}">
     <Window.Resources>
         <DataTemplate x:Key="SWInOutItemTemplate">
             <DockPanel>
@@ -16,10 +16,13 @@
                                    Width="30"
                                    Text="{Binding Name}"/>
                 <TextBlock DockPanel.Dock="Left"
-                                   Width="50"
+                                   Width="30"
                                    Text="{Binding BoolValue}"/>
-                <TextBlock DockPanel.Dock="Left"
-                                   Text="{Binding NumberValue, StringFormat={}{0:#,0.0}}"/>
+                <Grid DockPanel.Dock="Left" Width="100">
+                    <TextBlock HorizontalAlignment="Right"
+                               FontFamily="Courier New"
+                               Text="{Binding NumberValue, StringFormat={}{0:#,0.000}}"/>
+                </Grid>
             </DockPanel>
         </DataTemplate>
 
@@ -29,11 +32,11 @@
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="200" />
             <ColumnDefinition Width="5" />
             <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="200" />
         </Grid.ColumnDefinitions>
         
         <!--Inputs -->
@@ -52,7 +55,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="20"/>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="50" />
+                <RowDefinition Height="100" />
                 
             </Grid.RowDefinitions>
             <!-- Main Canvas Area-->
@@ -61,35 +64,32 @@
                         Margin="10,0"
                         Content="Reset"
                         Click="OnResetClicked"/>
-                <ComboBox DockPanel.Dock="Left"
-                          Margin="10,0"
-                          Padding="10,0"
-                          Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}"
-                          Foreground="Black"
-                          ItemsSource="{Binding ScreenDescriptionsList}"
-                          SelectedItem="{Binding ScreenResolutionDescription}"
-                          SelectedIndex="0"/>
-                          
-                <CheckBox Margin="10,0"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding IsPortrait}"
-                          Content="Portrait" />
-                
+
                 <CheckBox Margin="10,0"
                           VerticalAlignment="Center"
                           IsChecked="{Binding EnablePan}"
                           Content="Enable Pan" />
+                <Button DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Content="Add Screen"
+                        Click="OnAddScreenClicked"/>
             </DockPanel>
             <local:ZoomBorder x:Name="CanvasZoom"
                               Grid.Row="1"
                               ClipToBounds="True"
                               EnablePan="{Binding EnablePan}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Width="10000"
+                              Height="10000"
                               Background="Gray">
                 <ItemsControl x:Name="CanvasContainer"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
                               ItemsSource="{Binding ScreenVMs}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -99,21 +99,28 @@
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <Canvas
+                                            DockPanel.Dock="Left"
                                             Width="{Binding CanvasSize.X}"
-                                            Height="{Binding CanvasSize.X}"
+                                            Height="{Binding CanvasSize.Y}"
                                             Margin="2"
                                             VerticalAlignment ="Center"
                                             HorizontalAlignment="Center"
+                                            MouseEnter="Canvas_MouseEnter"
+                                            MouseLeave="Canvas_MouseLeave"
+                                            MouseMove="Canvas_MouseMove"
+                                            MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                                            MouseRightButtonDown="Canvas_MouseRightButtonDown"
+                                            MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                                            MouseRightButtonUp="Canvas_MouseRightButtonUp"
                                             Background="Black"
-                                            ClipToBounds = "True"
-                                            Visibility="Visible">  
+                                            ClipToBounds = "True">
                                             <Canvas.LayoutTransform>
                                                 <RotateTransform Angle="{Binding CanvasRotation}"/>
                                             </Canvas.LayoutTransform>
                                             <Canvas.Style>
                                                 <Style TargetType="Canvas">
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                        <DataTrigger Binding="{Binding IsPowered}" Value="False">
                                                             <Setter Property="Visibility" Value="Collapsed"></Setter>
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -128,7 +135,40 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </local:ZoomBorder>
+            
+            <!--- List of screen settings -->
+            <ListView
+                Grid.Row="2"
+                ItemsSource="{Binding ScreenVMs}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Left"
+                                       Text="Screen "/>
+                            <TextBlock DockPanel.Dock="Left"
+                                       Text="{Binding ScreenNumber}"/>
+                            <ComboBox DockPanel.Dock="Left"
+                              Margin="10,0"
+                              Padding="10,0"
+                              Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}"
+                              Foreground="Black"
+                              ItemsSource="{Binding ScreenDescriptionsList}"
+                              SelectedItem="{Binding ScreenResolutionDescription}"
+                              SelectedIndex="{Binding ScreenResolutionDescriptionIndex}"/>
 
+                            <CheckBox Margin="10,0"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding IsPortrait}"
+                              Content="Portrait" />
+
+                            <CheckBox Margin="10,0"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding IsPowered}"
+                              Content="Powered On" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </Grid>
 
         <!-- Outputs -->

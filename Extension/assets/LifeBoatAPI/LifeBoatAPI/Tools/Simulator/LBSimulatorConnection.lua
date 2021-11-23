@@ -49,22 +49,22 @@ LBSimulatorConnection = {
 
     ---@return string message reads the next message waiting from the simulator
     readMessage = function(this)
-        local size, err = this.client:receive(4)
+        local size = this:readBytes(4)
 
-        if err == "closed" then
-            this.isAlive = false
-            return nil
-        elseif err then
-            error(err)
+        if(size ~= nil) then
+            return this:readBytes(tonumber(size))
         end
-
-        size = tonumber(size)
+        return nil
+    end;
+    
+    ---@param this LBSimulatorConnection
+    ---@param numBytes number number of bytes to read from the connection
+    ---@return string value
+    readBytes = function(this, numBytes)
         local bytesRead = 0
         local data = ""
-        while bytesRead < size do
-            local buffer, err = this.client:receive(size - bytesRead)
-            bytesRead = bytesRead + #buffer
-            data = data .. buffer
+        while bytesRead < numBytes do
+            local buffer, err = this.client:receive(numBytes - bytesRead)
 
             if err == "closed" then
                 this.isAlive = false
@@ -72,7 +72,10 @@ LBSimulatorConnection = {
             elseif err then
                 error(err)
             end
+
+            bytesRead = bytesRead + #buffer
+            data = data .. buffer
         end
         return data
-    end;    
+    end;
 }

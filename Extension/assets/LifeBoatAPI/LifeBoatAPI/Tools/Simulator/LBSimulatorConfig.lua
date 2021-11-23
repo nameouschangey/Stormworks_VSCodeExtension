@@ -16,23 +16,44 @@ LBSimulatorConfig = {
 
     ---@param this LBSimulatorConfig
     ---@param screenNumber number screen to configure, if this is not an existing screen - it becomes the next available integer
-    ---@param width number
-    ---@param height number
+    ---@param screenSize string should be a valid SW screen size: 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5
+    ---@param poweredOn boolean true if the screen is turned on 
     ---@param portrait boolean (optional) true if this screen will be stood on its end in the game
-    ---@overload fun(this : LBSimulatorConfig, screenNumber:number, width:number, height:number)
+    ---@overload fun(this : LBSimulatorConfig, screenNumber:number, screenSize:string)
     ---@return number screenNumber the actual screen number that was created
-    configureScreen = function(this, screenNumber, width, height, portrait)
+    configureScreen = function(this, screenNumber, screenSize, poweredOn, portrait)
         portrait = portrait or false
+        poweredOn = (poweredOn == nil and true) or poweredOn
+
         if not this.simulator.screens[screenNumber] then
             screenNumber = #this.simulator.screens + 1
-            this.simulator.screens[screenNumber] = LBSimulatorScreen:new()
+            this.simulator.screens[screenNumber] = LBSimulatorScreen:new(screenNumber)
         end
         local thisScreen = this.simulator.screens[screenNumber]
-        thisScreen.width = width
-        thisScreen.height = height
+
+        local validScreenConfigs = {
+            ["1x1"] = true,
+            ["2x1"] = true,
+            ["2x2"] = true,
+            ["3x2"] = true,
+            ["3x3"] = true,
+            ["5x3"] = true,
+            ["9x5"] = true
+        }
+        if not validScreenConfigs[screenSize] then
+            error("Must be a valid screen size, 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5")
+        end
+
+        local splits = LBString_split(screenSize, "x")
+        thisScreen.width = splits[1] * 32
+        thisScreen.height = splits[2] * 32
 
         -- send the new screen data to the server
-        this.simulator.connection:sendCommand("SCREENCONFIG", screenNumber, width, height, portrait and "1" or "0")
+        this.simulator.connection:sendCommand("SCREENCONFIG",
+            screenNumber,
+            poweredOn and "1" or "0",
+            screenSize,
+            portrait and "1" or "0")
 
         return screenNumber
     end;
@@ -60,6 +81,15 @@ LBSimulatorConfig = {
             error("addNumberHandler can only be set for valid game indexes 1->32")
         end
 
+        if(type(handler) == "number") then
+            local value = handler
+            handler = function() return value end
+        end
+
+        if(type(handler) ~= "function") then
+            error("config handler must be a function, but got " .. type(handler))
+        end
+
         this.numberHandlers[index] = handler
     end;
 
@@ -69,6 +99,14 @@ LBSimulatorConfig = {
     addBoolHandler = function(this, index, handler)
         if type(index) ~= "number" or index < 1 or index > 32 then
             error("addBoolHandler can only be set for valid game indexes 1->32")
+        end
+
+        if(type(handler) == "boolean") then
+            handler = function() return handler end
+        end
+
+        if(type(handler) ~= "function") then
+            error("config handler must be a function, but got " .. type(handler))
         end
 
         this.boolHandlers[index] = handler

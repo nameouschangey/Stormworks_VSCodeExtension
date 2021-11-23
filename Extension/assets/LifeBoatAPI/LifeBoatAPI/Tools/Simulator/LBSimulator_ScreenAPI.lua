@@ -26,6 +26,10 @@ screen = {
             end)
     end;
 
+    getSimulatorScreenIndex = function ()
+        return screen._simulator.currentScreen.screenNumber
+    end;
+
     --- Gets the width of the screen (pixels)
     --- @return number width
     getWidth = function()
@@ -45,12 +49,12 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setColor = function(r, g, b, a)
         a = a or 255
-        screen._simulator.connection:sendCommand("COLOUR", r, g, b, a)
+        screen._simulator.connection:sendCommand("COLOUR", screen.getSimulatorScreenIndex(), r, g, b, a)
     end;
 
     --- Clear the screen with the current color
     drawClear = function()
-        screen._simulator.connection:sendCommand("CLEAR")
+        screen._simulator.connection:sendCommand("CLEAR", screen.getSimulatorScreenIndex())
     end;
 
     --- Draws a line on the screen from x1, y1 to x2, y2
@@ -59,7 +63,7 @@ screen = {
     --- @param x2 number The X coordinate of the end of the line
     --- @param y2 number The Y coordinate of the end of the line
     drawLine = function(x1, y1, x2, y2)
-        screen._simulator.connection:sendCommand("LINE", x1, y1, x2, y2)
+        screen._simulator.connection:sendCommand("LINE", screen.getSimulatorScreenIndex(), x1, y1, x2, y2)
     end;
 
     --- Draws an outlined circle on the screen
@@ -67,7 +71,7 @@ screen = {
     --- @param y number The Y coordinate of the center of the circle
     --- @param radius number The radius of the circle
     drawCircle = function(x, y, radius)
-        screen._simulator.connection:sendCommand("CIRCLE", "0", x, y, radius)
+        screen._simulator.connection:sendCommand("CIRCLE", screen.getSimulatorScreenIndex(), "0", x, y, radius)
     end;
 
     --- Draws a filled circle on the screen
@@ -75,7 +79,7 @@ screen = {
     --- @param y number The Y coordinate of the center of the circle
     --- @param radius number The radius of the circle
     drawCircleF = function(x, y, radius)
-        screen._simulator.connection:sendCommand("CIRCLE", "1", x, y, radius)
+        screen._simulator.connection:sendCommand("CIRCLE", screen.getSimulatorScreenIndex(), "1", x, y, radius)
     end;
 
     --- Draws an outlined rectangle on the screen
@@ -84,7 +88,7 @@ screen = {
     --- @param width number The width of the rectangle
     --- @param height number The height of the rectangle
     drawRect = function(x, y, width, height)
-        screen._simulator.connection:sendCommand("RECT", "0", x, y, width, height)
+        screen._simulator.connection:sendCommand("RECT", screen.getSimulatorScreenIndex(), "0", x, y, width, height)
     end;
 
     --- Draws a filled rectangle on the screen
@@ -93,7 +97,7 @@ screen = {
     --- @param width number The width of the rectangle
     --- @param height number The height of the rectangle
     drawRectF = function(x, y, width, height)
-        screen._simulator.connection:sendCommand("RECT", "1", x, y, width, height)
+        screen._simulator.connection:sendCommand("RECT", screen.getSimulatorScreenIndex(), "1", x, y, width, height)
     end;
 
     --- Draws a triangle on the screen
@@ -104,7 +108,7 @@ screen = {
     --- @param x3 number The X coordinate of the third point of the triangle
     --- @param y3 number The Y coordinate of the third point of the triangle
     drawTriangle = function(x1, y1, x2, y2, x3, y3)
-        screen._simulator.connection:sendCommand("TRIANGLE", "0", x1, y1, x2, y2, x3, y3)
+        screen._simulator.connection:sendCommand("TRIANGLE", screen.getSimulatorScreenIndex(), "0", x1, y1, x2, y2, x3, y3)
     end;
 
     --- Draws a filled triangle on the screen
@@ -115,7 +119,7 @@ screen = {
     --- @param x3 number The X coordinate of the third point of the triangle
     --- @param y3 number The Y coordinate of the third point of the triangle
     drawTriangleF = function(x1, y1, x2, y2, x3, y3)
-        screen._simulator.connection:sendCommand("TRIANGLE", "1", x1, y1, x2, y2, x3, y3)
+        screen._simulator.connection:sendCommand("TRIANGLE", screen.getSimulatorScreenIndex(), "1", x1, y1, x2, y2, x3, y3)
     end;
 
     --- Draws text on the screen
@@ -123,7 +127,7 @@ screen = {
     --- @param y number The Y coordinate of the top left of the text
     --- @param text string The text to draw
     drawText = function(x, y, text)
-        screen._simulator.connection:sendCommand("TEXT", x, y, text)
+        screen._simulator.connection:sendCommand("TEXT", screen.getSimulatorScreenIndex(), x, y, text)
     end;
 
     --- Draw text within a rectangle
@@ -135,11 +139,15 @@ screen = {
     --- @param horizontalAlign number How to align the text horizontally (-1 = left, 0 = center, 1 = right)
     --- @param verticalAlign number How to align the text vertically (-1 = top, 0 = center, 1 = bottom)
     drawTextBox = function(x, y, width, height, text, horizontalAlign, verticalAlign)
-        screen._simulator.connection:sendCommand("TEXTBOX", x, y, width, height, horizontalAlign, verticalAlign, text)
+        screen._simulator.connection:sendCommand("TEXTBOX", screen.getSimulatorScreenIndex(), x, y, width, height, horizontalAlign, verticalAlign, text)
     end;
 
+    --- Draw a map on the screen
+    --- @param x number The world X coordinate to center the map on
+    --- @param y number The world Y coordinate to center the map on
+    --- @param zoom number The zoom (0.1 - 50, 0.1 = max zoom in, 50 = max zoom out), width of screen at zoom 1 is 1Km
     drawMap = function(x, y, zoom)
-        screen._simulator.connection:sendCommand("MAP", x, y, zoom)
+        screen._simulator.connection:sendCommand("MAP", screen.getSimulatorScreenIndex(), x, y, zoom)
     end;
 
     --- Sets the color of the ocean on the drawn map
@@ -148,7 +156,8 @@ screen = {
     --- @param g number The green value of the color (0 - 255)
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
-    setMapColorOcean    = function(r,g,b,a)
+    setMapColorOcean = function(r,g,b,a)
+        screen._simulator.connection:sendCommand("MAPOCEAN", screen.getSimulatorScreenIndex(), r,g,b,a)
     end;
 
     --- Sets the color of the shallows on the drawn map
@@ -158,6 +167,7 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorShallows = function(r,g,b,a)
+        screen._simulator.connection:sendCommand("MAPSHALLOWS", screen.getSimulatorScreenIndex(), r,g,b,a)
     end;
 
     --- Sets the color of the land on the drawn map
@@ -166,7 +176,8 @@ screen = {
     --- @param g number The green value of the color (0 - 255)
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
-    setMapColorLand     = function(r,g,b,a)
+    setMapColorLand = function(r,g,b,a)
+        screen._simulator.connection:sendCommand("MAPLAND", screen.getSimulatorScreenIndex(), r,g,b,a)
     end;
 
     --- Sets the color of the grass on the drawn map
@@ -175,7 +186,8 @@ screen = {
     --- @param g number The green value of the color (0 - 255)
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
-    setMapColorGrass    = function(r,g,b,a)
+    setMapColorGrass = function(r,g,b,a)
+        screen._simulator.connection:sendCommand("MAPGRASS", screen.getSimulatorScreenIndex(), r,g,b,a)
     end;
 
     --- Sets the color of the sand on the drawn map
@@ -184,7 +196,8 @@ screen = {
     --- @param g number The green value of the color (0 - 255)
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
-    setMapColorSand     = function(r,g,b,a)
+    setMapColorSand = function(r,g,b,a)
+        screen._simulator.connection:sendCommand("MAPSAND", screen.getSimulatorScreenIndex(), r,g,b,a)
     end;
 
     --- Sets the color of the snow on the drawn map
@@ -193,15 +206,13 @@ screen = {
     --- @param g number The green value of the color (0 - 255)
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
-    setMapColorSnow     = function(r,g,b,a)
+    setMapColorSnow = function(r,g,b,a)
+        screen._simulator.connection:sendCommand("MAPSNOW", screen.getSimulatorScreenIndex(), r,g,b,a)
     end;
 }
 
-
--- can't really do much with these, as it's external
 map = {
     --- Translate pixel coordinates into world coordinates
-    --- NOTE: Not yet implemented in LBSimulator
     --- @param mapX number The current X world coordinate of the drawn map
     --- @param mapY number The current Y world coordinate of the drawn map
     --- @param zoom number The current zoom of the drawn map
@@ -210,12 +221,13 @@ map = {
     --- @param pixelX number The pixel's X coordinate to translate to a world coordinate
     --- @param pixelY number The pixel's Y coordinate to translate to a world coordinate
     --- @return number worldX, number worldY
-    screenToMap = function(mapX, mapY,zoom, screenWidth, screenHeight, pixelX, pixelY)
-        return 0,0
+    screenToMap = function(mapX, mapY, zoom, screenWidth, screenHeight, pixelX, pixelY)
+        local metersPerPixel = (zoom * 1000) / screenWidth
+
+        return math.floor(mapX + (metersPerPixel * (pixelX-screenWidth/2))), math.floor(mapY + (metersPerPixel * (pixelY-screenHeight/2)))
     end;
 
     --- Translate world coordinates into screen pixel coordinates
-    --- NOTE: Not yet implemented in LBSimulator
     --- @param mapX number The current X world coordinate of the drawn map
     --- @param mapY number The current Y world coordinate of the drawn map
     --- @param zoom number The current zoom of the drawn map
@@ -225,13 +237,15 @@ map = {
     --- @param worldY number The world Y coordinate to translate to a pixel coordinate
     --- @return number pixelX, number pixelY
     mapToScreen = function(mapX, mapY, zoom, screenWidth, screenHeight, worldX, worldY)
-        return 0,0
+        local pixelsPerMeter = screenWidth / (zoom * 1000)
+        
+        return math.floor((screenWidth/2) + (pixelsPerMeter * (worldX - mapX))), math.floor((screenHeight/2) + (pixelsPerMeter * (worldX - mapX)))
     end;
 }
 
 async = {
     --- Executes a HTTP GET request on the local machine
-    --- NOTE: Not yet implemented in LBSimulator
+    --- NOTE: Not yet implemented in LBSimulator (and unlikely it ever will be)
     --- @param port number The port number to execute the request on
     --- @param url string The URL to execute the request on
     httpGet = function(port, url)

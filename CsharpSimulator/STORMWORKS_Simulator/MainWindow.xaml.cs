@@ -20,7 +20,7 @@ namespace STORMWORKS_Simulator
         public StormworksMonitor Monitor;
         public MainVM ViewModel;
         public SocketConnection VSConnection;
-        public System.Threading.Timer TickTimer;
+        public System.Threading.Timer KeepAliveTimer;
 
         public MainWindow()
         {
@@ -28,19 +28,21 @@ namespace STORMWORKS_Simulator
 
             InitializeComponent();
 
-            ViewModel = new MainVM(CanvasContainer);
+            ViewModel = new MainVM();
             VSConnection = new SocketConnection(ViewModel);
             VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
-            ViewModel.OnViewReset += (x, e) => CanvasZoom.Reset();
+
+            ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
+            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
+            ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
+            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber}|{ (vm.IsPowered ? "1" : "0") }");
 
             DataContext = ViewModel;
 
-            ViewModel.OnViewReset += ViewModel_OnViewReset;
+            KeepAliveTimer = new System.Threading.Timer(OnTickTimer, null, 100, 100);
 
-            TickTimer = new System.Threading.Timer(OnTickTimer, null, 100, 100);
-
-            ViewModel.AddScreen(1);
-            ViewModel.AddScreen(2);
+            ViewModel.GetOrAddScreen(1);
+            ViewModel.GetOrAddScreen(2);
         }
 
         private void OnTickTimer(object state)
@@ -59,11 +61,6 @@ namespace STORMWORKS_Simulator
             }
         }
 
-        private void ViewModel_OnViewReset(object sender, EventArgs e)
-        {
-            //VSConnection.SendMessage("SCREENSIZE", ViewModel.Monitor.Size.X, ViewModel.Monitor.Size.Y);
-        }
-
         private void Pipe_OnPipeClosed(object sender, EventArgs e)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -77,27 +74,38 @@ namespace STORMWORKS_Simulator
             CanvasZoom.Reset();
         }
 
-
-        // Janky mouse-state handling
-
-        private void DrawableCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+        private void SendTouchDataIfChanged(object sender, ScreenVM vm)
         {
+            // only send the update if things actually changed
+            var newCommand = $"{vm.ScreenNumber}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{vm.TouchPosition.X}|{vm.TouchPosition.Y}";
+            if (newCommand != vm.LastTouchCommand)
+            {
+                vm.LastTouchCommand = newCommand;
+                VSConnection.SendMessage("TOUCH", newCommand);
+            }
         }
 
-        private void DrawableCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        private void OnAddScreenClicked(object sender, RoutedEventArgs e)
         {
+            ViewModel.GetOrAddScreen(ViewModel.ScreenVMs.Count + 1);
         }
 
-        private void DrawableCanvas_MouseMove(object sender, MouseEventArgs e)
-        {
-        }
+        // dirty event handling, but easier than going through all the bindings for this; as they're not designed to work with commands by default
+        // redirect the event manually, to the correct screenVM
+        private void Canvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnRightButtonUp(e);}
 
-        private void DrawableCanvas_RMouseDown(object sender, MouseButtonEventArgs e)
-        {
-        }
+        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnLeftButtonUp(e); }
 
-        private void DrawableCanvas_RMouseUp(object sender, MouseButtonEventArgs e)
-        {
-        }
+        private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnRightButtonDown(e); }
+
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnLeftButtonDown(e); }
+
+        private void Canvas_MouseLeave(object sender, MouseEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnMouseLeave(e); }
+
+        private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnMouseEnter(e); }
+
+        private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnMouseMove(e); }
+
+
     }
 }

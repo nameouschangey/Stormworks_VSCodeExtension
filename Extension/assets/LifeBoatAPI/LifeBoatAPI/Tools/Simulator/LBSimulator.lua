@@ -17,6 +17,9 @@ function Empty() end;
 ---@field screens LBSimulatorScreen[]
 ---@field currentScreen LBSimulatorScreen
 ---@field isInputOutputChanged boolean 
+---@field timePerFrame number in seconds
+---@field sleepBetweenFrames number in seconds, time to sleep when there's no frame - avoids churning the CPU at the expense of some accuracy
+---@field renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
 LBSimulator = {
     ---@param this LBSimulator
     ---@return LBSimulator
@@ -27,10 +30,12 @@ LBSimulator = {
         this.timePerFrame = 1/60
         this.screens = {}
         this.currentScreen = nil
+        this.sleepBetweenFrames = 0.001;
+        this.renderOnFrames = 1
 
         this:registerHandler("TOUCH",
             function(simulator, screenNumber, isDownL, isDownR, x, y)
-                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new()
+                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
                 local thisScreen = this.screens[screenNumber]
                 thisScreen.isTouchedL = (isDownL == "1")
                 thisScreen.isTouchedR = (isDownR == "1")
@@ -40,27 +45,41 @@ LBSimulator = {
 
         this:registerHandler("SCREENSIZE",
             function (simulator, screenNumber, width, height)
-                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new()
+                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
                 local thisScreen = this.screens[screenNumber]
                 thisScreen.width  = width
                 thisScreen.height = height
             end)
 
-        this:registerHandler("REMOVESCREEN",
-            function (simulator, screenNumber)
-                this.screens[screenNumber] = nil
+        this:registerHandler("SCREENPOWER",
+            function (simulator, screenNumber, poweredOn)
+                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
+                local thisScreen = this.screens[screenNumber]
+                thisScreen.poweredOn = poweredOn == "1"
+                if not thisScreen.poweredOn then
+                    thisScreen.touchX = 0
+                    thisScreen.touchY = 0
+                    thisScreen.isTouchedL = false
+                    thisScreen.isTouchedR = false
+                end
             end)
 
         return this
     end;
 
+    ---@param this LBSimulator
     run = function(this)
+        -- set the global screen and output to be simulated
+        -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
+        screen.setSimulator(this)
+        output.setSimulator(this)
+
         local simulatorExePath = LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\Extension\assets\simulator\STORMWORKS_Simulator.exe]])
         this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
         this.connection = LBSimulatorConnection:new()
 
         -- default screen
-        this.config:configureScreen(1, 32, 32, false)
+        this.config:configureScreen(1, "1x1", true)
 
         onSimulatorInit = onSimulatorInit or Empty
         onSimulatorInit(this, this.config, LBSimulatorInputHelpers)
@@ -69,7 +88,7 @@ LBSimulator = {
         local timeRunning = 0.0
         local lastTime = _socket.gettime()
         local timeSinceFrame = 0.0
-        frameCount = 0
+        local framesSinceRender = 0
         while this.connection.isAlive do
             local time = _socket.gettime()
             timeRunning = timeRunning + (time - lastTime)
@@ -78,8 +97,7 @@ LBSimulator = {
 
             if timeSinceFrame > this.timePerFrame then
                 timeSinceFrame = 0.0
-                frameCount = frameCount + 1
-
+                
                 -- messages incoming from the server
                 this:readSimulatorMessages()
 
@@ -91,19 +109,32 @@ LBSimulator = {
                 -- possibility that the server has closed connection at any of these points
                 -- in which case, we want to stop processing asap
                 if this.connection.isAlive then this.config:onSimulate() end
-
                 if this.connection.isAlive then onSimulate(this) end
+
                 if this.connection.isAlive then onTick() end
 
-                if this.connection.isAlive then this:_sendInOuts() end
+                -- we can frame-skip, which means rendering (=>less networking, significant cost reduction)
+                --  can be useful when frame rate is suffering
+                if framesSinceRender%this.renderOnFrames == 0 and this.connection.isAlive then
+                    framesSinceRender = 0
 
-                for screenNumber, screenData in pairs(this.screens) do 
-                    this.currentScreen = screenData
-                    if this.connection.isAlive then this.connection:sendCommand("CLEAR", screenNumber) end
-                    if this.connection.isAlive then onDraw() end
+                    if this.connection.isAlive then this:_sendInOuts() end
+
+                    for screenNumber, screenData in pairs(this.screens) do 
+                        if screenData.poweredOn then
+                            this.currentScreen = screenData
+                            if this.connection.isAlive then screen.drawClear() end
+                            if this.connection.isAlive then onDraw() end
+                        end
+                    end
+                else
+                    framesSinceRender = framesSinceRender + 1
                 end
             else
-                _socket.sleep(0.001)
+                -- sleep while we idle, to avoid burning through the CPU
+                if(this.sleepBetweenFrames > 0) then
+                    _socket.sleep(this.sleepBetweenFrames)
+                end
             end
         end
 

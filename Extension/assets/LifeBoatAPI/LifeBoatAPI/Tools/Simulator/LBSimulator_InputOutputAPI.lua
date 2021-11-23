@@ -37,7 +37,7 @@ output = {
     _numbers = {};
     _bools = {};
 
-    setSimulator = function(this, simulator)
+    setSimulator = function(simulator)
         output._simulator = simulator
     end;
 

@@ -16,20 +16,24 @@ require("LifeBoatAPI.Tools.Simulator.LBSimulatorInputHelpers")
 require("LifeBoatAPI.Tools.Simulator.LBSimulatorConnection")
 
 simulator = LBSimulator:new()
-screen.setSimulator(simulator)
-output.setSimulator(simulator)
 
 ---@section __IF__IS__SIMULATING__
     ---@param simulator LBSimulator
     ---@param config LBSimulatorConfig
+    ---@param helpers LBSimulatorInputHelpers
     function onSimulatorInit(simulator, config, helpers)
-        config:configureScreen(1, 32, 32,true)
+        config:configureScreen(1, "9x5", true, true)
+        config:configureScreen(2, "9x5", true, true)
+        config:configureScreen(3, "9x5", true, true)
 
-        simulator.config:addBoolHandler(9,    helpers.constantBool(true))
-        simulator.config:addNumberHandler(10, helpers.oscillatingNumber(-10,10,-0.2,5))
-        simulator.config:addNumberHandler(11, helpers.wrappingNumber(-10,10,0.2,4))
-        simulator.config:addNumberHandler(12, helpers.noiseyOscillation(1,0))
-        simulator.config:addNumberHandler(13, helpers.noiseyIncrement(1, 0, 0))
+        config:setProperty("navconstant", 5)
+        config:addNumberHandler(15,10)
+        config:addNumberHandler(1, helpers.wrappingNumber(0, 1, 0.01))
+        config:addNumberHandler(2, helpers.wrappingNumber(0, 1, 0.01))
+        config:addNumberHandler(3, helpers.wrappingNumber(0, 1, 0.01))
+        config:addNumberHandler(4, helpers.wrappingNumber(0, 1, 0.01))
+        config:addNumberHandler(5, helpers.wrappingNumber(0, 1, 0.01))
+        config:addNumberHandler(6, helpers.wrappingNumber(0, 1, 0.01))
     end
 
     function onSimulatorTick(simulator)end

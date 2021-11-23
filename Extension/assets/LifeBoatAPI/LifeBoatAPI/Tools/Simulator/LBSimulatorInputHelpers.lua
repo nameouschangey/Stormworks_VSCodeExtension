@@ -1,4 +1,5 @@
 
+---@class LBSimulatorInputHelpers
 LBSimulatorInputHelpers = {
     
     ---Sets this input to a specific value constantly
