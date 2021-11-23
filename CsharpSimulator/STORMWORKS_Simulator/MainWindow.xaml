@@ -58,7 +58,8 @@
                 <RowDefinition Height="100" />
                 
             </Grid.RowDefinitions>
-            <!-- Main Canvas Area-->
+            
+            <!-- Top Bar-->
             <DockPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Button DockPanel.Dock="Left"
                         Margin="10,0"
@@ -74,6 +75,8 @@
                         Content="Add Screen"
                         Click="OnAddScreenClicked"/>
             </DockPanel>
+            
+            <!-- Main Canvas Area-->
             <local:ZoomBorder x:Name="CanvasZoom"
                               Grid.Row="1"
                               ClipToBounds="True"
@@ -94,43 +97,74 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- Canvas as ItemControl so we can bind the children easily-->
-                            <ItemsControl ItemsSource="{Binding CanvasChildren}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas
-                                            DockPanel.Dock="Left"
-                                            Width="{Binding CanvasSize.X}"
-                                            Height="{Binding CanvasSize.Y}"
-                                            Margin="2"
-                                            VerticalAlignment ="Center"
-                                            HorizontalAlignment="Center"
-                                            MouseEnter="Canvas_MouseEnter"
-                                            MouseLeave="Canvas_MouseLeave"
-                                            MouseMove="Canvas_MouseMove"
-                                            MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
-                                            MouseRightButtonDown="Canvas_MouseRightButtonDown"
-                                            MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
-                                            MouseRightButtonUp="Canvas_MouseRightButtonUp"
-                                            Background="Black"
-                                            ClipToBounds = "True">
-                                            <Canvas.LayoutTransform>
-                                                <RotateTransform Angle="{Binding CanvasRotation}"/>
-                                            </Canvas.LayoutTransform>
-                                            <Canvas.Style>
-                                                <Style TargetType="Canvas">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsPowered}" Value="False">
-                                                            <Setter Property="Visibility" Value="Collapsed"></Setter>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Canvas.Style>
-                                        </Canvas>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
-
+                            <Grid>
+                                <Canvas
+                                        Initialized="Canvas_FrontInitialized"
+                                        DockPanel.Dock="Left"
+                                        Width="{Binding CanvasSize.X}"
+                                        Height="{Binding CanvasSize.Y}"
+                                        Margin="2"
+                                        VerticalAlignment ="Center"
+                                        HorizontalAlignment="Center"
+                                        MouseEnter="Canvas_MouseEnter"
+                                        MouseLeave="Canvas_MouseLeave"
+                                        MouseMove="Canvas_MouseMove"
+                                        MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                                        MouseRightButtonDown="Canvas_MouseRightButtonDown"
+                                        MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                                        MouseRightButtonUp="Canvas_MouseRightButtonUp"
+                                        Background="Black"
+                                        ClipToBounds = "True">
+                                    <Canvas.LayoutTransform>
+                                        <RotateTransform Angle="{Binding CanvasRotation}"/>
+                                    </Canvas.LayoutTransform>
+                                    <Canvas.Style>
+                                        <Style TargetType="Canvas">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsFront}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsPowered}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Canvas.Style>
+                                </Canvas>
+                                <Canvas
+                                    Initialized="Canvas_BackInitialized"
+                                    DockPanel.Dock="Left"
+                                    Width="{Binding CanvasSize.X}"
+                                    Height="{Binding CanvasSize.Y}"
+                                    Margin="2"
+                                    VerticalAlignment ="Center"
+                                    HorizontalAlignment="Center"
+                                    MouseEnter="Canvas_MouseEnter"
+                                    MouseLeave="Canvas_MouseLeave"
+                                    MouseMove="Canvas_MouseMove"
+                                    MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                                    MouseRightButtonDown="Canvas_MouseRightButtonDown"
+                                    MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                                    MouseRightButtonUp="Canvas_MouseRightButtonUp"
+                                    Background="Black"
+                                    ClipToBounds = "True">
+                                    <Canvas.LayoutTransform>
+                                        <RotateTransform Angle="{Binding CanvasRotation}"/>
+                                    </Canvas.LayoutTransform>
+                                    <Canvas.Style>
+                                        <Style TargetType="Canvas">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBack}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsPowered}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Canvas.Style>
+                                </Canvas>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -165,6 +199,12 @@
                               VerticalAlignment="Center"
                               IsChecked="{Binding IsPowered}"
                               Content="Powered On" />
+                            <TextBlock
+                                Margin="10,0"
+                                Text="Drawn Elements: " />
+                            <TextBlock
+                                Margin="10,0"
+                                Text="{Binding FrontBuffer.Children.Count}" />
                         </DockPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

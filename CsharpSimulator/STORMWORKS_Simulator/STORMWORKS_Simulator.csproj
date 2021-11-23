@@ -60,6 +60,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="lib\SmartCollection.cs" />
     <Compile Include="lib\ZoomBorder.cs" />
     <Compile Include="src\BasicCommand.cs" />
     <Compile Include="src\Logger.cs" />

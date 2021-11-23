@@ -29,7 +29,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
             var x       = (int)double.Parse(commandParts[3]) * screen.DrawScale;
@@ -62,7 +62,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
             var x       = (int)double.Parse(commandParts[3]) * screen.DrawScale;
@@ -94,7 +94,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             var x   = (int)double.Parse(commandParts[2])  * screen.DrawScale;
             var y   = (int)double.Parse(commandParts[3])  * screen.DrawScale;
@@ -129,7 +129,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             var x = (int)(double.Parse(commandParts[2]))   * screen.DrawScale;
             var y = (int)(double.Parse(commandParts[3])-1) * screen.DrawScale;
@@ -163,14 +163,14 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
-            var x               = (int)(double.Parse(commandParts[2])) * screen.DrawScale;
+            var x               = (int)double.Parse(commandParts[2]) * screen.DrawScale;
             var y               = (int)(double.Parse(commandParts[3])-1) * screen.DrawScale;
-            var horizontalAlign = int.Parse(commandParts[4]);
-            var verticalAlign   = int.Parse(commandParts[5]);
-            var width           = (int)double.Parse(commandParts[6]) * screen.DrawScale;
-            var height          = (int)double.Parse(commandParts[7]) * screen.DrawScale;
+            var width = (int)double.Parse(commandParts[4]) * screen.DrawScale;
+            var height = (int)double.Parse(commandParts[5]) * screen.DrawScale;
+            var horizontalAlign = (int)double.Parse(commandParts[6]);
+            var verticalAlign   = (int)double.Parse(commandParts[7]);
             var text            = commandParts[8];
 
             var textBlock = new TextBlock();
@@ -204,7 +204,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[1] == "1";
             var p1x = (int)double.Parse(commandParts[3]) * screen.DrawScale;
@@ -242,7 +242,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
             var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
@@ -266,7 +266,7 @@ namespace STORMWORKS_Simulator
             }
 
             var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.ScreenVMs[screenNumber];
+            var screen = vm.GetScreen(screenNumber);
 
             screen.ClearScreen();
         }

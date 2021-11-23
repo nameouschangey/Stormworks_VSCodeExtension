@@ -39,4 +39,22 @@ namespace STORMWORKS_Simulator
             screen.IsPortrait = isPortrait;
         }
     }
+
+    [Export(typeof(IPipeCommandHandler))]
+    public class ScreenFrameSwap : IPipeCommandHandler
+    {
+        public bool CanHandle(string commandName) => commandName == "FRAMESWAP";
+
+        public void Handle(MainVM vm, string[] commandParts)
+        {
+            if (commandParts.Length < 2)
+            {
+                return;
+            }
+
+            var screenNumber = int.Parse(commandParts[1]);
+            var screen = vm.GetOrAddScreen(screenNumber);
+            screen.SwapFrameBuffers();
+        }
+    }
 }

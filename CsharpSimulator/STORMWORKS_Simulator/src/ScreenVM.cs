@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,6 +35,8 @@ namespace STORMWORKS_Simulator
             Color = Brushes.White;
         }
     }
+
+
 
 
     public class ScreenVM : INotifyPropertyChanged
@@ -108,7 +111,12 @@ namespace STORMWORKS_Simulator
         }
 
         public StormworksMonitor Monitor { get; private set; }
-        public ObservableCollection<UIElement> CanvasChildren { get; private set; }
+
+        public bool IsFront { get; set; }
+        public bool IsBack { get; set; }
+        public Canvas FrontBuffer { get; set; }
+        public Canvas BackBuffer { get; set; }
+
         public int ScreenNumber { get; private set; }
 
         private bool _IsPortrait;
@@ -120,6 +128,7 @@ namespace STORMWORKS_Simulator
         public Point TouchPosition = new Point(0, 0);
         public bool IsLDown { get => _IsLDown && _IsInCanvas; }
         public bool IsRDown { get => _IsRDown && _IsInCanvas; }
+
         private bool _IsLDown;
         private bool _IsRDown;
         private bool _IsInCanvas = false;
@@ -129,70 +138,103 @@ namespace STORMWORKS_Simulator
             ScreenNumber = screenNumber;
             Monitor = new StormworksMonitor();
             ScreenResolutionDescription = ScreenDescriptionsList[0];
+            IsFront = true;
+            IsBack = false;
         }
 
+        public void SetFront(Canvas canvas)
+        {
+            FrontBuffer = canvas;
+        }
+
+        public void SetBack(Canvas canvas)
+        {
+            BackBuffer = canvas;
+        }
+
+        public void SwapFrameBuffers()
+        {
+            IsFront = !IsFront;
+            IsBack = !IsBack;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+        }
 
         public void Draw(UIElement shape)
         {
             Panel.SetZIndex(shape, _NextZIndex++);
-            CanvasChildren.Add(shape);
+            if(IsFront)
+            {
+                BackBuffer.Children.Add(shape);
+            }
+            else
+            {
+                FrontBuffer.Children.Add(shape);
+            }
+           
         }
 
         public void ClearScreen()
         {
             _NextZIndex = 0;
-            CanvasChildren.Clear();
+            if (IsFront)
+            {
+                BackBuffer.Children.Clear();
+            }
+            else
+            {
+                FrontBuffer.Children.Clear();
+            }
         }
 
         // mouse event handling
-        public void OnMouseEnter(MouseEventArgs e)
+        public void OnMouseEnter(Canvas canvas, MouseEventArgs e)
         {
             _IsInCanvas = true;
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        public void OnMouseLeave(MouseEventArgs e)
+        public void OnMouseLeave(Canvas canvas, MouseEventArgs e)
         {
             _IsInCanvas = false;
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        public void OnMouseMove(MouseEventArgs e)
+        public void OnMouseMove(Canvas canvas, MouseEventArgs e)
         {
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        public void OnRightButtonDown(MouseButtonEventArgs e)
+        public void OnRightButtonDown(Canvas canvas, MouseButtonEventArgs e)
         {
             _IsRDown = true;
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        public void OnLeftButtonDown(MouseButtonEventArgs e)
+        public void OnLeftButtonDown(Canvas canvas, MouseButtonEventArgs e)
         {
             _IsLDown = true;
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        public void OnLeftButtonUp(MouseButtonEventArgs e)
+        public void OnLeftButtonUp(Canvas canvas, MouseButtonEventArgs e)
         {
             _IsLDown = false;
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        public void OnRightButtonUp(MouseButtonEventArgs e)
+        public void OnRightButtonUp(Canvas canvas, MouseButtonEventArgs e)
         {
             _IsRDown = false;
-            UpdateTouchPosition(e);
+            UpdateTouchPosition(canvas, e);
         }
 
-        private void UpdateTouchPosition(MouseEventArgs e)
+        private void UpdateTouchPosition(Canvas canvas, MouseEventArgs e)
         {
             // Stormworks only updates positions when buttons are being pressed
             // There is no on-hover
             if (IsRDown || IsLDown)
             {
-                TouchPosition = e.GetPosition(e.Source as Canvas);
+                TouchPosition = e.GetPosition(canvas);
                 TouchPosition.X = Math.Floor(TouchPosition.X / DrawScale);
                 TouchPosition.Y = Math.Floor(TouchPosition.Y / DrawScale);
             }

@@ -33,16 +33,13 @@ namespace STORMWORKS_Simulator
             VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
 
             ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
-            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
+            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
             ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
-            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber}|{ (vm.IsPowered ? "1" : "0") }");
+            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
 
             DataContext = ViewModel;
 
             KeepAliveTimer = new System.Threading.Timer(OnTickTimer, null, 100, 100);
-
-            ViewModel.GetOrAddScreen(1);
-            ViewModel.GetOrAddScreen(2);
         }
 
         private void OnTickTimer(object state)
@@ -77,7 +74,7 @@ namespace STORMWORKS_Simulator
         private void SendTouchDataIfChanged(object sender, ScreenVM vm)
         {
             // only send the update if things actually changed
-            var newCommand = $"{vm.ScreenNumber}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{vm.TouchPosition.X}|{vm.TouchPosition.Y}";
+            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{vm.TouchPosition.X}|{vm.TouchPosition.Y}";
             if (newCommand != vm.LastTouchCommand)
             {
                 vm.LastTouchCommand = newCommand;
@@ -92,20 +89,29 @@ namespace STORMWORKS_Simulator
 
         // dirty event handling, but easier than going through all the bindings for this; as they're not designed to work with commands by default
         // redirect the event manually, to the correct screenVM
-        private void Canvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnRightButtonUp(e);}
+        private void Canvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnRightButtonUp(sender as Canvas, e);}
 
-        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnLeftButtonUp(e); }
+        private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnLeftButtonUp(sender as Canvas, e); }
 
-        private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnRightButtonDown(e); }
+        private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnRightButtonDown(sender as Canvas, e); }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnLeftButtonDown(e); }
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnLeftButtonDown(sender as Canvas, e); }
 
-        private void Canvas_MouseLeave(object sender, MouseEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnMouseLeave(e); }
+        private void Canvas_MouseLeave(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseLeave(sender as Canvas, e); }
 
-        private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnMouseEnter(e); }
+        private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseEnter(sender as Canvas, e); }
 
-        private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((e.Source as Canvas).DataContext as ScreenVM).OnMouseMove(e); }
+        private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseMove(sender as Canvas, e); }
 
+        // really horrid
+        private void Canvas_FrontInitialized(object sender, EventArgs e)
+        {
+            ((sender as Canvas).DataContext as ScreenVM).SetFront(sender as Canvas);
+        }
 
+        private void Canvas_BackInitialized(object sender, EventArgs e)
+        {
+            ((sender as Canvas).DataContext as ScreenVM).SetBack(sender as Canvas);
+        }
     }
 }

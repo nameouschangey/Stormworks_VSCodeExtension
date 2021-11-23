@@ -1,9 +1,13 @@
-﻿// Wiesław Šoltés
+﻿// Author: Wiesław Šoltés
 // https://stackoverflow.com/a/6782715/15086575
 // https://stackoverflow.com/questions/741956/pan-zoom-image/
 // https://github.com/wieslawsoltes/PanAndZoom
+// License: https://creativecommons.org/licenses/by-sa/3.0/
+//
 // Modifications:
-//  Set furthest pan amount
+//  Enable/Disable Pan Functionality
+//  Namespace and "using" directives are altered for this project
+//  In separate NameousChangey section
 
 using System.Linq;
 using System.Windows;

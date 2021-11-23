@@ -78,6 +78,12 @@ namespace STORMWORKS_Simulator
             }
         }
 
+        public ScreenVM GetScreen(int screenNumber)
+        {
+            screenNumber = screenNumber - 1;
+            return ScreenVMs[screenNumber];
+        }
+
         public ScreenVM GetOrAddScreen(int screenNumber)
         {
             screenNumber = screenNumber - 1;

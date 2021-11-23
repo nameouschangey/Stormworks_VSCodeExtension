@@ -35,16 +35,26 @@ LBSimulator = {
 
         this:registerHandler("TOUCH",
             function(simulator, screenNumber, isDownL, isDownR, x, y)
+                screenNumber = tonumber(screenNumber)
+                x = tonumber(x)
+                y = tonumber(y)
+                isDownL = isDownL == "1"
+                isDownR = isDownR == "1"
+
                 this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
                 local thisScreen = this.screens[screenNumber]
-                thisScreen.isTouchedL = (isDownL == "1")
-                thisScreen.isTouchedR = (isDownR == "1")
+                thisScreen.isTouchedL = isDownL
+                thisScreen.isTouchedR = isDownR
                 thisScreen.touchX = x
                 thisScreen.touchY = y
             end)
 
         this:registerHandler("SCREENSIZE",
             function (simulator, screenNumber, width, height)
+                screenNumber = tonumber(screenNumber)
+                width = tonumber(width)
+                height = tonumber(height)
+
                 this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
                 local thisScreen = this.screens[screenNumber]
                 thisScreen.width  = width
@@ -53,9 +63,11 @@ LBSimulator = {
 
         this:registerHandler("SCREENPOWER",
             function (simulator, screenNumber, poweredOn)
+                screenNumber = tonumber(screenNumber)
+                poweredOn = poweredOn == "1"
                 this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
                 local thisScreen = this.screens[screenNumber]
-                thisScreen.poweredOn = poweredOn == "1"
+                thisScreen.poweredOn = poweredOn
                 if not thisScreen.poweredOn then
                     thisScreen.touchX = 0
                     thisScreen.touchY = 0
@@ -63,27 +75,34 @@ LBSimulator = {
                     thisScreen.isTouchedR = false
                 end
             end)
-
         return this
     end;
 
     ---@param this LBSimulator
-    run = function(this)
+    ---@param attachToExistingProcess boolean attach to an existing running Simulator, instead of kicking off a new instance
+    beginSimulation = function(this, attachToExistingProcess)
+        if not attachToExistingProcess then
+            local simulatorExePath = LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\Extension\assets\simulator\STORMWORKS_Simulator.exe]])
+            this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
+        end
+
+        this.connection = LBSimulatorConnection:new()
+            
         -- set the global screen and output to be simulated
         -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
         screen.setSimulator(this)
         output.setSimulator(this)
-
-        local simulatorExePath = LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\Extension\assets\simulator\STORMWORKS_Simulator.exe]])
-        this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
-        this.connection = LBSimulatorConnection:new()
 
         -- default screen
         this.config:configureScreen(1, "1x1", true)
 
         onSimulatorInit = onSimulatorInit or Empty
         onSimulatorInit(this, this.config, LBSimulatorInputHelpers)
+    end;
 
+
+    ---@param this LBSimulator
+    giveControlToMainLoop = function(this)
         -- reliable 60 FPS main thread
         local timeRunning = 0.0
         local lastTime = _socket.gettime()
@@ -125,6 +144,7 @@ LBSimulator = {
                             this.currentScreen = screenData
                             if this.connection.isAlive then screen.drawClear() end
                             if this.connection.isAlive then onDraw() end
+                            if this.connection.isAlive then this.connection:sendCommand("FRAMESWAP", screenNumber) end
                         end
                     end
                 else

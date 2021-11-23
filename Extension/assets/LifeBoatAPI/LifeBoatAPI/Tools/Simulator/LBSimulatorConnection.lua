@@ -33,13 +33,7 @@ LBSimulatorConnection = {
 
         -- using first 4 characters for length
         local lengthString = string.format("%04d", #command + 1)
-        local bytesSend, err = this.client:send(lengthString .. command .. "\n");
-
-        if err == "closed" then
-            this.isAlive = false
-        elseif err then
-            error(err)
-        end
+        this:sendBytes(lengthString .. command .. "\n");
     end;
 
     ---@return boolean messageExists whether a message is ready to be read or not
@@ -51,7 +45,7 @@ LBSimulatorConnection = {
     readMessage = function(this)
         local size = this:readBytes(4)
 
-        if(size ~= nil) then
+        if(size ~= nil and tonumber(size) ~= nil) then
             return this:readBytes(tonumber(size))
         end
         return nil
@@ -77,5 +71,22 @@ LBSimulatorConnection = {
             data = data .. buffer
         end
         return data
+    end;
+
+    sendBytes = function(this, message)
+        local length = #message
+        local bytesSent = 0
+        while bytesSent < length do
+            local sent, err = this.client:send(message);
+
+            if err == "closed" then
+                this.isAlive = false
+                return
+            elseif err then
+                error(err)
+            end
+
+            bytesSent = bytesSent + sent
+        end
     end;
 }
