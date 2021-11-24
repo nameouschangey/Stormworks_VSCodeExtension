@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace STORMWORKS_Simulator
 {
@@ -35,9 +36,6 @@ namespace STORMWORKS_Simulator
             Color = Brushes.White;
         }
     }
-
-
-
 
     public class ScreenVM : INotifyPropertyChanged
     {
@@ -112,15 +110,12 @@ namespace STORMWORKS_Simulator
 
         public StormworksMonitor Monitor { get; private set; }
 
-        public bool IsFront { get; set; }
-        public bool IsBack { get; set; }
-        public Canvas FrontBuffer { get; set; }
-        public Canvas BackBuffer { get; set; }
+        public WriteableBitmap FrontBuffer { get; set; }
+        public WriteableBitmap BackBuffer { get; set; }
 
         public int ScreenNumber { get; private set; }
 
         private bool _IsPortrait = false;
-        private int _NextZIndex = 0;
         private bool _IsPowered = true;
 
         // touch data
@@ -138,61 +133,23 @@ namespace STORMWORKS_Simulator
             ScreenNumber = screenNumber;
             Monitor = new StormworksMonitor();
             ScreenResolutionDescription = ScreenDescriptionsList[0];
-            IsFront = true;
-            IsBack = false;
-        }
 
-        public void SetFront(Canvas canvas)
-        {
-            FrontBuffer = canvas;
-        }
-
-        public void SetBack(Canvas canvas)
-        {
-            BackBuffer = canvas;
+            FrontBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
+            BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
         }
 
         public void SwapFrameBuffers()
         {
-            IsFront = !IsFront;
-            IsBack = !IsBack;
+            BackBuffer.Unlock();
+            FrontBuffer = BackBuffer;
+            BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
+            BackBuffer.Lock();
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        }
-
-        public void Draw(UIElement shape)
-        {
-            if (BackBuffer == null || FrontBuffer == null)
-            {
-                return;
-            }
-
-            Panel.SetZIndex(shape, _NextZIndex++);
-            if(IsFront)
-            {
-                BackBuffer.Children.Add(shape);
-            }
-            else
-            {
-                FrontBuffer.Children.Add(shape);
-            }
         }
 
         public void ClearScreen()
         {
-            if(BackBuffer == null || FrontBuffer == null)
-            {
-                return;
-            }
-
-            _NextZIndex = 0;
-            if (IsFront)
-            {
-                BackBuffer.Children.Clear();
-            }
-            else
-            {
-                FrontBuffer.Children.Clear();
-            }
         }
 
         // mouse event handling
