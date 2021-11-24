@@ -16,11 +16,7 @@ using System.Collections.Concurrent;
 
 namespace STORMWORKS_Simulator
 {
-    public interface IPipeCommandHandler
-    {
-        string Commmand { get; }
-        void Handle(MainVM vm, string[] commandParts);
-    }
+
 
     public class SocketReadBuffer
     {
@@ -61,21 +57,16 @@ namespace STORMWORKS_Simulator
 
     public class SocketConnection
     {
+        public event EventHandler<string> OnLineRead;
         public event EventHandler OnPipeClosed;
         public bool IsActive { get; set; } = true;
 
-        public ConcurrentQueue<string> MessagesToProcess { get; private set; } = new ConcurrentQueue<string>();
-
         private DateTime _StartTime = DateTime.UtcNow;
-        private MainVM _Viewmodel;
         private IAsyncResult _SocketReadTask;
         private TcpClient _Client;
 
         public SocketConnection(MainVM viewmodel)
         {
-            _Viewmodel = viewmodel;
-
-
             _SocketReadTask = Task.Run(() =>
             {
                 try
@@ -92,9 +83,8 @@ namespace STORMWORKS_Simulator
                     {
                         var message = reader.ReadNextMessage(stream);
                         Logger.Log($"Message: {message}");
-                        MessagesToProcess.Enqueue(message);
 
-                        //OnLineRead(message);
+                        OnLineRead?.Invoke(this, message);
                     }
                     _Client.Close();
                     listener.Stop();
@@ -131,32 +121,5 @@ namespace STORMWORKS_Simulator
                 throw e;
             }
         }
-
-        public void OnLineRead(string line)
-        {
-            //try
-            //{
-            //    // format is: COMMAND|PARAM|PARAM|PARAM|...
-            //    var splits = line.Split('|');
-            //    if (splits.Length < 1)
-            //    {
-            //        return;
-            //    }
-            //
-            //    var command = splits[0];
-            //    if(_CommandHandlersLookup.TryGetValue(command, out var handler))
-            //    {
-            //        handler.Handle(_Viewmodel, splits);
-            //    }
-            //}
-            //catch(Exception e)
-            //{
-            //    // keep the UI running, despite any issue that arise
-            //    // this will be called when non-standard commands get sent etc.
-            //    Logger.Log($"Caught Parsing Exception: {e}");
-            //}
-        }
-
-
     }
 }

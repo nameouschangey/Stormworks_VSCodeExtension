@@ -19,7 +19,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class SetInput : IPipeCommandHandler
     {
-        public string Commmand => "INPUT";
+        public string Command => "INPUT";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -38,7 +38,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class SetOutput : IPipeCommandHandler
     {
-        public string Commmand => "OUTPUT";
+        public string Command => "OUTPUT";
 
         public void Handle(MainVM vm, string[] commandParts)
         {

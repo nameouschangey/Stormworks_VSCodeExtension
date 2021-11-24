@@ -21,9 +21,10 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,6 +43,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.Composition.Registration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -61,8 +63,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="lib\SmartCollection.cs" />
+    <Compile Include="lib\UnsafeBitmap.cs" />
     <Compile Include="lib\ZoomBorder.cs" />
     <Compile Include="src\BasicCommand.cs" />
+    <Compile Include="src\Drawing\BMPDrawing.cs" />
     <Compile Include="src\Logger.cs" />
     <Compile Include="src\PipedCommands\SimulationCommands.cs" />
     <Compile Include="src\PipedCommands\ScreenCommands.cs" />

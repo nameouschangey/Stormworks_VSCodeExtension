@@ -19,7 +19,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawRect : IPipeCommandHandler
     {
-        public string Commmand => "RECT";
+        public string Command => "RECT";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -52,7 +52,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawCircle : IPipeCommandHandler
     {
-        public string Commmand => "CIRCLE";
+        public string Command => "CIRCLE";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -84,7 +84,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawLine : IPipeCommandHandler
     {
-        public string Commmand => "LINE";
+        public string Command => "LINE";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -119,7 +119,7 @@ namespace STORMWORKS_Simulator
     {
         public static FontFamily MonitorFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#PixelFont");
 
-        public string Commmand => "TEXT";
+        public string Command => "TEXT";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -155,7 +155,7 @@ namespace STORMWORKS_Simulator
     {
         public static FontFamily MonitorFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#PixelFont");
 
-        public string Commmand => "TEXTBOX";
+        public string Command => "TEXTBOX";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -196,7 +196,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawTriangle : IPipeCommandHandler
     {
-        public string Commmand => "TRIANGLE";
+        public string Command => "TRIANGLE";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -234,7 +234,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class SetColour : IPipeCommandHandler
     {
-        public string Commmand => "COLOUR";
+        public string Command => "COLOUR";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -258,7 +258,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class ClearScreen : IPipeCommandHandler
     {
-        public string Commmand => "CLEAR";
+        public string Command => "CLEAR";
 
         public void Handle(MainVM vm, string[] commandParts)
         {

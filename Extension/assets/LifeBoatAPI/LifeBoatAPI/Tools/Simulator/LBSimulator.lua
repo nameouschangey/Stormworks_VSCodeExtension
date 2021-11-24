@@ -169,6 +169,8 @@ LBSimulator = {
                 else
                     framesSinceRender = framesSinceRender + 1
                 end
+
+                if this.connection.isAlive then this.connection:sendCommand("TICKEND") end
             else
                 -- sleep while we idle, to avoid burning through the CPU
                 --if(this.sleepBetweenFrames > 0) then

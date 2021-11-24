@@ -24,54 +24,81 @@ using System.Net;
 
 namespace STORMWORKS_Simulator
 {
-    public partial class MainWindow : Window
+    public interface IPipeCommandHandler
     {
-        public StormworksMonitor Monitor;
-        public MainVM ViewModel;
-        public SocketConnection VSConnection;
-        public Timer KeepAliveTimer;
-        public DispatcherTimer ProcessUIMessagesTimer;
+        string Command { get; }
+        void Handle(MainVM vm, string[] commandParts);
 
-        private Dictionary<string, IPipeCommandHandler> _CommandHandlersLookup = new Dictionary<string, IPipeCommandHandler>();
+    }
+    public class TickHandler
+    {
+        private MainVM _ViewModel;
 
         [ImportMany(typeof(IPipeCommandHandler))]
         private IEnumerable<Lazy<IPipeCommandHandler>> _CommandHandlers;
+        private Dictionary<string, IPipeCommandHandler> _CommandHandlersLookup = new Dictionary<string, IPipeCommandHandler>();
 
-        public MainWindow()
+        private List<string> Messages = new List<string>();
+        private bool IsRendering = false;
+
+        public TickHandler(MainVM vm)
         {
-            Logger.SetLog(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt");
-            Logger.Enabled = false;
-
-            LoadMEFCommands();
-
-            foreach (var handler in _CommandHandlers)
-            {
-                _CommandHandlersLookup[handler.Value.Commmand] = handler.Value;
-            }
-
-            InitializeComponent();
-
-            ViewModel = new MainVM();
-            VSConnection = new SocketConnection(ViewModel);
-            VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
-
-            ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
-            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
-            ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
-            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
-
-            DataContext = ViewModel;
-
-            KeepAliveTimer = new System.Threading.Timer(OnKeepAliveTimer, null, 100, 100);
-
-            ProcessUIMessagesTimer = new DispatcherTimer();
-            ProcessUIMessagesTimer.Tick += new EventHandler(OnProcessUIMessagesTimer);
-            ProcessUIMessagesTimer.Interval = new TimeSpan(0, 0, 0, 0, 17);
-            ProcessUIMessagesTimer.Start();
-
+            _ViewModel = vm;
+            LoadMEFComponents();
         }
 
-        private void LoadMEFCommands()
+        public void OnLineRead(object sender, string messageFromVS)
+        {
+            if (!messageFromVS.StartsWith("TICKEND"))
+            {
+                Messages.Add(messageFromVS);
+            }
+            else
+            {
+                var messagesToProcess = new List<string>(Messages);
+                Messages.Clear();
+                if (!IsRendering)
+                {   // near impossible to recieve 2 TICKEND commands between these 2 commands
+                    // but you know, if it does happen - happy Race Condition Day.
+                    IsRendering = true;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        try
+                        {
+                            foreach (var message in messagesToProcess)
+                            {
+                            // format is: COMMAND|PARAM|PARAM|PARAM|...
+                            var splits = message.Split('|');
+                                if (splits.Length < 1)
+                                {
+                                    return;
+                                }
+
+                                var command = splits[0];
+                                if (_CommandHandlersLookup.TryGetValue(command, out var handler))
+                                {
+                                    handler.Handle(_ViewModel, splits);
+                                }
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                        // keep the UI running, despite any issue that arise
+                        // this will be called when non-standard commands get sent etc.
+                        Logger.Log($"Caught Parsing Exception: {e}");
+                        }
+                        IsRendering = false;
+                    });
+                }
+                else
+                {
+                    var a = 1;
+                }
+            }
+        }
+
+        private void LoadMEFComponents()
         {
             CompositionContainer _container;
 
@@ -85,39 +112,49 @@ namespace STORMWORKS_Simulator
                 // Create the CompositionContainer with the parts in the catalog.
                 _container = new CompositionContainer(catalog);
                 _container.ComposeParts(this);
+
+                foreach (var handler in _CommandHandlers)
+                {
+                    _CommandHandlersLookup[handler.Value.Command] = handler.Value;
+                }
             }
             catch (CompositionException compositionException)
             {
                 Console.WriteLine(compositionException.ToString());
             }
         }
+    }
 
-        private void OnProcessUIMessagesTimer(object sender, EventArgs args)
+    public partial class MainWindow : Window
+    {
+        public StormworksMonitor Monitor;
+        public MainVM ViewModel;
+        public SocketConnection VSConnection;
+        public Timer KeepAliveTimer;
+        public TickHandler TickHandler;
+
+        public MainWindow()
         {
-            try
-            {
-                while(VSConnection.MessagesToProcess.TryDequeue(out var message))
-                {
-                    // format is: COMMAND|PARAM|PARAM|PARAM|...
-                    var splits = message.Split('|');
-                    if (splits.Length < 1)
-                    {
-                        return;
-                    }
+            Logger.SetLog(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt");
+            Logger.Enabled = false;
 
-                    var command = splits[0];
-                    if (_CommandHandlersLookup.TryGetValue(command, out var handler))
-                    {
-                        handler.Handle(ViewModel, splits);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                // keep the UI running, despite any issue that arise
-                // this will be called when non-standard commands get sent etc.
-                Logger.Log($"Caught Parsing Exception: {e}");
-            }
+            InitializeComponent();
+
+            ViewModel = new MainVM();
+            TickHandler = new TickHandler(ViewModel);
+            VSConnection = new SocketConnection(ViewModel);
+            VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
+            VSConnection.OnLineRead += TickHandler.OnLineRead;
+
+
+            ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
+            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
+            ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
+            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
+
+            DataContext = ViewModel;
+
+            KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
         }
 
         private void OnKeepAliveTimer(object state)

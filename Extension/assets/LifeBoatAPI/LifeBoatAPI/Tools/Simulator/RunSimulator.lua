@@ -16,7 +16,6 @@ require("LifeBoatAPI.Tools.Simulator.LBSimulatorInputHelpers")
 require("LifeBoatAPI.Tools.Simulator.LBSimulatorConnection")
 
 
-
 ---@section __IF__IS__SIMULATING__
 ---@param simulator LBSimulator
 ---@param config LBSimulatorConfig

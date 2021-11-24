@@ -19,7 +19,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class ScreenPower : IPipeCommandHandler
     {
-        public string Commmand => "SCREENCONFIG";
+        public string Command => "SCREENCONFIG";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -43,7 +43,7 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class ScreenFrameSwap : IPipeCommandHandler
     {
-        public string Commmand => "FRAMESWAP";
+        public string Command => "FRAMESWAP";
 
         public void Handle(MainVM vm, string[] commandParts)
         {
