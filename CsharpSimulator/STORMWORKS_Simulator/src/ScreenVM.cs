@@ -8,6 +8,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.IO;
+using System.Drawing.Imaging;
 
 namespace STORMWORKS_Simulator
 {
@@ -136,12 +138,15 @@ namespace STORMWORKS_Simulator
 
             FrontBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
             BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
+
+            FrontBuffer.DrawRectangle(0, 0, (int)Monitor.Size.X, (int)Monitor.Size.Y, Color.FromArgb(255, 0, 0, 0));
+            FrontBuffer.DrawLine(0, 0, (int)Monitor.Size.X, (int)Monitor.Size.Y, Color.FromArgb(255, 0, 0, 0));
         }
 
         public void SwapFrameBuffers()
         {
             BackBuffer.Unlock();
-            FrontBuffer = BackBuffer;
+
             BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
             BackBuffer.Lock();
 

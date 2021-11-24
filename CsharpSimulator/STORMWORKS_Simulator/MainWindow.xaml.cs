@@ -155,6 +155,8 @@ namespace STORMWORKS_Simulator
             DataContext = ViewModel;
 
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
+            
+            ViewModel.GetOrAddScreen(1);
         }
 
         private void OnKeepAliveTimer(object state)
@@ -217,16 +219,5 @@ namespace STORMWORKS_Simulator
         private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseEnter(sender as Canvas, e); }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseMove(sender as Canvas, e); }
-
-        // really horrid
-        private void Canvas_FrontInitialized(object sender, EventArgs e)
-        {
-            ((sender as Canvas).DataContext as ScreenVM).SetFront(sender as Canvas);
-        }
-
-        private void Canvas_BackInitialized(object sender, EventArgs e)
-        {
-            ((sender as Canvas).DataContext as ScreenVM).SetBack(sender as Canvas);
-        }
     }
 }
