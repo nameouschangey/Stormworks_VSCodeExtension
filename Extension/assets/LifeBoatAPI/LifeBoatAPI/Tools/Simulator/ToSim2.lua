@@ -1,6 +1,10 @@
 
+ticks = 0
 function onDraw()	
-	screen.setColor(0,0,0)
-	screen.drawCircle(32,32,16)
-	screen.drawLine(0,0,10,10)
+	ticks = ticks + 1
+
+	screen.setColor(255,0,0,100)
+
+	radius = (ticks / 20) % 32 
+	screen.drawCircle(32,32,0.5)
 end

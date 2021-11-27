@@ -38,6 +38,72 @@ namespace System.Windows.Media.Imaging
 
         #region Fill Shapes
 
+        public static void DrawMidpointCircle(this WriteableBitmap bmp, int cx, int cy, double r, int color, bool filled)
+        { // https://github.com/donatj/Circle-Generator
+          // attempt at finding an algorithm that works similarly to the one being used by stormworks
+          // as it turns out, they seem to actually just use a vertex circle where they change how many verts based on the size
+          // anyway, this produces closer-to-stormworks small circles than the defalt FillElipse
+            bool IsInCircle(int x, int y)
+            {
+                return ((x * x) + (y * y)) <= ((int)r * (int)r);
+            }
+
+            bool IsInCircleFat(int x, int y)
+            {
+                return IsInCircle(x, y)
+                        && !(IsInCircle(x + 1, y) &&
+                             IsInCircle(x - 1, y) &&
+                             IsInCircle(x, y + 1) &&
+                             IsInCircle(x, y - 1) &&
+                             IsInCircle(x + 1, y + 1) &&
+                             IsInCircle(x + 1, y - 1) &&
+                             IsInCircle(x - 1, y - 1) &&
+                             IsInCircle(x - 1, y + 1));
+            }
+
+            using (var context = bmp.GetBitmapContext())
+            {
+                var pixels = context.Pixels;
+                int w = context.Width;
+                int h = context.Height;
+
+                int sa = ((color >> 24) & 0xff);
+                int sr = ((color >> 16) & 0xff);
+                int sg = ((color >> 8) & 0xff);
+                int sb = ((color) & 0xff);
+
+                // handle even/odd size circles
+                int maxblocks = (int)(r*2);
+
+                if (((int)(r * 2)) % 2 == 0)
+                {
+                    maxblocks = (int)(Math.Ceiling(r) * 2 + 1);
+                }
+                else
+                {
+                    maxblocks = (int)(Math.Ceiling(r) * 2);
+                }
+
+                for (int y = (int)(-maxblocks / 2) + 1; y <= (int)(maxblocks / 2) - 1; y++)
+                {
+                    for (int x = (int)(-maxblocks / 2) + 1; x <= (int)(maxblocks / 2) - 1; x++)
+                    {
+                        if (!filled
+                            && IsInCircleFat(x,y)
+                             && !(IsInCircleFat(x + (x > 0 ? 1 : -1), y) && IsInCircleFat(x, y + (y > 0 ? 1 : -1))))
+                        {
+                            pixels[(cy+y) * w + (cx+x)] = AlphaBlendColors(pixels[(cy + y) * w + (cx + x)], sa, sr, sg, sb);
+                        }
+                        else if(filled
+                            && IsInCircle(x,y))
+                        {
+                            pixels[(cy + y) * w + (cx + x)] = AlphaBlendColors(pixels[(cy + y) * w + (cx + x)], sa, sr, sg, sb);
+                        }
+                    }
+                }
+            }
+        }
+
         #region Rectangle
 
         /// <summary>
@@ -140,7 +206,7 @@ namespace System.Windows.Media.Imaging
             }
         }
 
-        private static int AlphaBlendColors(int pixel, int sa, int sr, int sg, int sb)
+        public static int AlphaBlendColors(int pixel, int sa, int sr, int sg, int sb)
         {
             // Alpha blend
             int destPixel = pixel;
@@ -243,7 +309,10 @@ namespace System.Windows.Media.Imaging
                 }
 
                 // Skip completly outside objects
-                if (xc - xr >= w || xc + xr < 0 || yc - yr >= h || yc + yr < 0)
+                if (   xc - xr >= w
+                    || xc + xr < 0
+                    || yc - yr >= h
+                    || yc + yr < 0)
                 {
                     return;
                 }

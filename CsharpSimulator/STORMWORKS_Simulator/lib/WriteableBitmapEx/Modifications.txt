@@ -13,6 +13,6 @@ Modifications by Nameos Changey:
 	Removed WriteableBitmapEx.WinRT
 
 
-	Implemented Transparent Clear
 	Implemented AlphaBlend for drawRect, drawLine, drawEllipse, drawPolygon
+	Implemented DrawMidpointCircle
 

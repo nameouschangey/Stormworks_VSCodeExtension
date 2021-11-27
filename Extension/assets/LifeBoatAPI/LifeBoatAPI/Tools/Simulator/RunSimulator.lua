@@ -30,6 +30,8 @@ function onSimulatorInit(simulator, config, helpers)
     config:setProperty("Direction", false)
     config:setProperty("On Pivot", false)
 
+    config:addBoolHandler(3,  function() return math.random() * 100 < 20 end)
+    config:addBoolHandler(4,  function() return math.random() * 100 < 20 end)
     for i=5, 32 do
         config:addNumberHandler(i,  helpers.wrappingNumber(0, 1, 0.01))
         config:addBoolHandler(i,  function() return math.random() * 100 < 20 end)
@@ -50,6 +52,6 @@ end
 local simulator = LBSimulator:new()
 simulator:beginSimulation(true)
 
-require("LifeBoatAPI.Tools.Simulator.ToSim")
+require("LifeBoatAPI.Tools.Simulator.ToSim2")
 
 simulator:giveControlToMainLoop()

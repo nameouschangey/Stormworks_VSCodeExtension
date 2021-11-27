@@ -64,18 +64,11 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = double.Parse(commandParts[3]);
-            var y       = double.Parse(commandParts[4]);
-            var radius  = double.Parse(commandParts[5]);
+            var x = double.Parse(commandParts[3]);
+            var y = double.Parse(commandParts[4]);
+            var radius = double.Parse(commandParts[5]);
 
-            if (filled)
-            {
-                screen.BackBuffer.FillEllipseCentered((int)(x),(int)(y),(int)(radius), (int)(radius), screen.Monitor.ColorInt, true);
-            }
-            else
-            {
-                screen.BackBuffer.DrawEllipseCentered((int)(x), (int)(y), (int)(radius), (int)(radius), screen.Monitor.ColorInt);
-            }
+            screen.BackBuffer.DrawMidpointCircle((int)(x), (int)(y), radius, screen.Monitor.ColorInt, filled);
         }
     }
 
@@ -94,10 +87,10 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x   = double.Parse(commandParts[2]);
-            var y   = double.Parse(commandParts[3]);
-            var x2  = double.Parse(commandParts[4]);
-            var y2  = double.Parse(commandParts[5]);
+            var x   = double.Parse(commandParts[2]) + 0.5;
+            var y   = double.Parse(commandParts[3]) + 0.5;
+            var x2  = double.Parse(commandParts[4]) + 0.5;
+            var y2  = double.Parse(commandParts[5]) + 0.5;
 
             screen.BackBuffer.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, screen.Monitor.ColorInt);
         }
@@ -200,14 +193,14 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var p1x = double.Parse(commandParts[3]);
-            var p1y = double.Parse(commandParts[4]);
-                                     
-            var p2x = double.Parse(commandParts[5]);
-            var p2y = double.Parse(commandParts[6]);
-                                              
-            var p3x = double.Parse(commandParts[7]);
-            var p3y = double.Parse(commandParts[8]);
+            var p1x = double.Parse(commandParts[3]) + 0.5;
+            var p1y = double.Parse(commandParts[4])+ 0.5;
+                                               
+            var p2x = double.Parse(commandParts[5])+ 0.5;
+            var p2y = double.Parse(commandParts[6])+ 0.5;
+                                           
+            var p3x = double.Parse(commandParts[7])+ 0.5;
+            var p3y = double.Parse(commandParts[8])+ 0.5;
 
             if (filled)
             {

@@ -168,12 +168,6 @@
                               VerticalAlignment="Center"
                               IsChecked="{Binding IsPowered}"
                               Content="Powered On" />
-                            <TextBlock
-                                Margin="10,0"
-                                Text="Drawn Elements: " />
-                            <TextBlock
-                                Margin="10,0"
-                                Text="{Binding FrontBuffer.Children.Count}" />
                         </DockPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

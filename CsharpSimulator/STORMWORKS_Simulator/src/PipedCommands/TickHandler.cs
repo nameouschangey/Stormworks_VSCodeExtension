@@ -32,7 +32,6 @@ namespace STORMWORKS_Simulator
 
     }
 
-
     public class TickHandler
     {
         private MainVM _ViewModel;

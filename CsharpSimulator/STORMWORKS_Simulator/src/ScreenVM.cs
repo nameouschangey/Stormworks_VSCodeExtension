@@ -103,7 +103,7 @@ namespace STORMWORKS_Simulator
                              Monitor.Size.Y * DrawScale);
         }
 
-        public float CanvasRotation
+        public double CanvasRotation
         {
             get => IsPortrait ? 90 : 0;
         }
