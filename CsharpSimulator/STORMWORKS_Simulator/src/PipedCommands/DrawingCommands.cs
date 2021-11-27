@@ -199,7 +199,7 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var filled = commandParts[1] == "1";
+            var filled = commandParts[2] == "1";
             var p1x = double.Parse(commandParts[3]);
             var p1y = double.Parse(commandParts[4]);
                                      
@@ -211,19 +211,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                var points = new int[8]
-                {
-                    (int)p1x, (int)p1y,
-                    (int)p2x, (int)p2y,
-                    (int)p3x, (int)p3y,
-                    (int)p1x, (int)p1y
-                };
-
-                screen.BackBuffer.FillPolygon(points, screen.Monitor.ColorInt, true);
+                screen.BackBuffer.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.ColorInt);
             }
             else
             {
-                //screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.ColorInt);
+                screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.ColorInt);
             }
         }
     }

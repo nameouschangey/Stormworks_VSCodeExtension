@@ -526,7 +526,7 @@ namespace System.Windows.Media.Imaging
                             if (x1 >= w) x1 = w - 1;
 
                             // Fill the pixels
-                            for (int x = x0; x <= x1; x++)
+                            for (int x = x0; x < x1; x++)
                             {
                                 int idx = y * w + x;
 

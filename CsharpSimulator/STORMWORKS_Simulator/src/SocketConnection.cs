@@ -92,7 +92,7 @@ namespace STORMWORKS_Simulator
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"[Read] Caught Exception: {e}");
+                    Logger.Error($"[Read] Caught Exception: {e}");
                     OnPipeClosed?.Invoke(this, new EventArgs());
                     throw e;
                 }
@@ -116,7 +116,7 @@ namespace STORMWORKS_Simulator
             }
             catch (Exception e)
             {
-                Logger.Log($"[Write] Caught Exception: {e}");
+                Logger.Error($"[Write] Caught Exception: {e}");
                 OnPipeClosed?.Invoke(this, new EventArgs());
                 throw e;
             }

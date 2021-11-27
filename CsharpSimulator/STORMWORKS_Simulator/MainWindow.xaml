@@ -111,7 +111,7 @@
                                 MouseRightButtonDown="Canvas_MouseRightButtonDown"
                                 MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
                                 MouseRightButtonUp="Canvas_MouseRightButtonUp"
-                                Background="Yellow"
+                                Background="Black"
                                 ClipToBounds = "True">
                                 <Canvas.LayoutTransform>
                                     <RotateTransform Angle="{Binding CanvasRotation}"/>

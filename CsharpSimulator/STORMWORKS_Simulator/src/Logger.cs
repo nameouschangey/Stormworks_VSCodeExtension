@@ -10,10 +10,12 @@ namespace STORMWORKS_Simulator
     {
         private static string Logfile;
         public static bool Enabled;
+        public static bool ErrorEnabled = true;
 
-        public static void SetLog(string path, bool enabled=true)
+        public static void SetLog(string path, bool enabled = true, bool errorEnabled = true)
         {
             Enabled = enabled;
+            ErrorEnabled = errorEnabled;
             Logfile = path;
 #if DEBUG
             System.IO.File.WriteAllText(Logfile, "");
@@ -28,9 +30,21 @@ namespace STORMWORKS_Simulator
 
                 System.IO.File.AppendAllText(Logfile, message + "\n");
 
-        }
+            }
 #endif
 
+        }
+
+        public static void Error(string message)
+        {
+#if DEBUG
+            if (ErrorEnabled)
+            {
+
+                System.IO.File.AppendAllText(Logfile, "ERROR: " + message + "\n");
+
+            }
+#endif
         }
     }
 }
