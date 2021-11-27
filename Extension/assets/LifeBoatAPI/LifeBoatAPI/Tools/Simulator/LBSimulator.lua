@@ -77,6 +77,15 @@ LBSimulator = {
                     thisScreen.isTouchedR = false
                 end
             end)
+
+        this:registerHandler("TICKRATE",
+            function (simulator, ticksPerSecond, frameSkip)
+                ticksPerSecond = tonumber(ticksPerSecond)
+                frameSkip = tonumber(frameSkip)
+                this.timePerFrame = 1 / ticksPerSecond
+                this.renderOnFrames = math.max(1, frameSkip)
+            end)
+
         return this
     end;
 
@@ -121,9 +130,7 @@ LBSimulator = {
         local timeSinceFrame = 0.0
         local framesSinceRender = 1
         local framesSinceOut = 1
-        frameRateHistory = {}
-        local rollingIndex = 1
-        local rollingHistoryLength = 10
+
         while this.connection.isAlive do
             local time = _socket.gettime()
             timeRunning = timeRunning + (time - lastTime)
@@ -131,15 +138,6 @@ LBSimulator = {
             lastTime = time
 
             if timeSinceFrame > this.timePerFrame then
-                frameRateHistory[rollingIndex] = timeSinceFrame
-                rollingIndex = (rollingIndex % rollingHistoryLength) + 1
-
-                local sum = 0
-                for i,v in ipairs(frameRateHistory) do
-                    sum = sum + v
-                end
-                local averageFrameTime = sum / rollingHistoryLength 
-
                 timeSinceFrame = 0.0
                 
                 -- messages incoming from the server
@@ -162,8 +160,8 @@ LBSimulator = {
                 if framesSinceRender%this.renderOnFrames == 0 and this.connection.isAlive then
                     framesSinceRender = 1
 
-
-                    if framesSinceOut%this.sendOutputSkip == 0 then
+                    local outputRate = math.max(this.sendOutputSkip, this.renderOnFrames) -- no point sending the data more often than rendering it
+                    if framesSinceOut%outputRate == 0 then
                         if this.connection.isAlive then this:_sendInOuts() end
                         framesSinceOut = 1
                     else
@@ -192,6 +190,19 @@ LBSimulator = {
         end
 
         this.connection:close()
+    end;
+
+    ---@param this LBSimulator
+    ---@param frameSkip number 
+    ---@param tickRate number
+    ---@param sendOutputSkip number
+    setFrameRate = function (this, frameSkip, tickRate, sendOutputSkip)
+        frameSkip = frameSkip or 1
+        tickRate = tickRate or 60
+        sendOutputSkip = sendOutputSkip or 1
+
+        this.timePerFrame = 1 / tickRate
+        this.renderOnFrames = frameSkip
     end;
 
     ---simulate the value an input should have

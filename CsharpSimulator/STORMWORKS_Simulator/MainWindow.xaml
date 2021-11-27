@@ -7,7 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="MainWindow" Height="768" Width="1024"
         Style="{StaticResource WindowStyle}">
     <Window.Resources>
         <DataTemplate x:Key="SWInOutItemTemplate">
@@ -74,6 +74,21 @@
                         Margin="10,0"
                         Content="Add Screen"
                         Click="OnAddScreenClicked"/>
+                <TextBlock DockPanel.Dock="Left"
+                           Text="Frameskip: " />
+                <ComboBox DockPanel.Dock="Left"
+                          Margin="10,0"
+                          Text="FrameSkip"
+                          ItemsSource="{Binding FrameSkipOptions}"
+                          SelectedItem="{Binding FrameSkipOption}"
+                          SelectedIndex="{Binding FrameSkipIndex}" />
+                <TextBlock DockPanel.Dock="Left"
+                           Text="TickRate: " />
+                <ComboBox DockPanel.Dock="Left"
+                          Text="TickRate"
+                          ItemsSource="{Binding TickRateOptions}"
+                          SelectedItem="{Binding TickRateOption}"
+                          SelectedIndex="{Binding TickRateIndex}" />
             </DockPanel>
             
             <!-- Main Canvas Area-->

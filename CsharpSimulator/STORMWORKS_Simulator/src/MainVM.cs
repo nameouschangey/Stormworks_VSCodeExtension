@@ -46,12 +46,54 @@ namespace STORMWORKS_Simulator
         public event EventHandler<ScreenVM> OnScreenTouchChanged;
         public event EventHandler<ScreenVM> OnScreenResolutionChanged;
         public event EventHandler<ScreenVM> OnPowerChanged;
+        public event EventHandler<MainVM> OnTickrateChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableCollection<StormworksInputOutput> Inputs { get; private set; }
         public ObservableCollection<StormworksInputOutput> Outputs { get; private set; }
         public ObservableCollection<ScreenVM> ScreenVMs { get; private set; }
+
+        public static List<string> FrameSkipOptions { get; private set; } = new List<string>() { "0", "2", "3", "5", "10", "30", "60" };
+        public string FrameSkipOption
+        {
+            get => $"{FrameSkip}";
+            set
+            {
+                FrameSkipIndex = FrameSkipOptions.IndexOf(value);
+                FrameSkip = int.Parse(value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+                OnTickrateChanged?.Invoke(this, this);
+            }
+        }
+        public int FrameSkipIndex { get; set; }
+        public int FrameSkip { get; private set; } = 0;
+
+
+        public static List<string> TickRateOptions { get; private set; } = new List<string>() { "60", "1", "10", "30", "Unlimited"};
+        public string TickRateOption
+        {
+            get => $"{TickRate}";
+            set
+            {
+                TickRateIndex = TickRateOptions.IndexOf(value);
+                if (value == "Unlimited")
+                {
+                    TickRate = 999;
+                }
+                else
+                {
+                    TickRateIndex = TickRateOptions.IndexOf(value);
+                    TickRate = int.Parse(value);
+                }
+                
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+                OnTickrateChanged?.Invoke(this, this);
+            }
+        }
+        public int TickRateIndex { get; set; }
+        public int TickRate { get; private set; } = 0;
+
 
         public bool EnablePan
         {
@@ -62,8 +104,8 @@ namespace STORMWORKS_Simulator
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
             }
         }
-
         private bool _EnablePan = true;
+
 
         public MainVM()
         {
