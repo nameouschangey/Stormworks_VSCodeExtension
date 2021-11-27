@@ -28,14 +28,24 @@ namespace STORMWORKS_Simulator
                 OnMonitorSizeChanged?.Invoke(this, new EventArgs());
             }
         }
-        public SolidColorBrush Color { get; set; }
+        public SolidColorBrush FontBrush { get; private set; }
+        public Color Color
+        {
+            get => _Color;
+            set
+            {
+                _Color = value;
+                FontBrush = new SolidColorBrush(_Color);
+            }
+        }
 
+        private Color _Color;
         private Point _Size;
 
         public StormworksMonitor()
         {
             Size = new Point(32, 32);
-            Color = Brushes.White;
+            Color = Color.FromArgb(0, 0, 0, 0);
         }
     }
 
@@ -67,6 +77,13 @@ namespace STORMWORKS_Simulator
                 ScreenResolutionDescriptionIndex = ScreenDescriptionsList.IndexOf(value);
 
                 Monitor.Size = new Point(width, height);
+
+                _Buffer1 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
+                _Buffer2 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
+
+                FrontBuffer = _Buffer1;
+                BackBuffer = _Buffer2;
+
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
                 if (IsPowered)
@@ -112,8 +129,10 @@ namespace STORMWORKS_Simulator
 
         public StormworksMonitor Monitor { get; private set; }
 
-        public WriteableBitmap FrontBuffer { get; set; }
-        public WriteableBitmap BackBuffer { get; set; }
+        public WriteableBitmap FrontBuffer { get; private set; }
+        public WriteableBitmap BackBuffer { get; private set; }
+        private WriteableBitmap _Buffer1;
+        private WriteableBitmap _Buffer2;
 
         public int ScreenNumber { get; private set; }
 
@@ -135,26 +154,14 @@ namespace STORMWORKS_Simulator
             ScreenNumber = screenNumber;
             Monitor = new StormworksMonitor();
             ScreenResolutionDescription = ScreenDescriptionsList[0];
-
-            FrontBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
-            BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
-
-            FrontBuffer.DrawRectangle(0, 0, (int)Monitor.Size.X, (int)Monitor.Size.Y, Color.FromArgb(255, 0, 0, 0));
-            FrontBuffer.DrawLine(0, 0, (int)Monitor.Size.X, (int)Monitor.Size.Y, Color.FromArgb(255, 0, 0, 0));
         }
 
         public void SwapFrameBuffers()
         {
-            BackBuffer.Unlock();
-
-            BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
-            BackBuffer.Lock();
-
+            var tempBuffer = FrontBuffer;
+            FrontBuffer = BackBuffer;
+            BackBuffer = tempBuffer;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-        }
-
-        public void ClearScreen()
-        {
         }
 
         // mouse event handling
@@ -172,6 +179,8 @@ namespace STORMWORKS_Simulator
 
         public void OnMouseMove(Canvas canvas, MouseEventArgs e)
         {
+            _IsLDown = e.LeftButton == MouseButtonState.Pressed;
+            _IsRDown = e.RightButton == MouseButtonState.Pressed;
             UpdateTouchPosition(canvas, e);
         }
 

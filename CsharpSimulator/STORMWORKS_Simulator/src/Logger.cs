@@ -22,12 +22,15 @@ namespace STORMWORKS_Simulator
 
         public static void Log(string message)
         {
+#if DEBUG
             if (Enabled)
             {
-#if DEBUG
+
                 System.IO.File.AppendAllText(Logfile, message + "\n");
-            }
+
+        }
 #endif
+
         }
     }
 }

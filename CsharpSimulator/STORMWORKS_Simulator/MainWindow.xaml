@@ -111,7 +111,7 @@
                                 MouseRightButtonDown="Canvas_MouseRightButtonDown"
                                 MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
                                 MouseRightButtonUp="Canvas_MouseRightButtonUp"
-                                Background="Red"
+                                Background="Black"
                                 ClipToBounds = "True">
                                 <Canvas.LayoutTransform>
                                     <RotateTransform Angle="{Binding CanvasRotation}"/>
@@ -119,9 +119,6 @@
                                 <Canvas.Style>
                                     <Style TargetType="Canvas">
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsFront}" Value="False">
-                                                <Setter Property="Visibility" Value="Collapsed"></Setter>
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding IsPowered}" Value="False">
                                                 <Setter Property="Visibility" Value="Collapsed"></Setter>
                                             </DataTrigger>
@@ -131,6 +128,7 @@
                                 <Image Source="{Binding FrontBuffer}"
                                        Width="{Binding CanvasSize.X}"
                                        Height="{Binding CanvasSize.Y}"
+                                       IsHitTestVisible="False"
                                        RenderOptions.BitmapScalingMode="NearestNeighbor"
                                        HorizontalAlignment="Stretch"
                                        VerticalAlignment="Stretch"></Image>

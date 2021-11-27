@@ -20,6 +20,7 @@ function Empty() end;
 ---@field timePerFrame number in seconds
 ---@field sleepBetweenFrames number in seconds, time to sleep when there's no frame - avoids churning the CPU at the expense of some accuracy
 ---@field renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
+---@field sendOutputSkip number frame-skip for sending the input/output changes.
 LBSimulator = {
     ---@param this LBSimulator
     ---@return LBSimulator
@@ -32,6 +33,7 @@ LBSimulator = {
         this.currentScreen = nil
         this.sleepBetweenFrames = 0.001;
         this.renderOnFrames = 1
+        this.sendOutputSkip = 1
 
         this:registerHandler("TOUCH",
             function(simulator, screenNumber, isDownL, isDownR, x, y)
@@ -96,6 +98,16 @@ LBSimulator = {
         -- default screen
         this.config:configureScreen(1, "1x1", true)
 
+        -- enable touchscreen by default
+        local helpers = LBSimulatorInputHelpers
+        this.config:addBoolHandler(1, helpers.touchScreenIsETouched(this,1))
+        this.config:addBoolHandler(2, helpers.touchScreenIsQTouched(this,1))
+
+        this.config:addNumberHandler(1, helpers.touchScreenWidth(this,1))
+        this.config:addNumberHandler(2, helpers.touchScreenHeight(this,1))
+        this.config:addNumberHandler(3, helpers.touchScreenXPosition(this,1))
+        this.config:addNumberHandler(4, helpers.touchScreenYPosition(this,1))
+
         onSimulatorInit = onSimulatorInit or Empty
         onSimulatorInit(this, this.config, LBSimulatorInputHelpers)
     end;
@@ -151,7 +163,7 @@ LBSimulator = {
                     framesSinceRender = 1
 
 
-                    if framesSinceOut%60 == 0 then
+                    if framesSinceOut%this.sendOutputSkip == 0 then
                         if this.connection.isAlive then this:_sendInOuts() end
                         framesSinceOut = 1
                     else

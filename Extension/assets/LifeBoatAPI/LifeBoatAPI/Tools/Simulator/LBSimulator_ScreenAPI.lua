@@ -8,22 +8,12 @@
 ---@diagnostic disable: undefined-global
 
 ---@class LBSimulator_ScreenAPI
----@field _Width number screen width in Stormworks pixels
----@field _Height number screen height in Stormworks pixels
 ---@field _simulator LBSimulator simulator connection
 screen = {
     _simulator = nil;
 
     setSimulator = function (simulator)
         screen._simulator = simulator
-
-        screen._simulator:registerHandler("SCREENSIZE",
-            function(_, width, height)
-                if(screen) then
-                    screen._Width = tonumber(width)
-                    screen._Height = tonumber(height)
-                end
-            end)
     end;
 
     getSimulatorScreenIndex = function ()

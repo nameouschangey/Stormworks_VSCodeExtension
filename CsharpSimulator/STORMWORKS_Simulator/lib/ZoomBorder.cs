@@ -109,6 +109,7 @@ namespace STORMWORKS_Simulator
             }
         }
 
+        private bool IsDown = false;
         private void child_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (child != null)
@@ -117,7 +118,8 @@ namespace STORMWORKS_Simulator
                 start = e.GetPosition(this);
                 origin = new Point(tt.X, tt.Y);
                 this.Cursor = Cursors.Hand;
-                child.CaptureMouse();
+                IsDown = true;
+                //child.CaptureMouse();
             }
         }
 
@@ -125,7 +127,8 @@ namespace STORMWORKS_Simulator
         {
             if (child != null)
             {
-                child.ReleaseMouseCapture();
+                //child.ReleaseMouseCapture();
+                IsDown = false;
                 this.Cursor = Cursors.Arrow;
             }
         }
@@ -134,7 +137,7 @@ namespace STORMWORKS_Simulator
         {
             if (child != null)
             {
-                if (child.IsMouseCaptured && EnablePan)
+                if (IsDown && EnablePan)
                 {
                     var tt = GetTranslateTransform(child);
                     Vector v = start - e.GetPosition(this);

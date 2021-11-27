@@ -91,10 +91,6 @@ namespace STORMWORKS_Simulator
                         IsRendering = false;
                     });
                 }
-                else
-                {
-                    var a = 1;
-                }
             }
         }
 

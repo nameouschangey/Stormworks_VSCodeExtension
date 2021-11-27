@@ -37,7 +37,7 @@ LBSimulatorInputHelpers = {
     ---@return boolean
     touchScreenIsQTouched = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].isTouchedL or false end
+        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].isTouchedR or false end
     end;
 
     ---@param simulator LBSimulator
@@ -45,7 +45,26 @@ LBSimulatorInputHelpers = {
     ---@return boolean
     touchScreenIsETouched = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].isTouchedR or false end
+        return function()
+            local a = simulator.screens[screenNumber].isTouchedL
+            return simulator.screens[screenNumber] and simulator.screens[screenNumber].isTouchedL or false
+        end
+    end;
+
+    ---@param simulator LBSimulator
+    ---@param screenNumber number futureproofing, for now there's only 1 
+    ---@return number
+    touchScreenWidth = function (simulator, screenNumber)
+        screenNumber = 1
+        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].width or 0 end
+    end;
+
+    ---@param simulator LBSimulator
+    ---@param screenNumber number futureproofing, for now there's only 1 
+    ---@return number
+    touchScreenHeight = function (simulator, screenNumber)
+        screenNumber = 1
+        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].height or 0 end
     end;
 
     ---@param simulator LBSimulator

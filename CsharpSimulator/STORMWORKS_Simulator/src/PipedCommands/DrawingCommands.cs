@@ -32,20 +32,19 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = double.Parse(commandParts[3]) * screen.DrawScale;
-            var y       = double.Parse(commandParts[4]) * screen.DrawScale;
-            var width   = double.Parse(commandParts[5]) * screen.DrawScale;
-            var height  = double.Parse(commandParts[6]) * screen.DrawScale;
+            var x       = double.Parse(commandParts[3]);
+            var y       = double.Parse(commandParts[4]);
+            var width   = double.Parse(commandParts[5]);
+            var height  = double.Parse(commandParts[6]);
 
-            var shape = new Path
+            if (filled)
             {
-                Data = new RectangleGeometry(new Rect(x, y, width, height)),
-                StrokeThickness = 2,
-                Fill   = filled ? screen.Monitor.Color : null,
-                Stroke = !filled ? screen.Monitor.Color : null
-            };
-
-            screen.Draw(shape);
+                screen.BackBuffer.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.Color);
+            }
+            else
+            {
+                screen.BackBuffer.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.Color);
+            }
         }
     }
 
@@ -65,19 +64,18 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = double.Parse(commandParts[3]) * screen.DrawScale;
-            var y       = double.Parse(commandParts[4]) * screen.DrawScale;
-            var radius  = double.Parse(commandParts[5]) * screen.DrawScale;
+            var x       = double.Parse(commandParts[3]);
+            var y       = double.Parse(commandParts[4]);
+            var radius  = double.Parse(commandParts[5]) + 0.5;
 
-            var shape = new Path
+            if (filled)
             {
-                Data = new EllipseGeometry(new Rect(x, y, radius, radius)),
-                StrokeThickness = 2,
-                Fill    = filled  ? screen.Monitor.Color : null,
-                Stroke  = !filled ? screen.Monitor.Color : null
-            };
-
-            screen.Draw(shape);
+                screen.BackBuffer.FillEllipse((int)(x - radius),(int)(y-radius),(int)(x + radius), (int)(y + radius), screen.Monitor.Color);
+            }
+            else
+            {
+                screen.BackBuffer.DrawEllipse((int)(x - radius), (int)(y - radius), (int)(x + radius), (int)(y + radius), screen.Monitor.Color);
+            }
         }
     }
 
@@ -96,19 +94,12 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x   = double.Parse(commandParts[2])  * screen.DrawScale;
-            var y   = double.Parse(commandParts[3])  * screen.DrawScale;
-            var x2  = double.Parse(commandParts[4])  * screen.DrawScale;
-            var y2  = double.Parse(commandParts[5])  * screen.DrawScale;
+            var x   = double.Parse(commandParts[2]);
+            var y   = double.Parse(commandParts[3]);
+            var x2  = double.Parse(commandParts[4]);
+            var y2  = double.Parse(commandParts[5]);
 
-            var line = new Line();
-            line.X1 = x;
-            line.X2 = x2;
-            line.Y1 = y;
-            line.Y2 = y2;
-            line.Stroke = screen.Monitor.Color;
-
-            screen.Draw(line);
+            screen.BackBuffer.DrawLine((int)x, (int)y, (int)x2, (int)y2, screen.Monitor.Color);
         }
     }
 
@@ -123,30 +114,30 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            if (commandParts.Length < 5)
-            {
-                return;
-            }
-
-            var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.GetScreen(screenNumber);
-
-            var x = (double.Parse(commandParts[2]))   * screen.DrawScale;
-            var y = (double.Parse(commandParts[3])-1) * screen.DrawScale;
-            var text = commandParts[4];
-
-            var textBlock = new TextBlock();
-            textBlock.Text = text;
-            textBlock.Foreground = screen.Monitor.Color;
-            textBlock.FontSize   = 5 * screen.DrawScale;
-            textBlock.FontFamily = MonitorFont;
-            textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-            textBlock.VerticalAlignment = VerticalAlignment.Top;
-
-            Canvas.SetLeft(textBlock, x);
-            Canvas.SetTop(textBlock, y);
-
-            screen.Draw(textBlock);
+            //if (commandParts.Length < 5)
+            //{
+            //    return;
+            //}
+            //
+            //var screenNumber = int.Parse(commandParts[1]);
+            //var screen = vm.GetScreen(screenNumber);
+            //
+            //var x = (double.Parse(commandParts[2]))   * screen.DrawScale;
+            //var y = (double.Parse(commandParts[3])-1) * screen.DrawScale;
+            //var text = commandParts[4];
+            //
+            //var textBlock = new TextBlock();
+            //textBlock.Text = text;
+            //textBlock.Foreground = screen.Monitor.Color;
+            //textBlock.FontSize   = 5 * screen.DrawScale;
+            //textBlock.FontFamily = MonitorFont;
+            //textBlock.HorizontalAlignment = HorizontalAlignment.Left;
+            //textBlock.VerticalAlignment = VerticalAlignment.Top;
+            //
+            //Canvas.SetLeft(textBlock, x);
+            //Canvas.SetTop(textBlock, y);
+            //
+            //screen.Draw(textBlock);
         }
     }
 
@@ -159,37 +150,37 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            if (commandParts.Length < 9)
-            {
-                return;
-            }
-
-            var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.GetScreen(screenNumber);
-
-            var x               = double.Parse(commandParts[2]) * screen.DrawScale;
-            var y               = (double.Parse(commandParts[3])-1) * screen.DrawScale;
-            var width           = double.Parse(commandParts[4]) * screen.DrawScale;
-            var height          = double.Parse(commandParts[5]) * screen.DrawScale;
-            var horizontalAlign = (int)double.Parse(commandParts[6]);
-            var verticalAlign   = (int)double.Parse(commandParts[7]);
-            var text            = commandParts[8];
-
-            var textBlock = new TextBlock();
-            textBlock.Text = text;
-            textBlock.TextWrapping = TextWrapping.Wrap;
-            textBlock.HorizontalAlignment = (HorizontalAlignment)(horizontalAlign - 1);
-            textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign - 1);
-            textBlock.Width = width;
-            textBlock.Height = height;
-            textBlock.Foreground = screen.Monitor.Color;
-            textBlock.FontSize = 8 * screen.DrawScale;
-            textBlock.FontFamily = MonitorFont;
-
-            Canvas.SetLeft(textBlock, x);
-            Canvas.SetTop(textBlock, y);
-
-            screen.Draw(textBlock);
+            //if (commandParts.Length < 9)
+            //{
+            //    return;
+            //}
+            //
+            //var screenNumber = int.Parse(commandParts[1]);
+            //var screen = vm.GetScreen(screenNumber);
+            //
+            //var x               = double.Parse(commandParts[2]) * screen.DrawScale;
+            //var y               = (double.Parse(commandParts[3])-1) * screen.DrawScale;
+            //var width           = double.Parse(commandParts[4]) * screen.DrawScale;
+            //var height          = double.Parse(commandParts[5]) * screen.DrawScale;
+            //var horizontalAlign = (int)double.Parse(commandParts[6]);
+            //var verticalAlign   = (int)double.Parse(commandParts[7]);
+            //var text            = commandParts[8];
+            //
+            //var textBlock = new TextBlock();
+            //textBlock.Text = text;
+            //textBlock.TextWrapping = TextWrapping.Wrap;
+            //textBlock.HorizontalAlignment = (HorizontalAlignment)(horizontalAlign - 1);
+            //textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign - 1);
+            //textBlock.Width = width;
+            //textBlock.Height = height;
+            //textBlock.Foreground = screen.Monitor.Color;
+            //textBlock.FontSize = 8 * screen.DrawScale;
+            //textBlock.FontFamily = MonitorFont;
+            //
+            //Canvas.SetLeft(textBlock, x);
+            //Canvas.SetTop(textBlock, y);
+            //
+            //screen.Draw(textBlock);
         }
     }
 
@@ -209,25 +200,23 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[1] == "1";
-            var p1x = double.Parse(commandParts[3]) * screen.DrawScale;
-            var p1y = double.Parse(commandParts[4]) * screen.DrawScale;
+            var p1x = double.Parse(commandParts[3]);
+            var p1y = double.Parse(commandParts[4]);
                                      
-            var p2x = double.Parse(commandParts[5]) * screen.DrawScale;
-            var p2y = double.Parse(commandParts[6]) * screen.DrawScale;
+            var p2x = double.Parse(commandParts[5]);
+            var p2y = double.Parse(commandParts[6]);
                                               
-            var p3x = double.Parse(commandParts[7]) * screen.DrawScale;
-            var p3y = double.Parse(commandParts[8]) * screen.DrawScale;
+            var p3x = double.Parse(commandParts[7]);
+            var p3y = double.Parse(commandParts[8]);
 
-            var points = new PointCollection();
-            points.Add(new Point(p1x, p1y));
-            points.Add(new Point(p2x, p2y));
-            points.Add(new Point(p3x, p3y));
-
-            var polygon = new Polygon();
-            polygon.Fill   =  filled ? screen.Monitor.Color : null;
-            polygon.Stroke = !filled ? screen.Monitor.Color : null; ;
-            polygon.Points = points;
-            screen.Draw(polygon);
+            if (filled)
+            {
+                screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.Color);
+            }
+            else
+            {
+                screen.BackBuffer.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.Color);
+            }
         }
     }
 
@@ -251,7 +240,7 @@ namespace STORMWORKS_Simulator
             var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
             var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[5]))));
 
-            screen.Monitor.Color = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+            screen.Monitor.Color = Color.FromArgb(a, r, g, b);
         }
     }
 
@@ -270,7 +259,7 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            screen.ClearScreen();
+            screen.BackBuffer.Clear();
         }
     }
 }
