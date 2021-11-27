@@ -1,0 +1,18 @@
+﻿Modified from: https://github.com/reneschulte/WriteableBitmapEx/tree
+Please see LICENSE file
+
+Modifications by Nameos Changey:
+	Removed Nuget code
+	Removed VS Solutions
+	Removed .gitignore
+	Removed wbx_logo.png
+	Removed all *Sample* folders and solutions
+	Removed GlobalAssemblyInfo.cs as this was designed for compilation into a separate assembly
+	Removed all Properties folders, as these are designed for compilation into separate assemblies
+	Removed WriteableBitmapEx.Uwp
+	Removed WriteableBitmapEx.WinRT
+
+
+	Implemented Transparent Clear
+	Implemented AlphaBlend for drawRect, drawLine, drawEllipse, drawPolygon
+

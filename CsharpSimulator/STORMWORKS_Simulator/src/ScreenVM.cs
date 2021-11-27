@@ -35,10 +35,12 @@ namespace STORMWORKS_Simulator
             set
             {
                 _Color = value;
+                ColorInt = WriteableBitmapExtensions.ConvertColor(value);
                 FontBrush = new SolidColorBrush(_Color);
             }
         }
 
+        public int ColorInt { get; private set; }
         private Color _Color;
         private Point _Size;
 
@@ -162,6 +164,11 @@ namespace STORMWORKS_Simulator
             FrontBuffer = BackBuffer;
             BackBuffer = tempBuffer;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+        }
+
+        public void Clear()
+        {
+            BackBuffer.Clear(Color.FromArgb(0, 0, 0, 0));
         }
 
         // mouse event handling

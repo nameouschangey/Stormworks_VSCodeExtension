@@ -39,11 +39,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BackBuffer.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.Color);
+                screen.BackBuffer.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.ColorInt, true);
             }
             else
             {
-                screen.BackBuffer.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.Color);
+                screen.BackBuffer.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.ColorInt);
             }
         }
     }
@@ -66,15 +66,15 @@ namespace STORMWORKS_Simulator
             var filled = commandParts[2] == "1";
             var x       = double.Parse(commandParts[3]);
             var y       = double.Parse(commandParts[4]);
-            var radius  = double.Parse(commandParts[5]) + 0.5;
+            var radius  = double.Parse(commandParts[5]);
 
             if (filled)
             {
-                screen.BackBuffer.FillEllipse((int)(x - radius),(int)(y-radius),(int)(x + radius), (int)(y + radius), screen.Monitor.Color);
+                screen.BackBuffer.FillEllipseCentered((int)(x),(int)(y),(int)(radius), (int)(radius), screen.Monitor.ColorInt, true);
             }
             else
             {
-                screen.BackBuffer.DrawEllipse((int)(x - radius), (int)(y - radius), (int)(x + radius), (int)(y + radius), screen.Monitor.Color);
+                screen.BackBuffer.DrawEllipseCentered((int)(x), (int)(y), (int)(radius), (int)(radius), screen.Monitor.ColorInt);
             }
         }
     }
@@ -99,7 +99,7 @@ namespace STORMWORKS_Simulator
             var x2  = double.Parse(commandParts[4]);
             var y2  = double.Parse(commandParts[5]);
 
-            screen.BackBuffer.DrawLine((int)x, (int)y, (int)x2, (int)y2, screen.Monitor.Color);
+            screen.BackBuffer.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, screen.Monitor.ColorInt);
         }
     }
 
@@ -211,11 +211,19 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.Color);
+                var points = new int[8]
+                {
+                    (int)p1x, (int)p1y,
+                    (int)p2x, (int)p2y,
+                    (int)p3x, (int)p3y,
+                    (int)p1x, (int)p1y
+                };
+
+                screen.BackBuffer.FillPolygon(points, screen.Monitor.ColorInt, true);
             }
             else
             {
-                screen.BackBuffer.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.Color);
+                //screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.ColorInt);
             }
         }
     }
@@ -240,7 +248,8 @@ namespace STORMWORKS_Simulator
             var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
             var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[5]))));
 
-            screen.Monitor.Color = Color.FromArgb(a, r, g, b);
+            var colour = Color.FromArgb(a, r, g, b);
+            screen.Monitor.Color = colour;
         }
     }
 

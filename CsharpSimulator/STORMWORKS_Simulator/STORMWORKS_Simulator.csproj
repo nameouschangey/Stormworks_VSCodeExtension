@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WPF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -56,17 +56,28 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WriteableBitmapEx.Wpf, Version=1.6.8.0, Culture=neutral, PublicKeyToken=50375ca6144f1c69, processorArchitecture=MSIL">
-      <HintPath>..\packages\WriteableBitmapEx.1.6.8\lib\net40\WriteableBitmapEx.Wpf.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="lib\SmartCollection.cs" />
-    <Compile Include="lib\ZoomBorder.cs" />
+    <Compile Include="lib\SmartCollection\SmartCollection.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx.Wpf\NativeMethods.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\BitmapContext.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\BitmapFactory.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapAntialiasingExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapBaseExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapBlitExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapContextExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapConvertExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapFillExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapFilterExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapLineExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapShapeExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapSplineExtensions.cs" />
+    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapTransformationExtensions.cs" />
+    <Compile Include="lib\ZoomBorder\ZoomBorder.cs" />
     <Compile Include="src\BasicCommand.cs" />
     <Compile Include="src\Logger.cs" />
     <Compile Include="src\PipedCommands\DrawingCommands.cs" />
@@ -112,7 +123,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="Fonts\pixelfont.ttf" />
-    <None Include="packages.config" />
+    <None Include="lib\WriteableBitmapEx\LICENSE" />
+    <None Include="lib\WriteableBitmapEx\README.md" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -121,6 +133,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="lib\WriteableBitmapEx\Modifications.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

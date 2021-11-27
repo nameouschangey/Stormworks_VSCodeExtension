@@ -21,20 +21,19 @@ require("LifeBoatAPI.Tools.Simulator.LBSimulatorConnection")
 ---@param config LBSimulatorConfig
 ---@param helpers LBSimulatorInputHelpers
 function onSimulatorInit(simulator, config, helpers)
-    --config:configureScreen(1, "2x2", true, true)
---
-    --config:setProperty("Sweep Limit/100", 50)
-    --config:setProperty("FOV X/100", 2)
-    --config:setProperty("Zoom1", 100)
-    --config:setProperty("Zoom2", 500)
-    --config:setProperty("Zoom3", 10000)
-    --config:setProperty("Direction", false)
-    --config:setProperty("On Pivot", false)
---
-    --for i=5, 32 do
-    --config:addNumberHandler(i,  helpers.constantNumber(400))
-    --config:addBoolHandler(i,  function() return math.random() * 100 < 50 end)
-    --end
+    config:configureScreen(1, "2x2", true, true)
+    config:setProperty("Sweep Limit/100", 50)
+    config:setProperty("FOV X/100", 2)
+    config:setProperty("Zoom1", 100)
+    config:setProperty("Zoom2", 500)
+    config:setProperty("Zoom3", 10000)
+    config:setProperty("Direction", false)
+    config:setProperty("On Pivot", false)
+
+    for i=5, 32 do
+        config:addNumberHandler(i,  helpers.wrappingNumber(0, 1, 0.01))
+        config:addBoolHandler(i,  function() return math.random() * 100 < 20 end)
+    end
 end
 
 function onSimulatorTick(simulator)end
@@ -51,6 +50,6 @@ end
 local simulator = LBSimulator:new()
 simulator:beginSimulation(true)
 
-require("LifeBoatAPI.Tools.Simulator.ToSim2")
+require("LifeBoatAPI.Tools.Simulator.ToSim")
 
 simulator:giveControlToMainLoop()

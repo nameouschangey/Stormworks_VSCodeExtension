@@ -152,7 +152,7 @@ namespace STORMWORKS_Simulator
 
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             
-            ViewModel.GetOrAddScreen(1);
+            var screen = ViewModel.GetOrAddScreen(1);
         }
 
         private void OnKeepAliveTimer(object state)
