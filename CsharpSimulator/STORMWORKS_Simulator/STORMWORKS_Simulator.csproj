@@ -67,17 +67,13 @@
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx.Wpf\NativeMethods.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\BitmapContext.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\BitmapFactory.cs" />
-    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapAntialiasingExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapBaseExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapBlitExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapContextExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapConvertExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapFillExtensions.cs" />
-    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapFilterExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapLineExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapShapeExtensions.cs" />
-    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapSplineExtensions.cs" />
-    <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapTransformationExtensions.cs" />
     <Compile Include="lib\ZoomBorder\ZoomBorder.cs" />
     <Compile Include="src\BasicCommand.cs" />
     <Compile Include="src\Logger.cs" />

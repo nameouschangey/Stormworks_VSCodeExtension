@@ -11,8 +11,8 @@ Modifications by Nameos Changey:
 	Removed all Properties folders, as these are designed for compilation into separate assemblies
 	Removed WriteableBitmapEx.Uwp
 	Removed WriteableBitmapEx.WinRT
+	Removed move fill and shape functions that aren't being used, to reduce mental capacity needed
 
-
-	Implemented AlphaBlend for drawRect, drawLine, drawEllipse, drawPolygon
-	Implemented DrawMidpointCircle
+	Added AlphaBlend for drawRect, drawLine, drawEllipse, drawPolygon
+	Added DrawSinglePoint
 

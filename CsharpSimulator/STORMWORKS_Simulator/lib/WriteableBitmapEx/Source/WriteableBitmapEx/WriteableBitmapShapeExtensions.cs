@@ -40,18 +40,6 @@ namespace System.Windows.Media.Imaging
         #region Polyline, Triangle, Quad
 
         /// <summary>
-        /// Draws a polyline. Add the first point also at the end of the array if the line should be closed.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="points">The points of the polyline in x and y pairs, therefore the array is interpreted as (x1, y1, x2, y2, ..., xn, yn).</param>
-        /// <param name="color">The color for the line.</param>
-        public static void DrawPolyline(this WriteableBitmap bmp, int[] points, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawPolyline(points, col);
-        }
-
-        /// <summary>
         /// Draws a polyline anti-aliased. Add the first point also at the end of the array if the line should be closed.
         /// </summary>
         /// <param name="bmp">The WriteableBitmap.</param>
@@ -80,63 +68,6 @@ namespace System.Windows.Media.Imaging
         }
 
         /// <summary>
-        /// Draws a polyline. Add the first point also at the end of the array if the line should be closed.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="points">The points of the polyline in x and y pairs, therefore the array is interpreted as (x1, y1, x2, y2, ..., xn, yn).</param>
-        /// <param name="color">The color for the line.</param>
-        public static void DrawPolylineAa(this WriteableBitmap bmp, int[] points, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawPolylineAa(points, col);
-        }
-
-        /// <summary>
-        /// Draws a polyline anti-aliased. Add the first point also at the end of the array if the line should be closed.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="points">The points of the polyline in x and y pairs, therefore the array is interpreted as (x1, y1, x2, y2, ..., xn, yn).</param>
-        /// <param name="color">The color for the line.</param>
-        public static void DrawPolylineAa(this WriteableBitmap bmp, int[] points, int color)
-        {
-            using (var context = bmp.GetBitmapContext())
-            {
-                // Use refs for faster access (really important!) speeds up a lot!
-                var w = context.Width;
-                var h = context.Height;
-                var x1 = points[0];
-                var y1 = points[1];
-
-                for (var i = 2; i < points.Length; i += 2)
-                {
-                    var x2 = points[i];
-                    var y2 = points[i + 1];
-
-                    DrawLineAa(context, w, h, x1, y1, x2, y2, color);
-                    x1 = x2;
-                    y1 = y2;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Draws a triangle.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="x1">The x-coordinate of the 1st point.</param>
-        /// <param name="y1">The y-coordinate of the 1st point.</param>
-        /// <param name="x2">The x-coordinate of the 2nd point.</param>
-        /// <param name="y2">The y-coordinate of the 2nd point.</param>
-        /// <param name="x3">The x-coordinate of the 3rd point.</param>
-        /// <param name="y3">The y-coordinate of the 3rd point.</param>
-        /// <param name="color">The color.</param>
-        public static void DrawTriangle(this WriteableBitmap bmp, int x1, int y1, int x2, int y2, int x3, int y3, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawTriangle(x1, y1, x2, y2, x3, y3, col);
-        }
-
-        /// <summary>
         /// Draws a triangle.
         /// </summary>
         /// <param name="bmp">The WriteableBitmap.</param>
@@ -161,73 +92,9 @@ namespace System.Windows.Media.Imaging
             }
         }
 
-        /// <summary>
-        /// Draws a quad.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="x1">The x-coordinate of the 1st point.</param>
-        /// <param name="y1">The y-coordinate of the 1st point.</param>
-        /// <param name="x2">The x-coordinate of the 2nd point.</param>
-        /// <param name="y2">The y-coordinate of the 2nd point.</param>
-        /// <param name="x3">The x-coordinate of the 3rd point.</param>
-        /// <param name="y3">The y-coordinate of the 3rd point.</param>
-        /// <param name="x4">The x-coordinate of the 4th point.</param>
-        /// <param name="y4">The y-coordinate of the 4th point.</param>
-        /// <param name="color">The color.</param>
-        public static void DrawQuad(this WriteableBitmap bmp, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawQuad(x1, y1, x2, y2, x3, y3, x4, y4, col);
-        }
-
-        /// <summary>
-        /// Draws a quad.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="x1">The x-coordinate of the 1st point.</param>
-        /// <param name="y1">The y-coordinate of the 1st point.</param>
-        /// <param name="x2">The x-coordinate of the 2nd point.</param>
-        /// <param name="y2">The y-coordinate of the 2nd point.</param>
-        /// <param name="x3">The x-coordinate of the 3rd point.</param>
-        /// <param name="y3">The y-coordinate of the 3rd point.</param>
-        /// <param name="x4">The x-coordinate of the 4th point.</param>
-        /// <param name="y4">The y-coordinate of the 4th point.</param>
-        /// <param name="color">The color.</param>
-        public static void DrawQuad(this WriteableBitmap bmp, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int color)
-        {
-            using (var context = bmp.GetBitmapContext())
-            {
-                // Use refs for faster access (really important!) speeds up a lot!
-                int w = context.Width;
-                int h = context.Height;
-
-                DrawLine(context, w, h, x1, y1, x2, y2, color);
-                DrawLine(context, w, h, x2, y2, x3, y3, color);
-                DrawLine(context, w, h, x3, y3, x4, y4, color);
-                DrawLine(context, w, h, x4, y4, x1, y1, color);
-            }
-        }
-
         #endregion
 
         #region Rectangle
-
-        /// <summary>
-        /// Draws a rectangle.
-        /// x2 has to be greater than x1 and y2 has to be greater than y1.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="x1">The x-coordinate of the bounding rectangle's left side.</param>
-        /// <param name="y1">The y-coordinate of the bounding rectangle's top side.</param>
-        /// <param name="x2">The x-coordinate of the bounding rectangle's right side.</param>
-        /// <param name="y2">The y-coordinate of the bounding rectangle's bottom side.</param>
-        /// <param name="color">The color.</param>
-        public static void DrawRectangle(this WriteableBitmap bmp, int x1, int y1, int x2, int y2, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawRectangle(x1, y1, x2, y2, col);
-        }
-
         /// <summary>
         /// Draws a rectangle.
         /// x2 has to be greater than x1 and y2 has to be greater than y1.
@@ -302,59 +169,6 @@ namespace System.Windows.Media.Imaging
         #endregion
 
         #region Ellipse
-
-        /// <summary>
-        /// A Fast Bresenham Type Algorithm For Drawing Ellipses http://homepage.smc.edu/kennedy_john/belipse.pdf 
-        /// x2 has to be greater than x1 and y2 has to be less than y1.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="x1">The x-coordinate of the bounding rectangle's left side.</param>
-        /// <param name="y1">The y-coordinate of the bounding rectangle's top side.</param>
-        /// <param name="x2">The x-coordinate of the bounding rectangle's right side.</param>
-        /// <param name="y2">The y-coordinate of the bounding rectangle's bottom side.</param>
-        /// <param name="color">The color for the line.</param>
-        public static void DrawEllipse(this WriteableBitmap bmp, int x1, int y1, int x2, int y2, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawEllipse(x1, y1, x2, y2, col);
-        }
-
-        /// <summary>
-        /// A Fast Bresenham Type Algorithm For Drawing Ellipses http://homepage.smc.edu/kennedy_john/belipse.pdf 
-        /// x2 has to be greater than x1 and y2 has to be less than y1.
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="x1">The x-coordinate of the bounding rectangle's left side.</param>
-        /// <param name="y1">The y-coordinate of the bounding rectangle's top side.</param>
-        /// <param name="x2">The x-coordinate of the bounding rectangle's right side.</param>
-        /// <param name="y2">The y-coordinate of the bounding rectangle's bottom side.</param>
-        /// <param name="color">The color for the line.</param>
-        public static void DrawEllipse(this WriteableBitmap bmp, int x1, int y1, int x2, int y2, int color)
-        {
-            // Calc center and radius
-            int xr = (x2 - x1) >> 1;
-            int yr = (y2 - y1) >> 1;
-            int xc = x1 + xr;
-            int yc = y1 + yr;
-            bmp.DrawEllipseCentered(xc, yc, xr, yr, color);
-        }
-
-        /// <summary>
-        /// A Fast Bresenham Type Algorithm For Drawing Ellipses http://homepage.smc.edu/kennedy_john/belipse.pdf
-        /// Uses a different parameter representation than DrawEllipse().
-        /// </summary>
-        /// <param name="bmp">The WriteableBitmap.</param>
-        /// <param name="xc">The x-coordinate of the ellipses center.</param>
-        /// <param name="yc">The y-coordinate of the ellipses center.</param>
-        /// <param name="xr">The radius of the ellipse in x-direction.</param>
-        /// <param name="yr">The radius of the ellipse in y-direction.</param>
-        /// <param name="color">The color for the line.</param>
-        public static void DrawEllipseCentered(this WriteableBitmap bmp, int xc, int yc, int xr, int yr, Color color)
-        {
-            var col = ConvertColor(color);
-            bmp.DrawEllipseCentered(xc, yc, xr, yr, col);
-        }
-
         /// <summary>
         /// A Fast Bresenham Type Algorithm For Drawing Ellipses http://homepage.smc.edu/kennedy_john/belipse.pdf 
         /// Uses a different parameter representation than DrawEllipse().

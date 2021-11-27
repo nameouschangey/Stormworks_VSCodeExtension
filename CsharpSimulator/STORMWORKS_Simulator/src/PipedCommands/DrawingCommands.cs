@@ -68,7 +68,22 @@ namespace STORMWORKS_Simulator
             var y = double.Parse(commandParts[4]);
             var radius = double.Parse(commandParts[5]);
 
-            screen.BackBuffer.DrawMidpointCircle((int)(x), (int)(y), radius, screen.Monitor.ColorInt, filled);
+            if (radius < 1)
+            {
+                screen.BackBuffer.DrawSinglePoint((int)x, (int)y, screen.Monitor.ColorInt);
+            }
+            else
+            {
+                if (filled)
+                {
+                    screen.BackBuffer.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, screen.Monitor.ColorInt);
+                }
+                else
+                {
+                    screen.BackBuffer.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, screen.Monitor.ColorInt);
+                }
+            }
+            
         }
     }
 
