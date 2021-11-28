@@ -203,19 +203,28 @@ namespace STORMWORKS_Simulator
             var container = new StackPanel();
             container.Orientation = Orientation.Vertical;
             container.Width = width * screen.DrawScale;
-            container.Height = height * screen.DrawScale;
+            container.Height = (height/5) * 6 * screen.DrawScale;
             container.ClipToBounds = true;
             //container.Background = Brushes.Yellow;
             Canvas.SetLeft(container, x * screen.DrawScale);
             Canvas.SetTop(container, y * screen.DrawScale);
 
+            var align = TextAlignment.Center;
+            if (horizontalAlign == -1)
+            {
+                align = TextAlignment.Left;
+            }
+            else if (horizontalAlign == 1)
+            {
+                align = TextAlignment.Right;
+            }
 
             foreach (var line in lines)
             {
                 var textBlock = new TextBlock();
                 textBlock.Text = line.ToUpper();
                 textBlock.TextWrapping = TextWrapping.NoWrap;
-                textBlock.TextAlignment = (TextAlignment)(horizontalAlign + 1);
+                textBlock.TextAlignment = align;
                 textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign + 1);
                 textBlock.Width = width * screen.DrawScale;
                 textBlock.Height = 6 * screen.DrawScale;
@@ -274,18 +283,15 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            if (commandParts.Length < 6)
+            if (commandParts.Length < 5)
             {
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.GetScreen(screenNumber);
-
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[5]))));
+            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
+            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
+            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
+            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
 
             var colour = Color.FromArgb(a, r, g, b);
             vm.Color = colour;

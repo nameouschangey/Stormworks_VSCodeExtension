@@ -21,6 +21,7 @@ function Empty() end;
 ---@field sleepBetweenFrames number in seconds, time to sleep when there's no frame - avoids churning the CPU at the expense of some accuracy
 ---@field renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
 ---@field sendOutputSkip number frame-skip for sending the input/output changes.
+---@field isRendering boolean whether we are currently rendering or not, for blocking the screen operations
 LBSimulator = {
     ---@param this LBSimulator
     ---@return LBSimulator
@@ -34,6 +35,7 @@ LBSimulator = {
         this.sleepBetweenFrames = 0.001;
         this.renderOnFrames = 1
         this.sendOutputSkip = 1
+        this.isRendering = false
 
         this:registerHandler("TOUCH",
             function(simulator, screenNumber, isDownL, isDownR, x, y)
@@ -148,6 +150,8 @@ LBSimulator = {
                 onTick = onTick or Empty
                 onDraw = onDraw or Empty
 
+                this.isRendering = false
+
                 -- possibility that the server has closed connection at any of these points
                 -- in which case, we want to stop processing asap
                 if this.connection.isAlive then this.config:onSimulate() end
@@ -171,6 +175,7 @@ LBSimulator = {
                     for screenNumber, screenData in pairs(this.screens) do 
                         if screenData.poweredOn then
                             this.currentScreen = screenData
+                            this.isRendering = true
                             if this.connection.isAlive then screen.drawClear() end
                             if this.connection.isAlive then onDraw() end
                             if this.connection.isAlive then this.connection:sendCommand("FRAMESWAP", screenNumber) end

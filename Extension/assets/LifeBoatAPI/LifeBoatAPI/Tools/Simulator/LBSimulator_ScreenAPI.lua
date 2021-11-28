@@ -12,6 +12,12 @@
 screen = {
     _simulator = nil;
 
+    ensureIsRendering = function()
+        if not screen._simulator or not screen._simulator.isRendering then
+            error("Cannot use screen functions outside of onDraw.")
+        end
+    end;
+
     setSimulator = function (simulator)
         screen._simulator = simulator
     end;
@@ -23,12 +29,14 @@ screen = {
     --- Gets the width of the screen (pixels)
     --- @return number width
     getWidth = function()
+        screen.ensureIsRendering()
         return screen._simulator.currentScreen.width
     end;
 
     --- Gets the height of the screen (pixels)
     --- @return number height
     getHeight = function()
+        screen.ensureIsRendering()
         return screen._simulator.currentScreen.height
     end;
 
@@ -38,12 +46,14 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setColor = function(r, g, b, a)
+        screen.ensureIsRendering()
         a = a or 255
-        screen._simulator.connection:sendCommand("COLOUR", screen.getSimulatorScreenIndex(), r, g, b, a)
+        screen._simulator.connection:sendCommand("COLOUR", r, g, b, a)
     end;
 
     --- Clear the screen with the current color
     drawClear = function()
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("CLEAR", screen.getSimulatorScreenIndex())
     end;
 
@@ -53,6 +63,7 @@ screen = {
     --- @param x2 number The X coordinate of the end of the line
     --- @param y2 number The Y coordinate of the end of the line
     drawLine = function(x1, y1, x2, y2)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("LINE", screen.getSimulatorScreenIndex(), x1, y1, x2, y2)
     end;
 
@@ -61,6 +72,7 @@ screen = {
     --- @param y number The Y coordinate of the center of the circle
     --- @param radius number The radius of the circle
     drawCircle = function(x, y, radius)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("CIRCLE", screen.getSimulatorScreenIndex(), "0", x, y, radius)
     end;
 
@@ -69,6 +81,7 @@ screen = {
     --- @param y number The Y coordinate of the center of the circle
     --- @param radius number The radius of the circle
     drawCircleF = function(x, y, radius)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("CIRCLE", screen.getSimulatorScreenIndex(), "1", x, y, radius)
     end;
 
@@ -78,6 +91,7 @@ screen = {
     --- @param width number The width of the rectangle
     --- @param height number The height of the rectangle
     drawRect = function(x, y, width, height)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("RECT", screen.getSimulatorScreenIndex(), "0", x, y, width, height)
     end;
 
@@ -87,6 +101,7 @@ screen = {
     --- @param width number The width of the rectangle
     --- @param height number The height of the rectangle
     drawRectF = function(x, y, width, height)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("RECT", screen.getSimulatorScreenIndex(), "1", x, y, width, height)
     end;
 
@@ -98,6 +113,7 @@ screen = {
     --- @param x3 number The X coordinate of the third point of the triangle
     --- @param y3 number The Y coordinate of the third point of the triangle
     drawTriangle = function(x1, y1, x2, y2, x3, y3)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("TRIANGLE", screen.getSimulatorScreenIndex(), "0", x1, y1, x2, y2, x3, y3)
     end;
 
@@ -109,6 +125,7 @@ screen = {
     --- @param x3 number The X coordinate of the third point of the triangle
     --- @param y3 number The Y coordinate of the third point of the triangle
     drawTriangleF = function(x1, y1, x2, y2, x3, y3)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("TRIANGLE", screen.getSimulatorScreenIndex(), "1", x1, y1, x2, y2, x3, y3)
     end;
 
@@ -117,6 +134,7 @@ screen = {
     --- @param y number The Y coordinate of the top left of the text
     --- @param text string The text to draw
     drawText = function(x, y, text)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("TEXT", screen.getSimulatorScreenIndex(), x, y, text)
     end;
 
@@ -129,6 +147,7 @@ screen = {
     --- @param horizontalAlign number How to align the text horizontally (-1 = left, 0 = center, 1 = right)
     --- @param verticalAlign number How to align the text vertically (-1 = top, 0 = center, 1 = bottom)
     drawTextBox = function(x, y, width, height, text, horizontalAlign, verticalAlign)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("TEXTBOX", screen.getSimulatorScreenIndex(), x, y, width, height, horizontalAlign, verticalAlign, text)
     end;
 
@@ -137,6 +156,7 @@ screen = {
     --- @param y number The world Y coordinate to center the map on
     --- @param zoom number The zoom (0.1 - 50, 0.1 = max zoom in, 50 = max zoom out), width of screen at zoom 1 is 1Km
     drawMap = function(x, y, zoom)
+        screen.ensureIsRendering()
         screen._simulator.connection:sendCommand("MAP", screen.getSimulatorScreenIndex(), x, y, zoom)
     end;
 
@@ -147,7 +167,8 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorOcean = function(r,g,b,a)
-        screen._simulator.connection:sendCommand("MAPOCEAN", screen.getSimulatorScreenIndex(), r,g,b,a)
+        screen.ensureIsRendering()
+        screen._simulator.connection:sendCommand("MAPOCEAN", r,g,b,a)
     end;
 
     --- Sets the color of the shallows on the drawn map
@@ -157,7 +178,8 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorShallows = function(r,g,b,a)
-        screen._simulator.connection:sendCommand("MAPSHALLOWS", screen.getSimulatorScreenIndex(), r,g,b,a)
+        screen.ensureIsRendering()
+        screen._simulator.connection:sendCommand("MAPSHALLOWS", r,g,b,a)
     end;
 
     --- Sets the color of the land on the drawn map
@@ -167,7 +189,8 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorLand = function(r,g,b,a)
-        screen._simulator.connection:sendCommand("MAPLAND", screen.getSimulatorScreenIndex(), r,g,b,a)
+        screen.ensureIsRendering()
+        screen._simulator.connection:sendCommand("MAPLAND", r,g,b,a)
     end;
 
     --- Sets the color of the grass on the drawn map
@@ -177,7 +200,8 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorGrass = function(r,g,b,a)
-        screen._simulator.connection:sendCommand("MAPGRASS", screen.getSimulatorScreenIndex(), r,g,b,a)
+        screen.ensureIsRendering()
+        screen._simulator.connection:sendCommand("MAPGRASS", r,g,b,a)
     end;
 
     --- Sets the color of the sand on the drawn map
@@ -187,7 +211,8 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorSand = function(r,g,b,a)
-        screen._simulator.connection:sendCommand("MAPSAND", screen.getSimulatorScreenIndex(), r,g,b,a)
+        screen.ensureIsRendering()
+        screen._simulator.connection:sendCommand("MAPSAND", r,g,b,a)
     end;
 
     --- Sets the color of the snow on the drawn map
@@ -197,7 +222,8 @@ screen = {
     --- @param b number The blue value of the color (0 - 255)
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorSnow = function(r,g,b,a)
-        screen._simulator.connection:sendCommand("MAPSNOW", screen.getSimulatorScreenIndex(), r,g,b,a)
+        screen.ensureIsRendering()
+        screen._simulator.connection:sendCommand("MAPSNOW", r,g,b,a)
     end;
 }
 
@@ -213,7 +239,6 @@ map = {
     --- @return number worldX, number worldY
     screenToMap = function(mapX, mapY, zoom, screenWidth, screenHeight, pixelX, pixelY)
         local metersPerPixel = (zoom * 1000) / screenWidth
-
         return math.floor(mapX + (metersPerPixel * (pixelX-screenWidth/2))), math.floor(mapY + (metersPerPixel * (pixelY-screenHeight/2)))
     end;
 
@@ -228,7 +253,6 @@ map = {
     --- @return number pixelX, number pixelY
     mapToScreen = function(mapX, mapY, zoom, screenWidth, screenHeight, worldX, worldY)
         local pixelsPerMeter = screenWidth / (zoom * 1000)
-        
         return math.floor((screenWidth/2) + (pixelsPerMeter * (worldX - mapX))), math.floor((screenHeight/2) + (pixelsPerMeter * (worldX - mapX)))
     end;
 }

@@ -63,7 +63,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="lib\SmartCollection\SmartCollection.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx.Wpf\NativeMethods.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\BitmapContext.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\BitmapFactory.cs" />
@@ -75,8 +74,8 @@
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapLineExtensions.cs" />
     <Compile Include="lib\WriteableBitmapEx\Source\WriteableBitmapEx\WriteableBitmapShapeExtensions.cs" />
     <Compile Include="lib\ZoomBorder\ZoomBorder.cs" />
-    <Compile Include="src\BasicCommand.cs" />
     <Compile Include="src\Logger.cs" />
+    <Compile Include="src\PipedCommands\MapDrawingCommands.cs" />
     <Compile Include="src\PipedCommands\DrawingCommands.cs" />
     <Compile Include="src\PipedCommands\SimulationCommands.cs" />
     <Compile Include="src\PipedCommands\ScreenCommands.cs" />

@@ -85,6 +85,13 @@ namespace STORMWORKS_Simulator
         public int ColorInt { get; private set; }
         private Color _Color;
 
+        public int MapOceanColour       { get; set; }
+        public int MapShallowsColour    { get; set; }
+        public int MapLandColour        { get; set; }
+        public int MapSandColour        { get; set; }
+        public int MapGrassColour       { get; set; }
+        public int MapSnowColour        { get; set; }
+
         public static List<string> TickRateOptions { get; private set; } = new List<string>() { "60", "1", "10", "30", "Unlimited"};
         public string TickRateOption
         {
@@ -125,6 +132,7 @@ namespace STORMWORKS_Simulator
         public MainVM()
         {
             Color = Color.FromArgb(255,255,255,255);
+            SetupMapColours();
 
             Inputs = new ObservableCollection<StormworksInputOutput>();
             Outputs = new ObservableCollection<StormworksInputOutput>();
@@ -157,8 +165,8 @@ namespace STORMWORKS_Simulator
 
                 // re-route child events upwards
                 screen.OnResolutionChanged  += (s, vm) => OnScreenResolutionChanged?.Invoke(s, vm);
-                screen.OnTouchChanged += (s, vm) => OnScreenTouchChanged?.Invoke(s, vm);
-                screen.OnPowerChanged += (s, vm) => OnPowerChanged?.Invoke(s, vm);
+                screen.OnTouchChanged       += (s, vm) => OnScreenTouchChanged?.Invoke(s, vm);
+                screen.OnPowerChanged       += (s, vm) => OnPowerChanged?.Invoke(s, vm);
 
                 ScreenVMs.Add(screen);
                 return screen;
@@ -167,6 +175,16 @@ namespace STORMWORKS_Simulator
             {
                 throw new Exception($"Attempt to create a new screen index {screenNumber} but currently only have {ScreenVMs.Count} screens. Must be done in order.");
             }
+        }
+
+        private void SetupMapColours()
+        {
+            MapOceanColour    = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 50, 150, 150));
+            MapShallowsColour = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 75, 170, 170));
+            MapLandColour     = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 220, 220, 220));
+            MapSandColour     = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 230, 230, 140));
+            MapGrassColour    = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 190, 215, 150));
+            MapSnowColour     = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 255, 255, 255));
         }
     }
 }
