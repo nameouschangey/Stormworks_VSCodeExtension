@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace STORMWORKS_Simulator
 {
@@ -69,6 +70,20 @@ namespace STORMWORKS_Simulator
         public int FrameSkipIndex { get; set; }
         public int FrameSkip { get; private set; } = 0;
 
+        // draw colour is shared between all screens
+        public SolidColorBrush FontBrush { get; private set; }
+        public Color Color
+        {
+            get => _Color;
+            set
+            {
+                _Color = value;
+                ColorInt = WriteableBitmapExtensions.ConvertColor(value);
+                FontBrush = new SolidColorBrush(_Color);
+            }
+        }
+        public int ColorInt { get; private set; }
+        private Color _Color;
 
         public static List<string> TickRateOptions { get; private set; } = new List<string>() { "60", "1", "10", "30", "Unlimited"};
         public string TickRateOption
@@ -109,6 +124,8 @@ namespace STORMWORKS_Simulator
 
         public MainVM()
         {
+            Color = Color.FromArgb(255,255,255,255);
+
             Inputs = new ObservableCollection<StormworksInputOutput>();
             Outputs = new ObservableCollection<StormworksInputOutput>();
             ScreenVMs = new ObservableCollection<ScreenVM>();

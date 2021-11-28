@@ -52,6 +52,6 @@ end
 local simulator = LBSimulator:new()
 simulator:beginSimulation(true)
 
-require("LifeBoatAPI.Tools.Simulator.ToSim")
+require("LifeBoatAPI.Tools.Simulator.ToSim2")
 
 simulator:giveControlToMainLoop()

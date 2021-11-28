@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
+using System.Reflection;
 
 namespace STORMWORKS_Simulator
 {
@@ -39,11 +40,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BackBuffer.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.ColorInt, true);
+                screen.BackBuffer.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt, true);
             }
             else
             {
-                screen.BackBuffer.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), screen.Monitor.ColorInt);
+                screen.BackBuffer.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt);
             }
         }
     }
@@ -70,17 +71,17 @@ namespace STORMWORKS_Simulator
 
             if (radius < 1)
             {
-                screen.BackBuffer.DrawSinglePoint((int)x, (int)y, screen.Monitor.ColorInt);
+                screen.BackBuffer.DrawSinglePoint((int)x, (int)y, vm.ColorInt);
             }
             else
             {
                 if (filled)
                 {
-                    screen.BackBuffer.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, screen.Monitor.ColorInt);
+                    screen.BackBuffer.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
                 }
                 else
                 {
-                    screen.BackBuffer.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, screen.Monitor.ColorInt);
+                    screen.BackBuffer.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
                 }
             }
             
@@ -107,7 +108,7 @@ namespace STORMWORKS_Simulator
             var x2  = double.Parse(commandParts[4]) + 0.5;
             var y2  = double.Parse(commandParts[5]) + 0.5;
 
-            screen.BackBuffer.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, screen.Monitor.ColorInt);
+            screen.BackBuffer.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, vm.ColorInt);
         }
     }
 
@@ -122,32 +123,33 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            //if (commandParts.Length < 5)
-            //{
-            //    return;
-            //}
-            //
-            //var screenNumber = int.Parse(commandParts[1]);
-            //var screen = vm.GetScreen(screenNumber);
-            //
-            //var x = (double.Parse(commandParts[2]))   * screen.DrawScale;
-            //var y = (double.Parse(commandParts[3])-1) * screen.DrawScale;
-            //var text = commandParts[4];
-            //
-            //var textBlock = new TextBlock();
-            //textBlock.Text = text;
-            //textBlock.Foreground = screen.Monitor.Color;
-            //textBlock.FontSize   = 5 * screen.DrawScale;
-            //textBlock.FontFamily = MonitorFont;
-            //textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-            //textBlock.VerticalAlignment = VerticalAlignment.Top;
-            //
-            //Canvas.SetLeft(textBlock, x);
-            //Canvas.SetTop(textBlock, y);
-            //
-            //screen.Draw(textBlock);
+            if (commandParts.Length < 5)
+            {
+                return;
+            }
+            
+            var screenNumber = int.Parse(commandParts[1]);
+            var screen = vm.GetScreen(screenNumber);
+
+            var x = (double.Parse(commandParts[2]));//   * screen.DrawScale;
+            var y = (double.Parse(commandParts[3]) - 1);// * screen.DrawScale;
+            var text = commandParts[4];
+            
+            var textBlock = new TextBlock();
+            textBlock.Text = text.ToUpper();
+            textBlock.Foreground = vm.FontBrush;
+            textBlock.FontSize   = 5 * screen.DrawScale;
+            textBlock.FontFamily = MonitorFont;
+            textBlock.HorizontalAlignment = HorizontalAlignment.Left;
+            textBlock.VerticalAlignment = VerticalAlignment.Top;
+            
+            Canvas.SetLeft(textBlock, x);
+            Canvas.SetTop(textBlock, y);
+            
+            screen.DrawText(textBlock);
         }
     }
+
 
     [Export(typeof(IPipeCommandHandler))]
     public class DrawTextbox : IPipeCommandHandler
@@ -158,37 +160,74 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            //if (commandParts.Length < 9)
-            //{
-            //    return;
-            //}
-            //
-            //var screenNumber = int.Parse(commandParts[1]);
-            //var screen = vm.GetScreen(screenNumber);
-            //
-            //var x               = double.Parse(commandParts[2]) * screen.DrawScale;
-            //var y               = (double.Parse(commandParts[3])-1) * screen.DrawScale;
-            //var width           = double.Parse(commandParts[4]) * screen.DrawScale;
-            //var height          = double.Parse(commandParts[5]) * screen.DrawScale;
-            //var horizontalAlign = (int)double.Parse(commandParts[6]);
-            //var verticalAlign   = (int)double.Parse(commandParts[7]);
-            //var text            = commandParts[8];
-            //
-            //var textBlock = new TextBlock();
-            //textBlock.Text = text;
-            //textBlock.TextWrapping = TextWrapping.Wrap;
-            //textBlock.HorizontalAlignment = (HorizontalAlignment)(horizontalAlign - 1);
-            //textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign - 1);
-            //textBlock.Width = width;
-            //textBlock.Height = height;
-            //textBlock.Foreground = screen.Monitor.Color;
-            //textBlock.FontSize = 8 * screen.DrawScale;
-            //textBlock.FontFamily = MonitorFont;
-            //
-            //Canvas.SetLeft(textBlock, x);
-            //Canvas.SetTop(textBlock, y);
-            //
-            //screen.Draw(textBlock);
+            if (commandParts.Length < 9)
+            {
+                return;
+            }
+            
+            var screenNumber    = int.Parse(commandParts[1]);
+            var screen          = vm.GetScreen(screenNumber);
+
+            var x               = double.Parse(commandParts[2]);
+            var y               = double.Parse(commandParts[3]) - 1;
+            var width           = double.Parse(commandParts[4]);
+            var height          = double.Parse(commandParts[5]);
+            var horizontalAlign = (int)double.Parse(commandParts[6]);
+            var verticalAlign   = (int)double.Parse(commandParts[7]);
+            var text            = commandParts[8];
+
+            // custom wrapping
+            var charsPerLine = (int)(Math.Max(1, width / 5));
+            var lines = new List<string>();
+            var index = 0;
+
+            while (index < (text.Length - charsPerLine + 1))
+            {
+                var nextIndex = text.LastIndexOf(" ", index + charsPerLine + 1, charsPerLine + 1) + 1;
+                if (nextIndex == -1
+                    || nextIndex > index + charsPerLine)
+                {
+                    nextIndex = index + charsPerLine;
+                }
+
+                lines.Add(text.Substring(index, nextIndex - index));
+                index = nextIndex;
+            }
+
+            if (index < text.Length)
+            {
+                lines.Add(text.Substring(index));
+            }
+
+
+            var container = new StackPanel();
+            container.Orientation = Orientation.Vertical;
+            container.Width = width * screen.DrawScale;
+            container.Height = height * screen.DrawScale;
+            container.ClipToBounds = true;
+            //container.Background = Brushes.Yellow;
+            Canvas.SetLeft(container, x * screen.DrawScale);
+            Canvas.SetTop(container, y * screen.DrawScale);
+
+
+            foreach (var line in lines)
+            {
+                var textBlock = new TextBlock();
+                textBlock.Text = line.ToUpper();
+                textBlock.TextWrapping = TextWrapping.NoWrap;
+                textBlock.TextAlignment = (TextAlignment)(horizontalAlign + 1);
+                textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign + 1);
+                textBlock.Width = width * screen.DrawScale;
+                textBlock.Height = 6 * screen.DrawScale;
+                textBlock.Foreground = vm.FontBrush;
+                //textBlock.Background = Brushes.Red;
+                textBlock.FontSize = 5 * screen.DrawScale;
+                textBlock.FontFamily = MonitorFont;
+
+                container.Children.Add(textBlock);
+            }
+
+            screen.DrawText(container);
         }
     }
 
@@ -219,11 +258,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BackBuffer.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.ColorInt);
+                screen.BackBuffer.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
             }
             else
             {
-                screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, screen.Monitor.ColorInt);
+                screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
             }
         }
     }
@@ -249,7 +288,7 @@ namespace STORMWORKS_Simulator
             var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[5]))));
 
             var colour = Color.FromArgb(a, r, g, b);
-            screen.Monitor.Color = colour;
+            vm.Color = colour;
         }
     }
 
@@ -268,7 +307,7 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            screen.BackBuffer.Clear();
+            screen.Clear();
         }
     }
 }

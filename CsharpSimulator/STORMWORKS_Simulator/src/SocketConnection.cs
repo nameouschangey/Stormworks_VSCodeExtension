@@ -94,7 +94,6 @@ namespace STORMWORKS_Simulator
                 {
                     Logger.Error($"[Read] Caught Exception: {e}");
                     OnPipeClosed?.Invoke(this, new EventArgs());
-                    throw e;
                 }
             });
         }
@@ -118,7 +117,6 @@ namespace STORMWORKS_Simulator
             {
                 Logger.Error($"[Write] Caught Exception: {e}");
                 OnPipeClosed?.Invoke(this, new EventArgs());
-                throw e;
             }
         }
     }

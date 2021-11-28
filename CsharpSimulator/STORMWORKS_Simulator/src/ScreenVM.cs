@@ -28,26 +28,12 @@ namespace STORMWORKS_Simulator
                 OnMonitorSizeChanged?.Invoke(this, new EventArgs());
             }
         }
-        public SolidColorBrush FontBrush { get; private set; }
-        public Color Color
-        {
-            get => _Color;
-            set
-            {
-                _Color = value;
-                ColorInt = WriteableBitmapExtensions.ConvertColor(value);
-                FontBrush = new SolidColorBrush(_Color);
-            }
-        }
 
-        public int ColorInt { get; private set; }
-        private Color _Color;
         private Point _Size;
 
         public StormworksMonitor()
         {
             Size = new Point(32, 32);
-            Color = Color.FromArgb(0, 0, 0, 0);
         }
     }
 
@@ -131,6 +117,7 @@ namespace STORMWORKS_Simulator
 
         public StormworksMonitor Monitor { get; private set; }
 
+        public List<UIElement> TextChildren { get; private set; } = new List<UIElement>();
         public WriteableBitmap FrontBuffer { get; private set; }
         public WriteableBitmap BackBuffer { get; private set; }
         private WriteableBitmap _Buffer1;
@@ -147,6 +134,7 @@ namespace STORMWORKS_Simulator
         public bool IsLDown { get => _IsLDown && _IsInCanvas; }
         public bool IsRDown { get => _IsRDown && _IsInCanvas; }
 
+        public Canvas _Canvas { private get; set; }
         private bool _IsLDown = false;
         private bool _IsRDown = false;
         private bool _IsInCanvas = false;
@@ -158,17 +146,38 @@ namespace STORMWORKS_Simulator
             ScreenResolutionDescription = ScreenDescriptionsList[0];
         }
 
+        public void DrawText(UIElement text)
+        {
+            if (_Canvas != null)
+            {
+                TextChildren.Add(text);
+            }
+        }
+
         public void SwapFrameBuffers()
         {
             var tempBuffer = FrontBuffer;
             FrontBuffer = BackBuffer;
             BackBuffer = tempBuffer;
+
+            // swap in text
+            _Canvas.Children.RemoveRange(1, _Canvas.Children.Count - 1);
+            foreach (var child in TextChildren)
+            {
+                _Canvas.Children.Add(child);
+            }
+            TextChildren.Clear();
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
         public void Clear()
         {
-            BackBuffer.Clear(Color.FromArgb(0, 0, 0, 0));
+            if (_Canvas != null)
+            {
+                TextChildren.Clear();
+            }
+            BackBuffer.Clear();
         }
 
         // mouse event handling

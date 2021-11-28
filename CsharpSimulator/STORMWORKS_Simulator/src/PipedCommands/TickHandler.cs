@@ -82,7 +82,6 @@ namespace STORMWORKS_Simulator
                                     handler.Handle(_ViewModel, splits);
                                 }
                             }
-
                         }
                         catch (Exception e)
                         {

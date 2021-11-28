@@ -119,5 +119,12 @@ namespace STORMWORKS_Simulator
         private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseEnter(sender as Canvas, e); }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseMove(sender as Canvas, e); }
+
+        private void Canvas_Initialized(object sender, EventArgs e)
+        { // irritating hack, but needed for drawing text without a bunch of other bodges.
+            Canvas canvas = sender as Canvas;
+            ScreenVM vm = canvas.DataContext as ScreenVM;
+            vm._Canvas = canvas;
+        }
     }
 }

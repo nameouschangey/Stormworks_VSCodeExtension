@@ -7,7 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         mc:Ignorable="d"
-        Title="MainWindow" Height="768" Width="1024"
+        Title="LifeBoatAPI Simulator by Nameous Changey" Height="768" Width="1024"
         Style="{StaticResource WindowStyle}">
     <Window.Resources>
         <DataTemplate x:Key="SWInOutItemTemplate">
@@ -113,6 +113,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Canvas
+                                Initialized="Canvas_Initialized"
                                 DockPanel.Dock="Left"
                                 Width="{Binding CanvasSize.X}"
                                 Height="{Binding CanvasSize.Y}"
