@@ -11,15 +11,19 @@ require("LifeBoatAPI.Tools.Minimizer.LBParsingConstantsLoader")
 
 ---@class LBBuilder
 ---@field outputDirectory LBFilepath
+---@field combiner LBCombiner
+---@field minimizer LBMinimizer
+---@field vehicle_constants LBParsingConstantsLoader
+---@field mission_constants LBParsingConstantsLoader
 LBBuilder = {
     ---@param outputDirectory LBFilepath
     ---@return LBBuilder
-    new = function(this, outputDirectory)
+    new = function(this, outputDirectory, nelodocs_dir)
         this = LBCopy(this)
         this.outputDirectory = outputDirectory
 
-        this.vehicle_constants = this:_setupVehicleConstants()
-        this.mission_constants = this:_setupMissionConstants()
+        this.vehicle_constants = this:_setupVehicleConstants(nelodocs_dir)
+        this.mission_constants = this:_setupMissionConstants(nelodocs_dir)
 
         this.combiner = LBCombiner:new()
         this.combiner:addRootFolder(LBFilepath:new([[C:\personal\STORMWORKS\projects\]]))
@@ -27,23 +31,23 @@ LBBuilder = {
         return this
     end;
 
-    _setupVehicleConstants = function(this)
+    _setupVehicleConstants = function(this, docsDir)
         local constants = LBParsingConstantsLoader:new()
         constants:addRestrictedKeywords(constants._vehicle_restricted_callbacks)  -- select from _vehicle_restricted and _mission_restricted
         constants:loadLibrary("table")
         constants:loadLibrary("math")
         constants:loadLibrary("string", true)
-        constants:loadNeloDocFile(LBFilepath:new([[C:\personal\STORMWORKS\projects\_NeloDocs\docs_vehicles.lua]]))
+        constants:loadNeloDocFile(LBFilepath:new(docsDir + [[\docs_vehicles.lua]]))
         return constants
     end;
 
-    _setupMissionConstants = function (this)
+    _setupMissionConstants = function (this, docsDir)
         local constants = LBParsingConstantsLoader:new()
         constants:addRestrictedKeywords(constants._mission_restricted_callbacks)
         constants:loadLibrary("table")
         constants:loadLibrary("math")
         constants:loadLibrary("string", true)
-        constants:loadNeloDocFile(LBFilepath:new([[C:\personal\STORMWORKS\projects\_NeloDocs\docs_missions.lua]]))
+        constants:loadNeloDocFile(LBFilepath:new(docsDir + [[\docs_missions.lua]]))
         return constants
     end;
 
@@ -77,7 +81,7 @@ LBBuilder = {
 
         this.combiner:combineFile(entrypoint, cmbFile)
 
-        local minimizer = LBMinimizer:new(constants, params or {})
+        local minimizer = LBMinimizer:new(this.mission_constants, params or {})
         minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
         print("Complete") 
     end;

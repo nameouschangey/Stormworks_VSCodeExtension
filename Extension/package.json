@@ -28,14 +28,32 @@
 				"title": "Stormworks Lua with Lifeboat API",
 				"properties":
 				{
-					"lifeboatapi.stormworks.libraryPaths": {
+					"lifeboatapi.stormworks.projectSpecificLibraryPaths": {
 						"type":"array",
 						"items": {
 							"type": "string"
 						},
 						"scope": "resource",
 						"default": [],
-						"description": "Add paths to other projects or libraries, to use the lua from them."
+						"description": "(Per-project) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths apply ONLY to this project."
+					},
+					"lifeboatapi.stormworks.workspaceLibraryPaths": {
+						"type":"array",
+						"items": {
+							"type": "string"
+						},
+						"scope": "application",
+						"default": [],
+						"description": "(Shared within Workspace) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths are shared for all projects in this workspace, avoiding the need to set each project up specifically"
+					},
+					"lifeboatapi.stormworks.globalLibraryPaths": {
+						"type":"array",
+						"items": {
+							"type": "string"
+						},
+						"scope": "machine",
+						"default": [],
+						"description": "(Shared globally) Add absolute-paths to other projects or libraries, to use the lua from them.\n These paths are globally shared, for libraries you want to use every time without setting them up again."
 					},
 					"lifeboatapi.stormworks.ignorePaths": {
 						"type":"array",
@@ -48,6 +66,12 @@
 							"/out/"
 						],
 						"description": ".gitignore style path patterns to ignore from intellisense and build processes."
+					},
+					"lifeboatapi.stormworks.outputBoilerplate" : {
+						"type":"string",
+						"default": "Developed by: <YourName>, Please see my workshop and github here: <YourLink>",
+						"scope": "resource",
+						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
 					},
 					"lifeboatapi.stormworks.enableNewProjectContextMenu" : {
 						"type":"boolean",
@@ -115,12 +139,12 @@
 				{
 					"command": "lifeboatapi.newMCProject",
 					"group": "0_stormworks",
-					"when":"lifeboatapi.stormworks.enableNewProjectContextMenu"
+					"when":"config.lifeboatapi.stormworks.enableNewProjectContextMenu"
 				},
 				{
 					"command": "lifeboatapi.newAddonProject",
 					"group": "0_stormworks",
-					"when":"lifeboatapi.stormworks.enableNewProjectContextMenu"
+					"when":"config.lifeboatapi.stormworks.enableNewProjectContextMenu"
 				}
 			],
 			"file/newFile": [
