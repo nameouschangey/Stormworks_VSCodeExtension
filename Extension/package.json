@@ -1,7 +1,8 @@
 {
-  "name": "helloworld",
-	"displayName": "",
-	"description": "",
+  	"name": "lifeboatapi",
+	"publisher": "nameouschangey",
+	"displayName": "Stormworks Lua with Lifeboat API",
+	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.62.0"
@@ -10,16 +11,127 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:helloworld.helloWorld"
+		"*",
+        "onCommand:lifeboatapi.build",
+		"onCommand:lifeboatapi.newMCProject",
+		"onCommand:lifeboatapi.newAddonProject",
+		"onCommand:lifeboatapi.test"
+	],
+	"extensionPack": [
+		"sumneko.lua",
+		"actboy168.lua-debug"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration":[
+			{
+				"title": "Stormworks Lua with Lifeboat API",
+				"properties":
+				{
+					"lifeboatapi.stormworks.libraryPaths": {
+						"type":"array",
+						"items": {
+							"type": "string"
+						},
+						"scope": "resource",
+						"default": [],
+						"description": "Add paths to other projects or libraries, to use the lua from them."
+					},
+					"lifeboatapi.stormworks.ignorePaths": {
+						"type":"array",
+						"items": {
+							"type": "string"
+						},
+						"scope": "resource",
+						"default": [
+							".vscode",
+							"/out/"
+						],
+						"description": ".gitignore style path patterns to ignore from intellisense and build processes."
+					},
+					"lifeboatapi.stormworks.enableNewProjectContextMenu" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
+					},
+					"lifeboatapi.stormworks.isMicrocontrollerProject" : {
+						"type":"boolean",
+						"default": false,
+						"scope": "resource",
+						"description": "(Recommended that you do not change this.) True if this project is a Stormworks Microcontroller project."
+					},
+					"lifeboatapi.stormworks.isAddonProject" : {
+						"type":"boolean",
+						"default": false,
+						"scope": "resource",
+						"description": "(Recommended that you do not change this.) True if this project is a Stormworks Addon project"
+					}
+				}
+			}
+		],
 		"commands": [
 			{
-				"command": "helloworld.helloWorld",
-				"title": "Hello World"
+				"command": "lifeboatapi.build",
+				"title": "Stormworks: Build Project"
+			},
+			{
+				"command": "lifeboatapi.newMCProject",
+				"title": "Stormworks: New Microcontroller Project"
+			},
+			{
+				"command": "lifeboatapi.newAddonProject",
+				"title": "Stormworks: New Addon Project"
+			},
+			{
+				"command": "lifeboatapi.simulate",
+				"title": "Stormworks: Simulate Microcontroller"
 			}
-		]
+		],
+		"keybindings":[
+			{
+				"command": "lifeboatapi.simulate",
+				"key": "F6"
+			},
+			{
+				"command": "lifeboatapi.build",
+				"key": "F7",
+				"args": "${workspaceFolder}"
+			}
+		],
+		"menus": {
+			"editor/title/run" : [
+				{
+					"command": "lifeboatapi.simulate",
+					"group": "0_stormworks",
+					"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject"
+				},
+				{
+					"command": "lifeboatapi.build",
+					"group": "0_stormworks"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "lifeboatapi.newMCProject",
+					"group": "0_stormworks",
+					"when":"lifeboatapi.stormworks.enableNewProjectContextMenu"
+				},
+				{
+					"command": "lifeboatapi.newAddonProject",
+					"group": "0_stormworks",
+					"when":"lifeboatapi.stormworks.enableNewProjectContextMenu"
+				}
+			],
+			"file/newFile": [
+				{
+				"command": "lifeboatapi.newMCProject"
+				},
+				{
+				"command": "lifeboatapi.newAddonProject"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
