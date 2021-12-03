@@ -62,5 +62,12 @@ export function beginSimulator(context:vscode.ExtensionContext)
         );
     }
 
-    return Promise.reject();
+    if(vscode.debug.activeDebugSession)
+    {
+        return Promise.reject("Please end current debug session before starting another.");
+    }
+    else
+    {
+        return Promise.reject("Please ensure a valid file is selected for simulation");
+    }
 }

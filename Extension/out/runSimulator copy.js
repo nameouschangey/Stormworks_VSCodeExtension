@@ -52,12 +52,7 @@ function beginSimulator(context) {
             return vscode.debug.startDebugging(workspace, config);
         });
     }
-    if (vscode.debug.activeDebugSession) {
-        return Promise.reject("Please end current debug session before starting another.");
-    }
-    else {
-        return Promise.reject("Please ensure a valid file is selected for simulation");
-    }
+    return Promise.reject();
 }
 exports.beginSimulator = beginSimulator;
-//# sourceMappingURL=runSimulator.js.map
+//# sourceMappingURL=runSimulator%20copy.js.map
