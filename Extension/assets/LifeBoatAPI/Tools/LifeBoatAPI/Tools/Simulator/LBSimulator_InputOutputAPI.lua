@@ -49,8 +49,8 @@ output = {
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
 
         if(value ~= nil and value ~= output._bools[index]) then
-            if onSimulatorOutputBoolChanged then -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
-                onSimulatorOutputBoolChanged(index, output._bools[index], value)
+            if onLBSimulatorOutputBoolChanged then -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
+                onLBSimulatorOutputBoolChanged(index, output._bools[index], value)
             end
 
             output._simulator.isInputOutputChanged = true;
@@ -66,8 +66,8 @@ output = {
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
 
         if(value ~= nil and value ~= output._numbers[index]) then
-            if onSimulatorOutputNumberChanged then  -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
-                onSimulatorOutputNumberChanged(index, output._numbers[index], value)
+            if onLBSimulatorOutputNumberChanged then  -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
+                onLBSimulatorOutputNumberChanged(index, output._numbers[index], value)
             end
 
             output._simulator.isInputOutputChanged = true;

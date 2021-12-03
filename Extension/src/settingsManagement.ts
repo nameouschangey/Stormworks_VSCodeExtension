@@ -85,8 +85,8 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		// lua.debug.cpath
 		var existing : string[] = luaDebugConfig.get("cpath") ?? [];
 		const defaultCPaths = [
-			context.extensionPath + "/assets/luasocket/dll/mime/core.dll",
 			context.extensionPath + "/assets/luasocket/dll/socket/core.dll",
+			context.extensionPath + "/assets/luasocket/dll/mime/core.dll"
 		];
 		for(const cPathElement of defaultCPaths)
 		{
@@ -101,12 +101,11 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		//lua.debug.path
         var debugPaths = [
 			context.extensionPath + "/assets/luasocket/?.lua",
-
 		];
         for(path of lifeboatLibraryPaths)
         {
             debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
-			debugPaths.push(path + "?.lbinternal");
+			debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)
         }
 		return luaDebugConfig.update("path", debugPaths, vscode.ConfigurationTarget.Workspace);
 

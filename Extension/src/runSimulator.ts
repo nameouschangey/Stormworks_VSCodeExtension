@@ -14,16 +14,20 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     relativePath = relativePath.replace("\\", "."); 
     relativePath = relativePath.replace("/", ".");
 
+    if(relativePath.substr(0,1) === ".") // remove initial "." that might be left
+    {
+        relativePath = relativePath.substr(1);
+    }
+
     // is that correct?
     // or do we need to do something else?
     return `
 require("LifeBoatAPI.Tools.Simulator.LBSimulator");
 local __simulator = LBSimulator:new() 
 
-__simulator:beginSimulation(false, arg[1])
-
 require("${relativePath}");
 
+__simulator:beginSimulation(false, arg[1])
 __simulator:giveControlToMainLoop()
 `;
 }
@@ -50,8 +54,6 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     program: `${simulatedLuaFile?.fsPath}`,
                     arg: [
                         context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe"
-                        // stuff for the simulator to run?
-                        // can't remember what config is needed
                     ]
                 };
                 vscode.window.showInformationMessage(`Simulating file: ${utils.getCurrentWorkspaceFile()?.fsPath}`);

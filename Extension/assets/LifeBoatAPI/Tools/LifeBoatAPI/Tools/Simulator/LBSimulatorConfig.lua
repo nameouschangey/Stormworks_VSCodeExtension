@@ -25,11 +25,11 @@ LBSimulatorConfig = {
         portrait = portrait or false
         poweredOn = (poweredOn == nil and true) or poweredOn
 
-        if not this.simulator.screens[screenNumber] then
-            screenNumber = #this.simulator.screens + 1
-            this.simulator.screens[screenNumber] = LBSimulatorScreen:new(screenNumber)
+        if not this.simulator._screens[screenNumber] then
+            screenNumber = #this.simulator._screens + 1
+            this.simulator._screens[screenNumber] = LBSimulatorScreen:new(screenNumber)
         end
-        local thisScreen = this.simulator.screens[screenNumber]
+        local thisScreen = this.simulator._screens[screenNumber]
 
         local validScreenConfigs = {
             ["1x1"] = true,
@@ -49,7 +49,7 @@ LBSimulatorConfig = {
         thisScreen.height = splits[2] * 32
 
         -- send the new screen data to the server
-        this.simulator.connection:sendCommand("SCREENCONFIG",
+        this.simulator._connection:sendCommand("SCREENCONFIG",
             screenNumber,
             poweredOn and "1" or "0",
             screenSize,

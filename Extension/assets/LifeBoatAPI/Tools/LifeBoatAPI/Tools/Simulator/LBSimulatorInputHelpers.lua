@@ -37,7 +37,7 @@ LBSimulatorInputHelpers = {
     ---@return boolean
     touchScreenIsQTouched = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].isTouchedR or false end
+        return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].isTouchedR or false end
     end;
 
     ---@param simulator LBSimulator
@@ -46,8 +46,8 @@ LBSimulatorInputHelpers = {
     touchScreenIsETouched = function (simulator, screenNumber)
         screenNumber = 1
         return function()
-            local a = simulator.screens[screenNumber].isTouchedL
-            return simulator.screens[screenNumber] and simulator.screens[screenNumber].isTouchedL or false
+            local a = simulator._screens[screenNumber].isTouchedL
+            return simulator._screens[screenNumber] and simulator._screens[screenNumber].isTouchedL or false
         end
     end;
 
@@ -56,7 +56,7 @@ LBSimulatorInputHelpers = {
     ---@return number
     touchScreenWidth = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].width or 0 end
+        return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].width or 0 end
     end;
 
     ---@param simulator LBSimulator
@@ -64,7 +64,7 @@ LBSimulatorInputHelpers = {
     ---@return number
     touchScreenHeight = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].height or 0 end
+        return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].height or 0 end
     end;
 
     ---@param simulator LBSimulator
@@ -72,7 +72,7 @@ LBSimulatorInputHelpers = {
     ---@return number
     touchScreenXPosition = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].touchX or 0 end
+        return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].touchX or 0 end
     end;
 
     ---@param simulator LBSimulator
@@ -80,7 +80,7 @@ LBSimulatorInputHelpers = {
     ---@return number
     touchScreenYPosition = function (simulator, screenNumber)
         screenNumber = 1
-        return function() return simulator.screens[screenNumber] and simulator.screens[screenNumber].touchY or 0 end
+        return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].touchY or 0 end
     end;
 
     ---Sets the input to a number that wraps around a fixed range

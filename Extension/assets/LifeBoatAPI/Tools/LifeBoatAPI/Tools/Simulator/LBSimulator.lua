@@ -6,9 +6,10 @@ require("LifeBoatAPI.Tools.Simulator.LBSimulator_InputOutputAPI")
 require("LifeBoatAPI.Tools.Simulator.LBSimulator_ScreenAPI")
 require("LifeBoatAPI.Tools.Simulator.LBSimulatorConnection")
 require("LifeBoatAPI.Tools.Simulator.LBSimulatorScreen")
+require("LifeBoatAPI.Tools.Simulator.LBSimulatorConfig")
+require("LifeBoatAPI.Tools.Simulator.LBSimulatorInputHelpers")
 
 function Empty() end;
-
 
 ---@class LBSimulator : LBBaseClass
 ---@field config LBSimulatorConfig reference to the Simulator input/output config
@@ -118,7 +119,7 @@ LBSimulator = {
         this.config:addNumberHandler(3, helpers.touchScreenXPosition(this,1))
         this.config:addNumberHandler(4, helpers.touchScreenYPosition(this,1))
 
-        onSimulatorInit = onSimulatorInit or Empty
+        onSimulatorInit = onLBSimulatorInit or Empty
         onSimulatorInit(this, this.config, LBSimulatorInputHelpers)
     end;
 
@@ -145,7 +146,7 @@ LBSimulator = {
                 this:readSimulatorMessages()
 
                 -- run tick
-                onSimulate = onSimulate or Empty
+                onSimulate = onLBSimulatorTick or Empty
                 onTick = onTick or Empty
                 onDraw = onDraw or Empty
 
@@ -185,11 +186,6 @@ LBSimulator = {
                 end
 
                 if this._connection.isAlive then this._connection:sendCommand("TICKEND") end
-            else
-                -- sleep while we idle, to avoid burning through the CPU
-                --if(this.sleepBetweenFrames > 0) then
-                --    _socket.sleep(this.sleepBetweenFrames)
-                --end
             end
         end
 

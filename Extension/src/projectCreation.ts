@@ -52,8 +52,8 @@ const microControllerDefaultSimulatorConfig =
     ---@param simulator LBSimulator
     ---@param config LBSimulatorConfig
     ---@param helpers LBSimulatorInputHelpers
-    function onSimulatorInit(simulator, config, helpers)
-        config:configureScreen(1, "2x2", true, false)
+    function onLBSimulatorInit(simulator, config, helpers)
+        config:configureScreen(1, "3x2", true, false)
         config:setProperty("ExampleProperty", 50)
 
         -- handlers that automatically update the inputs each frame
@@ -66,11 +66,11 @@ const microControllerDefaultSimulatorConfig =
     --- Usually not needed, can allow you to do some custom manipulation
     --- Or set breakpoints based on simulator state
     ---@param simulator LBSimulator
-    function onSimulatorTick(simulator)end
+    function onLBSimulatorTick(simulator)end
 
     --- For easier debugging, called when an output value is changed
-    function onSimulatorOutputBoolChanged(index, oldValue, newValue)end
-    function onSimulatorOutputNumberChanged(index, oldValue, newValue)end
+    function onLBSimulatorOutputBoolChanged(index, oldValue, newValue)end
+    function onLBSimulatorOutputNumberChanged(index, oldValue, newValue)end
 ---@endsection _MAIN_SIMSECTION_INIT
 
 
@@ -187,7 +187,7 @@ export function addBoilerplate(text : string)
 `-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)`;
 
-	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n--\n" + nameousBoilerplate + "\n\n" + text;
+	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n--\n" + nameousBoilerplate + "\n" + text;
 }
 
 function setupMicrocontrollerFiles(params : any)
