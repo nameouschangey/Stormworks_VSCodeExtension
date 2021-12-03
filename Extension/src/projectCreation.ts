@@ -7,30 +7,81 @@ import * as utils from "./utils";
 
 
 const microControllerDefaultScript =
-`-- developed with the Stormworks Lua (LifeboatAPI) plugin for VSCode
+`
+--- With LifeBoatAPI; you can use the "require(...)" keyword to use code from other files!
+---     This lets you share code between projects, and organise your work better.
+---     The below, includes the content from BasicConfig.lua in the generated /SimulatorConfig/ folder
+--- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
+require("SimulatorConfig.BasicConfig")
 
--- This section is stripped out by the LifeBoat API build process
--- It only existing within VSCode, for configuring the simulator
--- Configure the simulator, e.g. simulated inputs/outputs and screen size in the onSimulate function
----@section __SIMULATORONLY__ 1 _MAIN_SIMSECTION_INIT
----@param simulator LBSimulator
-function onSimulate(simulator)
-    
+
+--- default onTick function; called once per in-game tick (60 per second)
+ticks = 0
+function onTick()
+    ticks = ticks + 1
+    local myRandomValue = math.random()
+
+    if(ticks == 100) then
+        -- Debugging Tip (F6 to run Simulator):
+        --  By clicking just left of the line number (left column), you can set a little red dot; called a "breakpoint"
+        --  When you run this in the LifeBoatAPI Simulator, the debugger will stop at each breakpoint and let you see the memory values
+        -- You can also look at the "callstack" to see which functions were called to get where you are.
+        --  Put a breakpoint to the left of this a = nil statement, and you'll be able to see what the value of "myRandomValue" is by hovering over it
+        a = nil;
+    end
 end
+
+--- default onDraw function; called once for each monitor connected each tick, order is not guaranteed
+function onDraw()
+end
+
+`;
+
+const microControllerDefaultSimulatorConfig =
+`
+--- Note: code wrapped in ---@section <Identifier> <number> <Name> ... ---@endsection <Name>
+---  Is only included in the final output if <Identifier> is seen <number> of times or more
+---  This means the code below will not be included in the final, minimized version
+---  And you can do the same to wrap library code; so that it's there if you use it, and deleted if you don't!
+---  No more manual cutting/pasting code out!
+
+---@section __SIMULATORONLY__ 1 _MAIN_SIMSECTION_INIT
+
+    --- Runs once when the simulator starts up
+    --- Put simulator configuration here, included automatic handlers for inputs, or screen sizes
+    ---@param simulator LBSimulator
+    ---@param config LBSimulatorConfig
+    ---@param helpers LBSimulatorInputHelpers
+    function onSimulatorInit(simulator, config, helpers)
+        config:configureScreen(1, "2x2", true, false)
+        config:setProperty("ExampleProperty", 50)
+
+        -- handlers that automatically update the inputs each frame
+        -- useful for simple inputs (sweeps/wraps etc.)
+        config:addBoolHandler(10,   function() return math.random() * 100 < 20 end)
+        config:addNumberHandler(10, function() return math.random() * 100 end)
+    end
+
+    --- runs every tick, prior to onTick and onDraw
+    --- Usually not needed, can allow you to do some custom manipulation
+    --- Or set breakpoints based on simulator state
+    ---@param simulator LBSimulator
+    function onSimulatorTick(simulator)end
+
+    --- For easier debugging, called when an output value is changed
+    function onSimulatorOutputBoolChanged(index, oldValue, newValue)end
+    function onSimulatorOutputNumberChanged(index, oldValue, newValue)end
 ---@endsection _MAIN_SIMSECTION_INIT
 
 
-function onTick()
-end
-
-function onDraw()
-end
 `;
 
 
-const addonDefaultScript =
-`-- developed with the Stormworks Lua (LifeboatAPI) plugin for VSCode
 
+
+
+const addonDefaultScript =
+`
 function onTick()
 end
 
@@ -108,14 +159,14 @@ export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 		}
 	)
 	.then ( (params) => {
-		const scriptFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/script.lua");
-		return utils.doesFileExist(scriptFile,
-			() => params,
-			() => {
-				const scriptText = params.isMicrocontroller? microControllerDefaultScript : addonDefaultScript; 
-				return vscode.workspace.fs.writeFile(scriptFile, new TextEncoder().encode(scriptText))
-				.then( () => params );
-			});
+		if(params.isMicrocontroller)
+		{
+			return setupMicrocontrollerFiles(params);
+		}
+		else
+		{
+			return setupAddonFiles(params);
+		}
 	})
 	.then(
 		(params) => {
@@ -123,4 +174,50 @@ export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 			vscode.workspace.updateWorkspaceFolders(0, 0, params.selectedFolder);
 		}
 	);
+}
+
+export function addBoilerplate(text : string)
+{
+	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+	var authorName	  = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+	var githubLink    = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+	var workshopLink  = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+
+	var nameousBoilerplate = 
+`-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)`;
+
+	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n--\n" + nameousBoilerplate + "\n\n" + text;
+}
+
+function setupMicrocontrollerFiles(params : any)
+{
+	const scriptFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/MyMicrocontroller.lua");
+	return utils.doesFileExist(scriptFile,
+		() => params,
+		() => {
+			return vscode.workspace.fs.writeFile(scriptFile, new TextEncoder().encode(addBoilerplate(microControllerDefaultScript)))
+					.then( () => params );
+		})
+		.then(
+		() => {
+			const basicConfigFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/SimulatorConfig/BasicConfig.lua");
+			return utils.doesFileExist(basicConfigFile,
+				() => params,
+				() => {
+					return vscode.workspace.fs.writeFile(basicConfigFile, new TextEncoder().encode(addBoilerplate(microControllerDefaultSimulatorConfig)))
+							.then( () => params );
+				});
+		});
+}
+
+function setupAddonFiles(params : any)
+{
+	const scriptFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/script.lua");
+	return utils.doesFileExist(scriptFile,
+		() => params,
+		() => {
+			return vscode.workspace.fs.writeFile(scriptFile, new TextEncoder().encode(addBoilerplate(addonDefaultScript)))
+					.then( () => params );
+		});
 }

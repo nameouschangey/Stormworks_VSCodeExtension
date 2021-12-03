@@ -5,8 +5,8 @@
 -- combines multiple scripts into one by following the require tree.
 -- resulting script can then be passed through luamin to minify it (or alternate tools)
 
-require("LifeBoatAPI.Missions.Utils.LBTable")
-require("LifeBoatAPI.Missions.Utils.LBString")
+require("LifeBoatAPI.Tools.Utils.LBTable")
+require("LifeBoatAPI.Tools.Utils.LBString")
 require("LifeBoatAPI.Tools.Utils.LBFilesystem")
 
 ---@class LBCombiner : LBBaseClass

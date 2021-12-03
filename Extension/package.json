@@ -28,6 +28,30 @@
 				"title": "Stormworks Lua with Lifeboat API",
 				"properties":
 				{
+					"lifeboatapi.stormworks.authorName" : {
+						"type":"string",
+						"default": null,
+						"scope": "resource",
+						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
+					},
+					"lifeboatapi.stormworks.workshopLink" : {
+						"type":"string",
+						"default": null,
+						"scope": "resource",
+						"description": "Link to your steam workshop page"
+					},
+					"lifeboatapi.stormworks.githubLink" : {
+						"type":"string",
+						"default": null,
+						"scope": "resource",
+						"description": "Link to your github page"
+					},
+					"lifeboatapi.stormworks.extendedBoilerplate" : {
+						"type":"string",
+						"default": "",
+						"scope": "resource",
+						"description": "Any remaining boiletplate notice you wish to include at the top of the file."
+					},
 					"lifeboatapi.stormworks.projectSpecificLibraryPaths": {
 						"type":"array",
 						"items": {
@@ -42,7 +66,7 @@
 						"items": {
 							"type": "string"
 						},
-						"scope": "application",
+						"scope": "window",
 						"default": [],
 						"description": "(Shared within Workspace) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths are shared for all projects in this workspace, avoiding the need to set each project up specifically"
 					},
@@ -51,7 +75,7 @@
 						"items": {
 							"type": "string"
 						},
-						"scope": "machine",
+						"scope": "application",
 						"default": [],
 						"description": "(Shared globally) Add absolute-paths to other projects or libraries, to use the lua from them.\n These paths are globally shared, for libraries you want to use every time without setting them up again."
 					},
@@ -61,17 +85,8 @@
 							"type": "string"
 						},
 						"scope": "resource",
-						"default": [
-							".vscode",
-							"/out/"
-						],
+						"default": [],
 						"description": ".gitignore style path patterns to ignore from intellisense and build processes."
-					},
-					"lifeboatapi.stormworks.outputBoilerplate" : {
-						"type":"string",
-						"default": "Developed by: <YourName>, Please see my workshop and github here: <YourLink>",
-						"scope": "resource",
-						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
 					},
 					"lifeboatapi.stormworks.enableNewProjectContextMenu" : {
 						"type":"boolean",

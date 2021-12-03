@@ -16,11 +16,26 @@ export function activate(context: vscode.ExtensionContext)
 {
 	console.log('LifeBoatAPI for Stormworks Lua now active. Please contact Nameous Changey if you discover issues.');
 
+	// when a lua file is created, if it's empty - add the boilerplate
+	vscode.workspace.onDidOpenTextDocument(
+		(document) => {
+			if (utils.isStormworksProject() 
+				&& document.languageId === "lua"
+				&& document.lineCount === 1)
+			{
+				const boilerPlate = projectCreation.addBoilerplate("");
+				var edit = new vscode.WorkspaceEdit();
+				edit.insert(document.uri, new vscode.Position(0, 0), boilerPlate);
+				return vscode.workspace.applyEdit(edit);
+			}
+		}, null, context.subscriptions);
 
 	// if config changes, we need to update the Lua library paths next time we are back on a file
 	vscode.workspace.onDidChangeConfiguration(
 	(e) => {	
-		if(e.affectsConfiguration("lifeboatapi.stormworks.libraryPaths")
+		if(e.affectsConfiguration("lifeboatapi.stormworks.projectSpecificLibraryPaths")
+			|| e.affectsConfiguration("lifeboatapi.stormworks.workspaceLibraryPaths")
+			|| e.affectsConfiguration("lifeboatapi.stormworks.globalLibraryPaths")
 			|| e.affectsConfiguration("lifeboatapi.stormworks.ignorePaths"))
 		{
 			context.workspaceState.update("lifeboatapi.lastWorkspace", null);
@@ -71,7 +86,7 @@ export function activate(context: vscode.ExtensionContext)
 	// Simulate current file
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.simulate',
 	() => {
-		return runSimulator.beginSimulator();
+		return runSimulator.beginSimulator(context);
 	}));
 
 	// New MC

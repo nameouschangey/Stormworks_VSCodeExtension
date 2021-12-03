@@ -1,7 +1,7 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
-require("LifeBoatAPI.Missions.Utils.LBStringMatch")
+require("LifeBoatAPI.Tools.Utils.LBStringMatch")
 
 --- runs gsub repeatedly until all instances, and instances created by the substitutions, are replaced
 ---  running gsub once, on some strings, may cause a pattern to be formed that itself can be replaced

@@ -1,7 +1,7 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
-require("LifeBoatAPI.Missions.Utils.LBString")
+require("LifeBoatAPI.Tools.Utils.LBString")
 require("LifeBoatAPI.Tools.Utils.LBFilepath")
 require("LifeBoatAPI.Tools.Utils.LBFilesystem")
 require("LifeBoatAPI.Tools.Minimizer.LBRedundancyRemover")
@@ -103,15 +103,15 @@ LBMinimizer = {
         -- please do not remove this, the user's boilerplate has precedence over the nameous changey one
         -- but if your resulting file has space - it is polite to include this; a significant effort went into making the minimizer
         local newLength = #text
-        local nameousBoilerplate = "-- Minimized using Nameouschangey's Minimizer (Gordon Mckendrick) \n"
-                                 .."-- Please see: https://github.com/nameouschangey/STORMWORKS \n"
-                                 .."-- Originally: " .. tostring(originalLength) .. " chars, Reduced to: " .. tostring(newLength) .. " chars"
+        local nameousBoilerplate = [[`-- Developed & Minimized using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)`"]]
++ "\n-- Originally: " .. tostring(originalLength) .. " chars, Reduced to: " .. tostring(newLength) .. " chars"
 
         -- add boilerplate if the file is small enough (4000 chars instead of 4096, gives some slight wiggle room)
         if(this.params.forceNCBoilerplate or (#text + #boilerplate + #nameousBoilerplate < 4000)) then
-            text = boilerplate .. "\n" .. nameousBoilerplate .. "\n" .. text
+            text = boilerplate .. "\n\n" .. nameousBoilerplate .. "\n\n" .. text
         elseif(this.params.forceBoilerplate or #text + #boilerplate < 4000) then
-            text = boilerplate .. "\n" .. text
+            text = boilerplate .. "\n\n" .. text
         end
 
         return text

@@ -1,27 +1,27 @@
 require("LifeBoatAPI.Tools.Utils.LBFilepath")
 require("LifeBoatAPI.Tools.Utils.LBFilesystem")
-require("LifeBoatAPI.Missions.Utils.LBString")
+require("LifeBoatAPI.Tools.Utils.LBString")
 
 require("LifeBoatAPI.Tools.Simulator.LBSimulator_InputOutputAPI")
 require("LifeBoatAPI.Tools.Simulator.LBSimulator_ScreenAPI")
-
+require("LifeBoatAPI.Tools.Simulator.LBSimulatorConnection")
+require("LifeBoatAPI.Tools.Simulator.LBSimulatorScreen")
 
 function Empty() end;
 
 
 ---@class LBSimulator : LBBaseClass
----@field connection LBSimulatorConnection simulator connection handler
----@field simulatorProcess file* currently running simulator process 
----@field _handlers table
----@field config LBSimulatorConfig
----@field screens LBSimulatorScreen[]
----@field currentScreen LBSimulatorScreen
----@field isInputOutputChanged boolean 
+---@field config LBSimulatorConfig reference to the Simulator input/output config
 ---@field timePerFrame number in seconds
----@field sleepBetweenFrames number in seconds, time to sleep when there's no frame - avoids churning the CPU at the expense of some accuracy
 ---@field renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
 ---@field sendOutputSkip number frame-skip for sending the input/output changes.
 ---@field isRendering boolean whether we are currently rendering or not, for blocking the screen operations
+---@field _connection LBSimulatorConnection (internal) simulator connection handler
+---@field _simulatorProcess file* (internal) currently running simulator process 
+---@field _handlers table (internal) list of event handlers
+---@field _screens LBSimulatorScreen[] (internal) list of currently active screens
+---@field _currentScreen LBSimulatorScreen (internal) screen currently being rendered to or nil
+---@field _isInputOutputChanged boolean (internal) true if the input/output was changed within this frame
 LBSimulator = {
     ---@param this LBSimulator
     ---@return LBSimulator
@@ -30,9 +30,8 @@ LBSimulator = {
         this._handlers = {}
         this.config = LBSimulatorConfig:new(this)
         this.timePerFrame = 1/60
-        this.screens = {}
-        this.currentScreen = nil
-        this.sleepBetweenFrames = 0.001;
+        this._screens = {}
+        this._currentScreen = nil
         this.renderOnFrames = 1
         this.sendOutputSkip = 1
         this.isRendering = false
@@ -45,8 +44,8 @@ LBSimulator = {
                 isDownL = isDownL == "1"
                 isDownR = isDownR == "1"
 
-                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
-                local thisScreen = this.screens[screenNumber]
+                this._screens[screenNumber] = this._screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
+                local thisScreen = this._screens[screenNumber]
                 thisScreen.isTouchedL = isDownL
                 thisScreen.isTouchedR = isDownR
                 thisScreen.touchX = x
@@ -59,8 +58,8 @@ LBSimulator = {
                 width = tonumber(width)
                 height = tonumber(height)
 
-                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
-                local thisScreen = this.screens[screenNumber]
+                this._screens[screenNumber] = this._screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
+                local thisScreen = this._screens[screenNumber]
                 thisScreen.width  = width
                 thisScreen.height = height
             end)
@@ -69,8 +68,8 @@ LBSimulator = {
             function (simulator, screenNumber, poweredOn)
                 screenNumber = tonumber(screenNumber)
                 poweredOn = poweredOn == "1"
-                this.screens[screenNumber] = this.screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
-                local thisScreen = this.screens[screenNumber]
+                this._screens[screenNumber] = this._screens[screenNumber] or LBSimulatorScreen:new(screenNumber)
+                local thisScreen = this._screens[screenNumber]
                 thisScreen.poweredOn = poweredOn
                 if not thisScreen.poweredOn then
                     thisScreen.touchX = 0
@@ -93,13 +92,13 @@ LBSimulator = {
 
     ---@param this LBSimulator
     ---@param attachToExistingProcess boolean attach to an existing running Simulator, instead of kicking off a new instance
-    beginSimulation = function(this, attachToExistingProcess)
+    beginSimulation = function(this, attachToExistingProcess, simulatorFile)
         if not attachToExistingProcess then
-            local simulatorExePath = LBFilepath:new([[C:\personal\STORMWORKS_VSCodeExtension\Extension\assets\simulator\STORMWORKS_Simulator.exe]])
-            this.simulatorProcess = io.popen(simulatorExePath:win(), "w")
+            local simulatorExePath = LBFilepath:new(simulatorFile)
+            this._simulatorProcess = io.popen(simulatorExePath:win(), "w")
         end
 
-        this.connection = LBSimulatorConnection:new()
+        this._connection = LBSimulatorConnection:new()
             
         -- set the global screen and output to be simulated
         -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
@@ -133,7 +132,7 @@ LBSimulator = {
         local framesSinceRender = 1
         local framesSinceOut = 1
 
-        while this.connection.isAlive do
+        while this._connection.isAlive do
             local time = _socket.gettime()
             timeRunning = timeRunning + (time - lastTime)
             timeSinceFrame = timeSinceFrame + (time - lastTime)
@@ -154,38 +153,38 @@ LBSimulator = {
 
                 -- possibility that the server has closed connection at any of these points
                 -- in which case, we want to stop processing asap
-                if this.connection.isAlive then this.config:onSimulate() end
-                if this.connection.isAlive then onSimulate(this) end
+                if this._connection.isAlive then this.config:onSimulate() end
+                if this._connection.isAlive then onSimulate(this) end
 
-                if this.connection.isAlive then onTick() end
+                if this._connection.isAlive then onTick() end
 
                 -- we can frame-skip, which means rendering (=>less networking, significant cost reduction)
                 --  can be useful when frame rate is suffering
-                if framesSinceRender%this.renderOnFrames == 0 and this.connection.isAlive then
+                if framesSinceRender%this.renderOnFrames == 0 and this._connection.isAlive then
                     framesSinceRender = 1
 
                     local outputRate = math.max(this.sendOutputSkip, this.renderOnFrames) -- no point sending the data more often than rendering it
                     if framesSinceOut%outputRate == 0 then
-                        if this.connection.isAlive then this:_sendInOuts() end
+                        if this._connection.isAlive then this:_sendInOuts() end
                         framesSinceOut = 1
                     else
                         framesSinceOut = framesSinceOut + 1
                     end
 
-                    for screenNumber, screenData in pairs(this.screens) do 
+                    for screenNumber, screenData in pairs(this._screens) do 
                         if screenData.poweredOn then
                             this.currentScreen = screenData
                             this.isRendering = true
-                            if this.connection.isAlive then screen.drawClear() end
-                            if this.connection.isAlive then onDraw() end
-                            if this.connection.isAlive then this.connection:sendCommand("FRAMESWAP", screenNumber) end
+                            if this._connection.isAlive then screen.drawClear() end
+                            if this._connection.isAlive then onDraw() end
+                            if this._connection.isAlive then this._connection:sendCommand("FRAMESWAP", screenNumber) end
                         end
                     end
                 else
                     framesSinceRender = framesSinceRender + 1
                 end
 
-                if this.connection.isAlive then this.connection:sendCommand("TICKEND") end
+                if this._connection.isAlive then this._connection:sendCommand("TICKEND") end
             else
                 -- sleep while we idle, to avoid burning through the CPU
                 --if(this.sleepBetweenFrames > 0) then
@@ -194,7 +193,7 @@ LBSimulator = {
             end
         end
 
-        this.connection:close()
+        this._connection:close()
     end;
 
     ---@param this LBSimulator
@@ -219,7 +218,7 @@ LBSimulator = {
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " setting bool ") end
 
         if value ~= nil and value ~= input.getBool(index) then
-            this.isInputOutputChanged = true
+            this._isInputOutputChanged = true
             input._bools[index] = value
         end
     end;
@@ -233,7 +232,7 @@ LBSimulator = {
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " setting number ") end
 
         if value ~= nil and value ~= input.getNumber(index) then
-            this.isInputOutputChanged = true
+            this._isInputOutputChanged = true
             input._numbers[index] = value
         end
     end;
@@ -241,8 +240,8 @@ LBSimulator = {
     ---read and handle all messages sent by the simulator server since the last tick
     ---@param this LBSimulator
     readSimulatorMessages = function(this)
-        while (this.connection.isAlive and this.connection:hasMessage()) do
-            local message = this.connection:readMessage()
+        while (this._connection.isAlive and this._connection:hasMessage()) do
+            local message = this._connection:readMessage()
             if message then
                 local commandParts = LBString_split(message, "|")
                 local commandName = table.remove(commandParts, 1) -- remove the commandName from the commandParts
@@ -265,11 +264,11 @@ LBSimulator = {
         this._handlers[commandName] = func
     end;
 
-        ---helper, send the input and output data to the server
+    ---helper, send the input and output data to the server
     ---@param this LBSimulator
     _sendInOuts = function (this)
-        if(this.isInputOutputChanged or this.isInputOutputChanged) then
-            this.isInputOutputChanged = false
+        if(this._isInputOutputChanged or this._isInputOutputChanged) then
+            this._isInputOutputChanged = false
 
             local inputCommand  = (input._bools[1] and "1" or "0") .. "|" .. input._numbers[1]
             local outputCommand = (output._bools[1] and "1" or "0") .. "|" .. output._numbers[1]
@@ -278,8 +277,8 @@ LBSimulator = {
                 outputCommand = outputCommand .. "|" .. (output._bools[i] and "1" or "0") .. "|" .. output._numbers[i]
             end
 
-            this.connection:sendCommand("INPUT", inputCommand)
-            this.connection:sendCommand("OUTPUT", outputCommand)
+            this._connection:sendCommand("INPUT", inputCommand)
+            this._connection:sendCommand("OUTPUT", outputCommand)
         end
     end;
 }

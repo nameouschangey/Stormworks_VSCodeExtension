@@ -17,36 +17,39 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     // is that correct?
     // or do we need to do something else?
     return `
-    require("LifeBoatAPI.Tools.Simulator.LBSimulator");
-    local __simulator = LBSimulator:new() 
-    __simulator:beginSimulation()
+require("LifeBoatAPI.Tools.Simulator.LBSimulator");
+local __simulator = LBSimulator:new() 
 
-    require("${relativePath}");
+__simulator:beginSimulation(false, arg[1])
 
-    __simulator:giveControlToMainLoop()
-    `;
+require("${relativePath}");
+
+__simulator:giveControlToMainLoop()
+`;
 }
 
-export function beginSimulator()
+export function beginSimulator(context:vscode.ExtensionContext)
 {
     var workspace = utils.getCurrentWorkspaceFolder();
     var file = utils.getCurrentWorkspaceFile();
-    
+
     if (workspace
         && file
-        && !vscode.debug.activeDebugSession)
+        && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
     {
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
+        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_simulator.lua");
 
-        return vscode.workspace.fs.writeFile(vscode.Uri.file(workspace.uri.fsPath + "/out/_simulator.lua"), new TextEncoder().encode(simulatorLua))
+        return vscode.workspace.fs.writeFile(simulatedLuaFile, new TextEncoder().encode(simulatorLua))
         .then(
             () => {
                 var config = {
                     name: "Run Simulator",
                     type: "lua",
                     request: "launch",
-                    program: `${file?.fsPath}`,
+                    program: `${simulatedLuaFile?.fsPath}`,
                     arg: [
+                        context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe"
                         // stuff for the simulator to run?
                         // can't remember what config is needed
                     ]

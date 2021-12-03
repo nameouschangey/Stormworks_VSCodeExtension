@@ -8,7 +8,7 @@ function beginUpdateWorkspaceSettings(context) {
     // setup library paths
     // copy global (user) and workspace paths, rather than overwriting
     var lifeboatLibraryPaths = lifeboatConfig.get("projectSpecificLibraryPaths") ?? [];
-    var wslifeboatLibraryPaths = lifeboatConfig.get("workspacelibraryPaths") ?? [];
+    var wslifeboatLibraryPaths = lifeboatConfig.get("workspaceLibraryPaths") ?? [];
     var userlifeboatLibraryPaths = lifeboatConfig.get("globalLibraryPaths") ?? [];
     for (var path of wslifeboatLibraryPaths) {
         lifeboatLibraryPaths.push(path);
@@ -19,7 +19,7 @@ function beginUpdateWorkspaceSettings(context) {
     // add lifeboatAPI to the library path
     if (utils.isMicrocontrollerProject()) {
         lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/");
-        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/Simulator/");
+        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/");
     }
     else {
         lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Addons");
@@ -33,6 +33,7 @@ function beginUpdateWorkspaceSettings(context) {
     var luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
     var luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");
     var luaDebugConfig = vscode.workspace.getConfiguration("lua.debug.settings");
+    var luaIntellisense = vscode.workspace.getConfiguration("Lua.Intellisense");
     return Promise.resolve()
         .then(() => {
         if (!utils.getCurrentWorkspaceFolder()) {
@@ -58,7 +59,8 @@ function beginUpdateWorkspaceSettings(context) {
         // lua.debug.cpath
         var existing = luaDebugConfig.get("cpath") ?? [];
         const defaultCPaths = [
-            "abc"
+            context.extensionPath + "/assets/luasocket/dll/mime/core.dll",
+            context.extensionPath + "/assets/luasocket/dll/socket/core.dll",
         ];
         for (const cPathElement of defaultCPaths) {
             if (existing.indexOf(cPathElement) === -1) {
@@ -68,8 +70,20 @@ function beginUpdateWorkspaceSettings(context) {
         return luaDebugConfig.update("cpath", existing, vscode.ConfigurationTarget.Workspace);
     }).then(() => {
         //lua.debug.path
-        return luaDebugConfig.update("path", lifeboatLibraryPaths, vscode.ConfigurationTarget.Workspace);
-    }).then(() => luaDebugConfig.update("luaVersion", "5.3", vscode.ConfigurationTarget.Workspace)).then(() => luaDebugConfig.update("luaArch", "x86", vscode.ConfigurationTarget.Workspace));
+        var debugPaths = [
+            context.extensionPath + "/assets/luasocket/?.lua",
+        ];
+        for (path of lifeboatLibraryPaths) {
+            debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
+            debugPaths.push(path + "?.lbinternal");
+        }
+        return luaDebugConfig.update("path", debugPaths, vscode.ConfigurationTarget.Workspace);
+    }).then(() => luaDebugConfig.update("luaVersion", "5.3", vscode.ConfigurationTarget.Workspace))
+        .then(() => luaDebugConfig.update("luaArch", "x86", vscode.ConfigurationTarget.Workspace))
+        .then(() => luaIntellisense.update("traceBeSetted", true))
+        .then(() => luaIntellisense.update("traceFieldInject", true))
+        .then(() => luaIntellisense.update("traceLocalSet", true))
+        .then(() => luaIntellisense.update("traceReturn", true));
 }
 exports.beginUpdateWorkspaceSettings = beginUpdateWorkspaceSettings;
 //# sourceMappingURL=settingsManagement.js.map

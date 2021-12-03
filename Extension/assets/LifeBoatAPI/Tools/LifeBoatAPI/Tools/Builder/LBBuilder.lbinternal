@@ -1,7 +1,7 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
-require("LifeBoatAPI.Vehicle.Utils.LBCopy")
+require("LifeBoatAPI.Tools.Utils.LBBase")
 require("LifeBoatAPI.Tools.Combiner.LBCombiner")
 require("LifeBoatAPI.Tools.Minimizer.LBMinimizer")
 require("LifeBoatAPI.Tools.Minimizer.LBParsingConstantsLoader")

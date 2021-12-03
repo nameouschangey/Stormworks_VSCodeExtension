@@ -1,9 +1,9 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
-require("LifeBoatAPI.Missions.Utils.LBBase")
-require("LifeBoatAPI.Missions.Utils.LBTable")
-require("LifeBoatAPI.Missions.Utils.LBString")
+require("LifeBoatAPI.Tools.Utils.LBBase")
+require("LifeBoatAPI.Tools.Utils.LBTable")
+require("LifeBoatAPI.Tools.Utils.LBString")
 
 ---@class LBStringReplacer : LBBaseClass
 ---@field renamer LBVariableRenamer

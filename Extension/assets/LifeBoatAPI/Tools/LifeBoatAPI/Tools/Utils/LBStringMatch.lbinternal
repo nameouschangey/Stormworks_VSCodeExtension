@@ -2,8 +2,8 @@
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
 
-require("LifeBoatAPI.Missions.Utils.LBBase")
-require("LifeBoatAPI.Missions.Utils.LBTable")
+require("LifeBoatAPI.Tools.Utils.LBBase")
+require("LifeBoatAPI.Tools.Utils.LBTable")
 
 --- struct representing a variable found in the code
 ---@class LBStringMatch : LBBaseClass
