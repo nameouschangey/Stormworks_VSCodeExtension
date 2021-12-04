@@ -7,7 +7,6 @@ require("LifeBoatAPI.Tools.Minimizer.LBMinimizer")
 require("LifeBoatAPI.Tools.Minimizer.LBParsingConstantsLoader")
 
 
-
 -- A simpler setup for the Minimizer and Combiner, to make them more user friendly
 
 ---@class LBBuilder
@@ -27,7 +26,7 @@ LBBuilder = {
         this.mission_constants = this:_setupMissionConstants(addonDoc)
 
         this.combiner = LBCombiner:new()
-        for dir in ipairs(rootDirs) do
+        for _,dir in ipairs(rootDirs) do
             this.combiner:addRootFolder(dir)
         end
         return this
@@ -40,8 +39,8 @@ LBBuilder = {
         print("Building micrcontroller: " .. name)
         params = params or {}
 
-        local outFile = LBFilepath:new(this.outputDirectory:linux() .. [[/minified/]] .. name, true)
-        local cmbFile = LBFilepath:new(this.outputDirectory:linux() .. [[/intermediate/]] .. name, true)
+        local cmbFile = LBFilepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
+        local outFile = LBFilepath:new(this.outputDirectory:linux() .. [[/release/]] .. name, true)
 
         this.combiner:combineFile(entrypoint, cmbFile)
 
@@ -56,10 +55,10 @@ LBBuilder = {
     buildAddonScript = function (this, name, entrypoint, params)    
         print("Building addon: " .. name)
         params = params or {}
-        
-        local outFile = LBFilepath:new(this.outputDirectory:linux() .. [[/minified/]] .. name, true)
-        local cmbFile = LBFilepath:new(this.outputDirectory:linux() .. [[/intermediate/]] .. name, true)
- 
+
+        local cmbFile = LBFilepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
+        local outFile = LBFilepath:new(this.outputDirectory:linux() .. [[/release/]] .. name, true)
+
         this.combiner:combineFile(entrypoint, cmbFile)
 
         local minimizer = LBMinimizer:new(this.mission_constants, params or {})
@@ -68,23 +67,23 @@ LBBuilder = {
     end;
 
 
-    _setupVehicleConstants = function(this, docsDir)
+    _setupVehicleConstants = function(this, docpath)
         local constants = LBParsingConstantsLoader:new()
         constants:addRestrictedKeywords(constants._vehicle_restricted_callbacks)  -- select from _vehicle_restricted and _mission_restricted
         constants:loadLibrary("table")
         constants:loadLibrary("math")
         constants:loadLibrary("string", true)
-        constants:loadNeloDocFile(LBFilepath:new(docsDir + [[\docs_vehicles.lua]]))
+        constants:loadNeloDocFile(docpath)
         return constants
     end;
 
-    _setupMissionConstants = function (this, docsDir)
+    _setupMissionConstants = function (this, docpath)
         local constants = LBParsingConstantsLoader:new()
         constants:addRestrictedKeywords(constants._mission_restricted_callbacks)
         constants:loadLibrary("table")
         constants:loadLibrary("math")
         constants:loadLibrary("string", true)
-        constants:loadNeloDocFile(LBFilepath:new(docsDir + [[\docs_missions.lua]]))
+        constants:loadNeloDocFile(docpath)
         return constants
     end;
 }

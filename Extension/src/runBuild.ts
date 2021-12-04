@@ -17,8 +17,13 @@ local neloMCPath = LBFilepath:new(arg[2]);
 local outputDir = LBFilepath:new(arg[3]);
 local params = {boilerPlate = arg[4]};
 local rootDirs = {};
+
 for i=5, #arg do
-    table.insert(rootDirs, LBFilepath(arg[i]));
+    table.insert(rootDirs, LBFilepath:new(arg[i]));
+end
+
+for i,v in ipairs(arg) do
+    print(tostring(i) .. ": " .. tostring(arg[i]))
 end
 
 local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
@@ -26,6 +31,8 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
     return vscode.workspace.findFiles("**/*.lua", "**/{out,.vscode}/**")
     .then(
         (files) => {
+            
+            var buildActionsFile = null;
             for(var file of files)
             {
                 // turn the relative path into a lua require
@@ -37,10 +44,21 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
                     relativePath = relativePath.substr(1);
                 }
 
-                var buildLine = isMC ? `_builder:buildMicrocontroller(${relativePath}, LBFilepath:new(${file.fsPath}), params)`
-                                        : `_builder:buildAddonScript(${relativePath}, LBFilepath:new(${file.fsPath}), params)`;
-                content += buildLine;
+                if(relativePath.includes("_BuildActions.lua"))
+                {
+                    buildActionsFile = relativePath;
+                }
+
+                var buildLine = isMC ? `_builder:buildMicrocontroller([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`
+                                     : `_builder:buildAddonScript([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`;
+                content += "\n" + buildLine;
             }
+
+            if(buildActionsFile)
+            {
+                content += `\nrequire("${buildActionsFile.replace("/", ".").replace(path.extname(buildActionsFile), "")}")`;
+            }
+            
             return content;
     });
 }
@@ -62,8 +80,10 @@ export function beginBuild(context:vscode.ExtensionContext)
         }
 
         
-        var buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/__build.lua");
+        var buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_process/__build.lua");
         var outputDir = workspace.uri.fsPath + "/out/";
+        var rootDir = workspace.uri.fsPath;
+
         return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(), context)
         .then(
             (buildLua) => vscode.workspace.fs.writeFile(buildLuaFile, new TextEncoder().encode(buildLua))
@@ -84,10 +104,12 @@ export function beginBuild(context:vscode.ExtensionContext)
                     ]
                 };
                 // all remaining args are root paths to load scripts from
-                for(var dir in settingsManagement.getLibraryPaths(context))
+                for(var dir of settingsManagement.getLibraryPaths(context))
                 {
                     config.arg.push(dir);
                 }
+                config.arg.push(rootDir);
+
                 vscode.window.showInformationMessage(`Simulating file: ${utils.getCurrentWorkspaceFile()?.fsPath}`);
                 return vscode.debug.startDebugging(workspace, config);
             }

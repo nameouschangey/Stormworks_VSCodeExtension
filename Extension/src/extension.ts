@@ -9,6 +9,7 @@ import * as utils from "./utils";
 import * as projectCreation from "./projectCreation";
 import * as settingsManagement from "./settingsManagement";
 import * as runSimulator from "./runSimulator";
+import * as runBuild from "./runBuild";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -60,33 +61,16 @@ export function activate(context: vscode.ExtensionContext)
 
 
 	// COMMAND HANDLING --------------------------------------------------------------------------------
-	// Build currently Workspace
-	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build',
-	(folder) => {
-		vscode.window.showInformationMessage('Attempt to build current project.');
-
-		var workspace = utils.getCurrentWorkspaceFolder();
-		if (workspace)
-		{
-			var config = {
-				name: "Run Simulator",
-				type: "lua",
-				request: "launch",
-				program: "${file}",
-				arg: [
-					// stuff for the simulator to run?
-					// can't remember what config is needed
-				]
-			};
-			vscode.window.showInformationMessage(`Simulating file: ${utils.getCurrentWorkspaceFile()?.fsPath}`);
-			vscode.debug.startDebugging(workspace, config);
-		}
-	}));
-
 	// Simulate current file
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.simulate',
 	() => {
 		return runSimulator.beginSimulator(context);
+	}));
+
+	// Build current workspace
+	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build',
+	() => {
+		return runBuild.beginBuild(context);
 	}));
 
 	// New MC

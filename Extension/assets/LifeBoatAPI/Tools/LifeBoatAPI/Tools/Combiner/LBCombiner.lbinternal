@@ -76,8 +76,7 @@ LBCombiner = {
 
     ---@param this LBCombiner
     ---@param rootDirectory LBFilepath
-    ---@param outputFile LBFilepath
-    _getDataByRequire = function(this, rootDirectory, outputFile)
+    _getDataByRequire = function(this, rootDirectory)
         local requiresToFilecontents = {}
         local files = LBFileSystem_findFilesRecursive(rootDirectory)
 
@@ -86,9 +85,7 @@ LBCombiner = {
             requireName = requireName:gsub("/", ".")
             requireName = requireName:gsub(".lua", "")
 
-            if(requireName ~= outputFile) then
-                requiresToFilecontents[requireName] = LBFileSystem_readAllText(filename)
-            end
+            requiresToFilecontents[requireName] = LBFileSystem_readAllText(filename)
         end
 
         return requiresToFilecontents

@@ -76,10 +76,6 @@ const microControllerDefaultSimulatorConfig =
 
 `;
 
-
-
-
-
 const addonDefaultScript =
 `
 function onTick()
@@ -89,6 +85,18 @@ function onDraw()
 end
 `;
 
+const buildActionsDefault =
+`
+-- This file is called after the build process finished
+-- Can be used to copy data into the game, trigger deployments, etc.
+-- Regular lua - you have access to the filesystem etc. via LBFilesystem
+-- Recommend using LBFilepath for paths, to keep things easy
+
+-- Note: This file will get picked up, so long as it is called _BuildActions.lua in any folder
+
+-- default is no actions
+print("Build Success - No additional actions in _BuildActions file")
+`;
 
 
 export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
@@ -179,9 +187,9 @@ export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 export function addUserBoilerplate(text : string)
 {
 	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
-	var authorName	  = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
-	var githubLink    = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
-	var workshopLink  = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+	var authorName	  = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+	var githubLink    = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+	var workshopLink  = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
 	var extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
 
 	var extendedBoilerplate = "";
@@ -191,16 +199,21 @@ export function addUserBoilerplate(text : string)
 		{
 			extendedBoilerplate += "\n--" + line;
 		}
+		return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "\n" + text;
 	}
-	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "\n" + text;
+	else
+	{
+		return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + text;
+	}
+	
 }
 
 export function addBoilerplate(text : string)
 {
 	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
-	var authorName	  = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
-	var githubLink    = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
-	var workshopLink  = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+	var authorName	  = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+	var githubLink    = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+	var workshopLink  = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
 	var extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
 
 	var extendedBoilerplate = "";
@@ -237,7 +250,16 @@ function setupMicrocontrollerFiles(params : any)
 					return vscode.workspace.fs.writeFile(basicConfigFile, new TextEncoder().encode(addBoilerplate(microControllerDefaultSimulatorConfig)))
 							.then( () => params );
 				});
-		});
+		}).then(
+			() => {
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_BuildActions.lua");
+				return utils.doesFileExist(buildActionsFile,
+					() => params,
+					() => {
+						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
+								.then( () => params );
+					});
+			});
 }
 
 function setupAddonFiles(params : any)
@@ -248,5 +270,14 @@ function setupAddonFiles(params : any)
 		() => {
 			return vscode.workspace.fs.writeFile(scriptFile, new TextEncoder().encode(addBoilerplate(addonDefaultScript)))
 					.then( () => params );
-		});
+		}).then(
+			() => {
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_BuildActions.lua");
+				return utils.doesFileExist(buildActionsFile,
+					() => params,
+					() => {
+						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
+								.then( () => params );
+					});
+			});
 }

@@ -152,8 +152,7 @@
 			},
 			{
 				"command": "lifeboatapi.build",
-				"key": "F7",
-				"args": "${workspaceFolder}"
+				"key": "F7"
 			}
 		],
 		"menus": {
