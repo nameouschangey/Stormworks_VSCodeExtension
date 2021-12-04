@@ -22,7 +22,8 @@ for i=5, #arg do
 end
 
 local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
-    return vscode.workspace.findFiles("**/*.lua", "**/{out,.vscode}/**")
+    var pattern = new vscode.RelativePattern(workspace, "**/*.lua");
+    return vscode.workspace.findFiles(pattern, "**/{out,.vscode}/**")
         .then((files) => {
         var buildActionsFile = null;
         for (var file of files) {
@@ -41,7 +42,15 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
             content += "\n" + buildLine;
         }
         if (buildActionsFile) {
-            content += `\nrequire("${buildActionsFile.replace("/", ".").replace(path.extname(buildActionsFile), "")}")`;
+            buildActionsFile = buildActionsFile.replace(path.extname(buildActionsFile), "");
+            buildActionsFile = buildActionsFile.replace("\\\\", "\\");
+            buildActionsFile = buildActionsFile.replace("\\", ".");
+            buildActionsFile = buildActionsFile.replace("/", ".");
+            if (buildActionsFile.substr(0, 1) === ".") // remove initial "." that might be left
+             {
+                relativePath = buildActionsFile.substr(1);
+            }
+            content += `\nrequire([[${buildActionsFile}]])`;
         }
         return content;
     });
@@ -77,7 +86,8 @@ function beginBuild(context) {
                 ]
             };
             // all remaining args are root paths to load scripts from
-            for (var dir of settingsManagement.getLibraryPaths(context)) {
+            const libPaths = settingsManagement.getLibraryPaths(context);
+            for (var dir of libPaths) {
                 config.arg.push(dir);
             }
             config.arg.push(rootDir);
