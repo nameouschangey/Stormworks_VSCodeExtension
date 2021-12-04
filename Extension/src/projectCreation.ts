@@ -256,16 +256,16 @@ function setupMicrocontrollerFiles(params : any)
 					return vscode.workspace.fs.writeFile(basicConfigFile, new TextEncoder().encode(addBoilerplate(microControllerDefaultSimulatorConfig)))
 							.then( () => params );
 				});
-		});/*.then(
+		}).then(
 			() => {
-				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_BuildActions.lua");
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_post_buildactions.lua");
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {
 						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
 								.then( () => params );
 					});
-			});*/
+			});
 }
 
 function setupAddonFiles(params : any)
@@ -276,14 +276,14 @@ function setupAddonFiles(params : any)
 		() => {
 			return vscode.workspace.fs.writeFile(scriptFile, new TextEncoder().encode(addBoilerplate(addonDefaultScript)))
 					.then( () => params );
-		});/*.then(
+		}).then(
 			() => {
-				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_BuildActions.lua");
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_post_buildactions.lua");
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {
 						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
 								.then( () => params );
 					});
-			});*/
+			});
 }
