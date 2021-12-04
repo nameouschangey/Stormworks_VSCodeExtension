@@ -22,10 +22,6 @@ for i=5, #arg do
     table.insert(rootDirs, LBFilepath:new(arg[i]));
 end
 
-for i,v in ipairs(arg) do
-    print(tostring(i) .. ": " .. tostring(arg[i]))
-end
-
 local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
 
     return vscode.workspace.findFiles("**/*.lua", "**/{out,.vscode}/**")
