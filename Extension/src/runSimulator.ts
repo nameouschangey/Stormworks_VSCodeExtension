@@ -67,7 +67,10 @@ export function beginSimulator(context:vscode.ExtensionContext)
         );
     }
 
-    if(vscode.debug.activeDebugSession)
+    if(!utils.isMicrocontrollerProject())
+    {// no error, might not be a stormworks project
+    }
+    else if(vscode.debug.activeDebugSession)
     {
         return Promise.reject("Please end current debug session before starting another.");
     }

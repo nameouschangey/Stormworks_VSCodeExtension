@@ -85,11 +85,10 @@ const microControllerDefaultSimulatorConfig =
 
 const addonDefaultScript =
 `
-function onTick()
+
+function onTick(game_ticks)
 end
 
-function onDraw()
-end
 `;
 
 const buildActionsDefault =

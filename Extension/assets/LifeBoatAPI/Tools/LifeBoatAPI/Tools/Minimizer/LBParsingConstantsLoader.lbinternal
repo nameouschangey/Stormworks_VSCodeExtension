@@ -19,7 +19,7 @@ LBParsingConstantsLoader = {
     };
     _default_baseNames = {"nil", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
-    _mission_restricted_callbacks = {"onCreate", "onDestroy", "onCustomCommand", "onChatMessage",
+    _mission_restricted_callbacks = {"onTick", "onCreate", "onDestroy", "onCustomCommand", "onChatMessage",
                                      "onPlayerJoin", "onPlayerSit", "onCharacterSit", "onPlayerRespawn",
                                      "onPlayerLeave","onToggleMap", "onPlayerDie", "onVehicleSpawn", "onVehicleLoad", "onVehicleTeleport",
                                      "onVehicleDespawn", "onSpawnAddonComponent", "onVehicleDamaged", "httpReply",

@@ -34,6 +34,7 @@ export function getLibraryPaths(context : vscode.ExtensionContext)
 	else
 	{
 		lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Addons");
+		lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/");
 	}
 
 	return lifeboatLibraryPaths;
@@ -58,7 +59,7 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 	.then( () => {
 		if(!utils.getCurrentWorkspaceFolder())
 		{
-			return Promise.reject("LifeBoatAPI: Can't update settings while no workspace is active");
+			return Promise.reject("Can't update settings while no workspace is active");
 		}
 
 	}).then( () => {
@@ -80,22 +81,6 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		//Lua.workspace.ignoreDir
 		return luaLibWorkspace.update("ignoreDir", lifeboatIgnorePaths, vscode.ConfigurationTarget.Workspace);
 
-	}).then( () => { 
-		//Lua.workspace.library
-		var paths = lifeboatLibraryPaths.copyWithin(0,0);
-
-		// Nelo Docs root
-		var neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
-		var neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
-		if(lifeboatConfig.get("overwriteNeloDocsPath"))
-		{
-			neloAddonDoc = lifeboatConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
-			neloMCDoc = lifeboatConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
-		}
-		paths.push(neloAddonDoc);
-		paths.push(neloMCDoc);
-
-		return luaLibWorkspace.update("library", paths, vscode.ConfigurationTarget.Workspace);
 	}).then(() => {
 		// lua.debug.cpath
 		var existing : string[] = luaDebugConfig.get("cpath") ?? [];
@@ -124,6 +109,22 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
         }
 		return luaDebugConfig.update("path", debugPaths, vscode.ConfigurationTarget.Workspace);
 
+	}).then( () => { 
+		//Lua.workspace.library
+		var paths = lifeboatLibraryPaths;
+
+		// Nelo Docs root
+		var neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
+		var neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
+		if(lifeboatConfig.get("overwriteNeloDocsPath"))
+		{
+			neloAddonDoc = lifeboatConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
+			neloMCDoc = lifeboatConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
+		}
+		paths.push(neloAddonDoc);
+		paths.push(neloMCDoc);
+
+		return luaLibWorkspace.update("library", paths, vscode.ConfigurationTarget.Workspace);
 	}).then( () => luaDebugConfig.update("luaVersion", "5.3", vscode.ConfigurationTarget.Workspace))
 	.then( () => luaDebugConfig.update("luaArch", "x86", vscode.ConfigurationTarget.Workspace) )
 	.then( () => luaIntellisense.update("traceBeSetted", true))

@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext)
 			|| e.affectsConfiguration("lifeboatapi.stormworks.globalLibraryPaths")
 			|| e.affectsConfiguration("lifeboatapi.stormworks.ignorePaths"))
 		{
-			context.workspaceState.update("lifeboatapi.lastWorkspace", null);
+			return context.workspaceState.update("lifeboatapi.lastWorkspace", null);
 		}
 	}, null, context.subscriptions);
 
@@ -54,7 +54,7 @@ export function activate(context: vscode.ExtensionContext)
 			&& utils.isStormworksProject())
 		{
 			context.workspaceState.update("lifeboatapi.lastWorkspace", currentWorkspace);
-			settingsManagement.beginUpdateWorkspaceSettings(context).then(() => vscode.window.showInformationMessage(`Changed workspace, updated settings`) );
+			return settingsManagement.beginUpdateWorkspaceSettings(context);
 		}
 	}, null, context.subscriptions);
 
@@ -76,16 +76,16 @@ export function activate(context: vscode.ExtensionContext)
 	// New MC
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newMCProject',
 	() =>{
-		projectCreation.beginCreateNewProjectFolder(true)
-			.then((folder) => vscode.commands.executeCommand("workbench.view.explorer"));
+		return projectCreation.beginCreateNewProjectFolder(true)
+				.then((folder) => vscode.commands.executeCommand("workbench.view.explorer"));
 	}));
 	
 
 	// New Addon
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newAddonProject',
 	() =>{
-		projectCreation.beginCreateNewProjectFolder(false)
-			.then((folder) => vscode.commands.executeCommand("workbench.view.explorer"));
+		return projectCreation.beginCreateNewProjectFolder(false)
+				.then((folder) => vscode.commands.executeCommand("workbench.view.explorer"));
 	}));
 }
 
