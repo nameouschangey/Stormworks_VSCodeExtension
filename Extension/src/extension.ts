@@ -34,10 +34,10 @@ export function activate(context: vscode.ExtensionContext)
 	// if config changes, we need to update the Lua library paths next time we are back on a file
 	vscode.workspace.onDidChangeConfiguration(
 	(e) => {	
-		if(e.affectsConfiguration("lifeboatapi.stormworks.projectSpecificLibraryPaths")
-			|| e.affectsConfiguration("lifeboatapi.stormworks.workspaceLibraryPaths")
-			|| e.affectsConfiguration("lifeboatapi.stormworks.globalLibraryPaths")
-			|| e.affectsConfiguration("lifeboatapi.stormworks.ignorePaths"))
+		if(e.affectsConfiguration("lifeboatapi.stormworks.libs.projectSpecificLibraryPaths")
+			|| e.affectsConfiguration("lifeboatapi.stormworks.libs.workspaceLibraryPaths")
+			|| e.affectsConfiguration("lifeboatapi.stormworks.libs.globalLibraryPaths")
+			|| e.affectsConfiguration("lifeboatapi.stormworks.libs.ignorePaths"))
 		{
 			return context.workspaceState.update("lifeboatapi.lastWorkspace", null);
 		}

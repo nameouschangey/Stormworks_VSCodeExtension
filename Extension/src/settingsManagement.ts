@@ -7,41 +7,56 @@ import * as utils from "./utils";
 import { debug } from 'console';
 
 
+function sanitisePath(path : string)
+{
+	path = path.replace("\\", "/");
+	if(path.charAt(path. length-1) !== "/")
+	{
+		return path + "/";
+	}
+	return path
+}
 export function getLibraryPaths(context : vscode.ExtensionContext)
 {
-	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
 
+	var lbPaths : string[] = [];
 	var lifeboatLibraryPaths : string[] = lifeboatConfig.get("projectSpecificLibraryPaths") ?? [];
     var wslifeboatLibraryPaths : string[] = lifeboatConfig.get("workspaceLibraryPaths") ?? [];
     var userlifeboatLibraryPaths : string[] = lifeboatConfig.get("globalLibraryPaths") ?? [];
 
+	for (var path of lifeboatLibraryPaths)
+    {
+        lbPaths.push(sanitisePath(path));
+    }
+
     for (var path of wslifeboatLibraryPaths)
     {
-        lifeboatLibraryPaths.push(path);
+        lbPaths.push(sanitisePath(path));
     }
 
     for(var path of userlifeboatLibraryPaths)
     {
-        lifeboatLibraryPaths.push(path);
+        lbPaths.push(sanitisePath(path));
     }
 
 	// add lifeboatAPI to the library path
 	if(utils.isMicrocontrollerProject())
     {
-		lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/");
-        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/");
+		lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/");
+        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
 	}
 	else
 	{
-		lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Addons");
-		lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/");
+		lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addons/");
+		lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
 	}
 
-	return lifeboatLibraryPaths;
+	return lbPaths;
 }
 
 export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
-	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
     var lifeboatLibraryPaths = getLibraryPaths(context);
 	var lifeboatIgnorePaths : string[]= lifeboatConfig.get("ignorePaths") ?? [];
 
@@ -111,20 +126,20 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 
 	}).then( () => { 
 		//Lua.workspace.library
-		var paths = lifeboatLibraryPaths;
+		var docConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.nelo", utils.getCurrentWorkspaceFile());
 
 		// Nelo Docs root
 		var neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
 		var neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
-		if(lifeboatConfig.get("overwriteNeloDocsPath"))
+		if(docConfig.get("overwriteNeloDocsPath") === true)
 		{
-			neloAddonDoc = lifeboatConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
-			neloMCDoc = lifeboatConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
+			neloAddonDoc = docConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
+			neloMCDoc = docConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
 		}
-		paths.push(neloAddonDoc);
-		paths.push(neloMCDoc);
+		lifeboatLibraryPaths.push(neloAddonDoc);
+		lifeboatLibraryPaths.push(neloMCDoc);
 
-		return luaLibWorkspace.update("library", paths, vscode.ConfigurationTarget.Workspace);
+		return luaLibWorkspace.update("library", lifeboatLibraryPaths, vscode.ConfigurationTarget.Workspace);
 	}).then( () => luaDebugConfig.update("luaVersion", "5.3", vscode.ConfigurationTarget.Workspace))
 	.then( () => luaDebugConfig.update("luaArch", "x86", vscode.ConfigurationTarget.Workspace) )
 	.then( () => luaIntellisense.update("traceBeSetted", true))

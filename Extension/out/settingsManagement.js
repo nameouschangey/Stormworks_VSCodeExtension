@@ -3,27 +3,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.beginUpdateWorkspaceSettings = exports.getLibraryPaths = void 0;
 const vscode = require("vscode");
 const utils = require("./utils");
+function sanitisePath(path) {
+    path = path.replace("\\", "/");
+    if (path.charAt(path.length - 1) !== "/") {
+        return path + "/";
+    }
+    return path;
+}
 function getLibraryPaths(context) {
     var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+    var lbPaths = [];
     var lifeboatLibraryPaths = lifeboatConfig.get("projectSpecificLibraryPaths") ?? [];
     var wslifeboatLibraryPaths = lifeboatConfig.get("workspaceLibraryPaths") ?? [];
     var userlifeboatLibraryPaths = lifeboatConfig.get("globalLibraryPaths") ?? [];
+    for (var path of lifeboatLibraryPaths) {
+        lbPaths.push(sanitisePath(path));
+    }
     for (var path of wslifeboatLibraryPaths) {
-        lifeboatLibraryPaths.push(path);
+        lbPaths.push(sanitisePath(path));
     }
     for (var path of userlifeboatLibraryPaths) {
-        lifeboatLibraryPaths.push(path);
+        lbPaths.push(sanitisePath(path));
     }
     // add lifeboatAPI to the library path
     if (utils.isMicrocontrollerProject()) {
-        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/");
-        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/");
+        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/");
+        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
     }
     else {
-        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Addons");
-        lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Tools/");
+        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addons");
+        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
     }
-    return lifeboatLibraryPaths;
+    return lbPaths;
 }
 exports.getLibraryPaths = getLibraryPaths;
 function beginUpdateWorkspaceSettings(context) {

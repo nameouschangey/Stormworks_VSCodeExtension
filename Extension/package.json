@@ -1,11 +1,11 @@
 {
   	"name": "lifeboatapi",
 	"repository": "https://github.com/nameouschangey/STORMWORKS_VSCodeExtension",
-	"publisher": "nameouschangey",
+	"publisher": "NameousChangey",
 	"icon": "assets/images/icon.png",
 	"displayName": "Stormworks Lua with LifeBoatAPI",
 	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"vscode": "^1.62.0"
 	},
@@ -54,25 +54,25 @@
 						"scope": "resource",
 						"description": "Any remaining boiletplate notice you wish to include at the top of the file."
 					},
-					"lifeboatapi.stormworks.overwriteNeloDocsPath" : {
+					"lifeboatapi.stormworks.nelo.overwriteNeloDocsPath" : {
 						"type":"boolean",
 						"default": false,
 						"scope": "resource",
 						"description": "True if you have a local copy of Nelo Lua docs you'd prefer to use (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
 					},
-					"lifeboatapi.stormworks.neloMicrocontrollerDocPath" : {
+					"lifeboatapi.stormworks.nelo.neloMicrocontrollerDocPath" : {
 						"type":"string",
 						"default": "<use internal LifeBoatAPI copy>",
 						"scope": "resource",
 						"description": "Local location of your microcontroller Nelo Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
 					},
-					"lifeboatapi.stormworks.neloAddonDocPath" : {
+					"lifeboatapi.stormworks.nelo.neloAddonDocPath" : {
 						"type":"string",
 						"default": "<use internal LifeBoatAPI copy>",
 						"scope": "resource",
 						"description": "Local location of your addon Nelo Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
 					},
-					"lifeboatapi.stormworks.projectSpecificLibraryPaths": {
+					"lifeboatapi.stormworks.libs.projectSpecificLibraryPaths": {
 						"type":"array",
 						"items": {
 							"type": "string"
@@ -81,7 +81,7 @@
 						"default": [],
 						"description": "(Per-project) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths apply ONLY to this project."
 					},
-					"lifeboatapi.stormworks.workspaceLibraryPaths": {
+					"lifeboatapi.stormworks.libs.workspaceLibraryPaths": {
 						"type":"array",
 						"items": {
 							"type": "string"
@@ -90,7 +90,7 @@
 						"default": [],
 						"description": "(Shared within Workspace) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths are shared for all projects in this workspace, avoiding the need to set each project up specifically"
 					},
-					"lifeboatapi.stormworks.globalLibraryPaths": {
+					"lifeboatapi.stormworks.libs.globalLibraryPaths": {
 						"type":"array",
 						"items": {
 							"type": "string"
@@ -99,7 +99,7 @@
 						"default": [],
 						"description": "(Shared globally) Add absolute-paths to other projects or libraries, to use the lua from them.\n These paths are globally shared, for libraries you want to use every time without setting them up again."
 					},
-					"lifeboatapi.stormworks.ignorePaths": {
+					"lifeboatapi.stormworks.libs.ignorePaths": {
 						"type":"array",
 						"items": {
 							"type": "string"
