@@ -171,4 +171,4 @@ LBVec2 = {
     end;
     ---@endsection
 };
----@endsection LBCANVASCLASS
+---@endsection LBVEC2CLASS
