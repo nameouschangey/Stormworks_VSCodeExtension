@@ -1,10 +1,8 @@
---[[
-Stats From Heracles421 on the Stormworks discord
-Stats From Bones       on the Stormworks discord
+-- Stats From Heracles421 on the Stormworks discord
+-- Stats From Bones       on the Stormworks discord
 
-Note:
-- Larger caliber projectiles receive proportionally less force from the wind
-]]
+-- Note:
+--   Larger caliber projectiles receive proportionally less force from the wind
 
 LBWeapon_SmallArms = {
     DragCoefficient   = 0;      -- technically "Unknown"
@@ -47,15 +45,6 @@ LBWeapon_HeavyAutoCannon = {
 }
 
 LBWeapon_BattleCannon = {
-    --[[
-
-    Battle Cannon
-    Muzzle velocity (m/s): 800m
-    Drag Coefficient: 0.002
-    Gravity: 30 m/s^2, 0.5m/s/t
-    Despawn Timer (ticks): 3600
-    Despawn Speed (m/s): N/A (50m/s underwater)  
-    ]]
     DragCoefficient   = 0.002;      -- technically "Unknown"
     MuzzleVelocity    = 800;    -- m/s
     Gravity           = 30;     -- m/s
@@ -66,14 +55,6 @@ LBWeapon_BattleCannon = {
 }
 
 LBWeapon_Artillery = {
-    --[[
-        Artillery Cannon
-    Muzzle velocity (m/s): 700
-    Drag Coefficient: 0.001
-    Gravity: 30 m/s^2, 0.5m/s/t
-    Despawn Timer (ticks): 3600
-    Despawn Speed (m/s): N/A (50m/s underwater)
-    ]]
     DragCoefficient   = 0.001;      -- technically "Unknown"
     MuzzleVelocity    = 700;    -- m/s
     Gravity           = 30;     -- m/s
@@ -84,14 +65,6 @@ LBWeapon_Artillery = {
 }
 
 LBWeapon_BigBertha = {
-    --[[
-    Big Bertha Cannon
-    Muzzle velocity (m/s): 600
-    Drag Coefficient: 0.0005
-    Gravity: 30 m/s^2, 0.5m/s/t
-    Despawn Timer (ticks): 3600
-    Despawn Speed (m/s): N/A (50m/s underwater)
-    ]]
     DragCoefficient   = 0.0005;      -- technically "Unknown"
     MuzzleVelocity    = 600;    -- m/s
     Gravity           = 30;     -- m/s
@@ -102,14 +75,6 @@ LBWeapon_BigBertha = {
 }
 
 LBWeapon_RocketLauncher = {
-    --[[
-        Rocket Launcher
-        Muzzle velocity (m/s): ? (This guy accelerates for a certain amount of time)
-        Drag Coefficient: 0.003
-        Gravity: 30 m/s^2, 0.5m/s/t
-        Despawn Timer (ticks): 3600
-        Despawn Speed (m/s): N/A (50m/s underwater)
-    ]]
     DragCoefficient   = 0.003;  -- technically "Unknown"
     MuzzleVelocity    = 0;      -- non-ballistic weapon, accelerates at an unknown rate
     Gravity           = 30;     -- m/s

@@ -60,13 +60,13 @@
 					},
 					"lifeboatapi.stormworks.neloMicrocontrollerDocPath" : {
 						"type":"string",
-						"default": "",
+						"default": "<use internal LifeBoatAPI copy>",
 						"scope": "resource",
 						"description": "Local location of your microcontroller Nelo Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
 					},
 					"lifeboatapi.stormworks.neloAddonDocPath" : {
 						"type":"string",
-						"default": "",
+						"default": "<use internal LifeBoatAPI copy>",
 						"scope": "resource",
 						"description": "Local location of your addon Nelo Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
 					},
@@ -164,7 +164,8 @@
 				},
 				{
 					"command": "lifeboatapi.build",
-					"group": "0_stormworks"
+					"group": "0_stormworks",
+					"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
 				}
 			],
 			"explorer/context": [

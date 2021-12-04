@@ -50,8 +50,8 @@ function activate(context) {
         return runSimulator.beginSimulator(context);
     }));
     // Build current workspace
-    context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build', () => {
-        return runBuild.beginBuild(context);
+    context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build', (uri) => {
+        return runBuild.beginBuild(context, uri);
     }));
     // New MC
     context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newMCProject', () => {

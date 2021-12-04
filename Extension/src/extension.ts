@@ -69,8 +69,8 @@ export function activate(context: vscode.ExtensionContext)
 
 	// Build current workspace
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build',
-	() => {
-		return runBuild.beginBuild(context);
+	(uri : vscode.Uri) => {
+			return runBuild.beginBuild(context, uri);
 	}));
 
 	// New MC
