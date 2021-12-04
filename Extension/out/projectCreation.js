@@ -204,31 +204,25 @@ function setupMicrocontrollerFiles(params) {
             return vscode.workspace.fs.writeFile(basicConfigFile, new util_1.TextEncoder().encode(addBoilerplate(microControllerDefaultSimulatorConfig)))
                 .then(() => params);
         });
-    }); /*.then(
-        () => {
-            const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_BuildActions.lua");
-            return utils.doesFileExist(buildActionsFile,
-                () => params,
-                () => {
-                    return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
-                            .then( () => params );
-                });
-        });*/
+    }).then(() => {
+        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_post_buildactions.lua");
+        return utils.doesFileExist(buildActionsFile, () => params, () => {
+            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(buildActionsDefault)))
+                .then(() => params);
+        });
+    });
 }
 function setupAddonFiles(params) {
     const scriptFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/script.lua");
     return utils.doesFileExist(scriptFile, () => params, () => {
         return vscode.workspace.fs.writeFile(scriptFile, new util_1.TextEncoder().encode(addBoilerplate(addonDefaultScript)))
             .then(() => params);
-    }); /*.then(
-        () => {
-            const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_BuildActions.lua");
-            return utils.doesFileExist(buildActionsFile,
-                () => params,
-                () => {
-                    return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
-                            .then( () => params );
-                });
-        });*/
+    }).then(() => {
+        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_post_buildactions.lua");
+        return utils.doesFileExist(buildActionsFile, () => params, () => {
+            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(buildActionsDefault)))
+                .then(() => params);
+        });
+    });
 }
 //# sourceMappingURL=projectCreation.js.map

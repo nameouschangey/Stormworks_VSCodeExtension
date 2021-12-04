@@ -24,7 +24,6 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
     var pattern = new vscode.RelativePattern(workspace, "**/*.lua");
     return vscode.workspace.findFiles(pattern, "**/{_build,out,.vscode}/**")
         .then((files) => {
-        var buildActionsFile = null;
         for (var file of files) {
             // turn the relative path into a lua require
             var relativePath = file.fsPath.replace(workspace.fsPath, "");
@@ -37,21 +36,9 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
                 : `_builder:buildAddonScript([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`;
             content += "\n" + buildLine;
         }
-        //if(buildActionsFile)
-        //{
-        //    buildActionsFile = buildActionsFile.replace(path.extname(buildActionsFile), "");
-        //    buildActionsFile = buildActionsFile.replace("\\\\", "\\");
-        //    buildActionsFile = buildActionsFile.replace("\\", "."); 
-        //    buildActionsFile = buildActionsFile.replace("/", ".");
-        //
-        //    if(buildActionsFile.substr(0,1) === ".") // remove initial "." that might be left
-        //    {
-        //        relativePath = buildActionsFile.substr(1);
-        //    }
-        //
-        //    content += `\nrequire([[${buildActionsFile}]])`;
-        //}
         return content;
+    }).then((content) => {
+        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_post_buildactions.lua"), () => content + "\n require([[_build._post_buildactions]])", () => content);
     });
 }
 function beginBuild(context) {
