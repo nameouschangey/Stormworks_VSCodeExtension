@@ -95,8 +95,8 @@ export function beginBuild(context:vscode.ExtensionContext)
                     type: "lua",
                     request: "launch",
                     program: `${buildLuaFile?.fsPath}`,
-                    stopOnEntry: false,
-                    stopOnThreadEntry: false,
+                    //stopOnEntry: false,
+                    //stopOnThreadEntry: false,
                     arg: [
                         neloAddonDoc,
                         neloMCDoc,
@@ -112,7 +112,6 @@ export function beginBuild(context:vscode.ExtensionContext)
                 }
                 config.arg.push(rootDir);
 
-                vscode.window.showInformationMessage(`Simulating file: ${utils.getCurrentWorkspaceFile()?.fsPath}`);
                 return vscode.debug.startDebugging(workspace, config);
             }
         );

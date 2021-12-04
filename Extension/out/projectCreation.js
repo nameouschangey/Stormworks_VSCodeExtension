@@ -31,6 +31,9 @@ end
 
 --- default onDraw function; called once for each monitor connected each tick, order is not guaranteed
 function onDraw()
+	-- when you simulate, you should see a slightly pink circle growing over 10 seconds and repeating.
+	screen.setColor(255, 125, 125)
+	screen.drawCircleF(16, 16, (ticks%600)/60)
 end
 
 

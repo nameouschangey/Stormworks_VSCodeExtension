@@ -81,7 +81,7 @@ LBCombiner = {
         local files = LBFileSystem_findFilesRecursive(rootDirectory)
 
         for _, filename in ipairs(files) do
-            local requireName = filename:linux():gsub(rootDirectory:linux() .. "/", "")
+            local requireName = filename:linux():gsub(LBString_escape(rootDirectory:linux()) .. "/", "")
             requireName = requireName:gsub("/", ".")
             requireName = requireName:gsub(".lua", "")
 

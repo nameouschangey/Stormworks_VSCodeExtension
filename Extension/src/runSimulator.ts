@@ -41,6 +41,7 @@ export function beginSimulator(context:vscode.ExtensionContext)
 
     if (workspace
         && file
+        && utils.isMicrocontrollerProject()
         && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
     {
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
@@ -60,7 +61,7 @@ export function beginSimulator(context:vscode.ExtensionContext)
                         context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe"
                     ]
                 };
-                vscode.window.showInformationMessage(`Simulating file: ${utils.getCurrentWorkspaceFile()?.fsPath}`);
+                
                 return vscode.debug.startDebugging(workspace, config);
             }
         );
