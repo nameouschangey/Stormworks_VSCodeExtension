@@ -1,7 +1,8 @@
 {
   	"name": "lifeboatapi",
+	"repository": "http://github.com",
 	"publisher": "nameouschangey",
-	"displayName": "Stormworks Lua with Lifeboat API",
+	"displayName": "Stormworks Lua with LifeBoatAPI",
 	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
 	"version": "0.0.1",
 	"engines": {
