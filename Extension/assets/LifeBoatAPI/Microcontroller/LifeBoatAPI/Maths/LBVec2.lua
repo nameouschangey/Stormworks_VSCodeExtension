@@ -1,6 +1,6 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
-require("LifeBoatAPI.Vehicle.Utils.LBCopy")
+require("LifeBoatAPI.Utils.LBCopy")
 
 ---@class LBVec2
 ---@field x number for viewspace coordinates: (0 => leftmost, 1=>rightmost) x position to convert

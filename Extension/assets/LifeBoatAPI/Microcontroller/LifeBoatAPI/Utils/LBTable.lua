@@ -1,7 +1,7 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
-require("LifeJacket.LBCopy")
+require("LifeBoatAPI.Utils.LBCopy")
 
 
 --- Returns whether this collection contains the given value or not

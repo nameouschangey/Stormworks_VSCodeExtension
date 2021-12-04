@@ -92,12 +92,14 @@ LifeBoatAPI also adds the "require(...)" lua function.
 - You can organise your project significantly better this way, and re-use code files between multiple projects
 - require's are fully resolved by the debugger, simulator and build process - so you don't need to worry.
 
+And remember, the more people you encourage to start using VSCode, the less code you need to write yourself:
+
 ```lua
 require("TrapdoorLib.Timers")
 require("LifeBoatAPI.Maths.LBAngles")
 require("BeginnersLibrary.Missiles.Guidance")
 
-var timer = trapdoor_timer_start(onTimerEnd)
+timer = trapdoor_timer_start(onTimerEnd)
 function onTick()
     timer:onTick()
 end
@@ -105,7 +107,7 @@ end
 function onTimerEnd()
     timer:reset()
 
-    var elevation = LBAngles_convertTurnsToRadians(input.getNumber(1))
+    local elevation = LBAngles_convertTurnsToRadians(input.getNumber(1))
     
     BeginnersSetMissileElevationFunction(elevation)
 end
@@ -201,7 +203,11 @@ All other requirements are installed automatically with this extension:
 Lua by sumneko
 Lua-Debug by actboy168
 
-
+## Version History
 ### 1.0.0
-
-Initial release
+Initial testing release
+- LifeBoatAPI for Microcontrollers has some useful utilities
+- LifeBoatAPI for Addons needs re-written from scratch, (not - included)
+- Simulator written and working
+- Debugging configurations setup and working
+- Project creation written and working

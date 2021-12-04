@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------------------
-require("LifeBoatAPI.Vehicle.Maths.LBVec2")
+require("LifeBoatAPI.Maths.LBVec2")
 
 -- use a copy of the tree for this
 function lb_uielement(type,x,y,rx,ry,element)

@@ -156,7 +156,7 @@ function beginCreateNewProjectFolder(isMicrocontrollerProject) {
 }
 exports.beginCreateNewProjectFolder = beginCreateNewProjectFolder;
 function addUserBoilerplate(text) {
-    var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+    var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.user", utils.getCurrentWorkspaceFile());
     var authorName = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
     var githubLink = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
     var workshopLink = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
@@ -174,7 +174,7 @@ function addUserBoilerplate(text) {
 }
 exports.addUserBoilerplate = addUserBoilerplate;
 function addBoilerplate(text) {
-    var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+    var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.user", utils.getCurrentWorkspaceFile());
     var authorName = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
     var githubLink = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
     var workshopLink = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
