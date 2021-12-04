@@ -115,6 +115,10 @@ function onTimerEnd()
 end
 ```
 
+> Note: You should NOT require("") the global lua modules, as these are already automatically included into every file.
+    e.g. require("screen"), require("map"), require("input"), require("output") are unecessary and will not work.
+    You can simply use `screen.drawCircleF(...)` without any require, as it's part of Stormworks global modules.
+
 ## Create and Use Code Libraries
 Use and create code libraries (it's easy!)
 
