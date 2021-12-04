@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.beginBuild = void 0;
 const vscode = require("vscode");
-const path = require("path");
 const util_1 = require("util");
 const utils = require("./utils");
 const projectCreation = require("./projectCreation");
@@ -23,7 +22,7 @@ end
 
 local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
     var pattern = new vscode.RelativePattern(workspace, "**/*.lua");
-    return vscode.workspace.findFiles(pattern, "**/{out,.vscode}/**")
+    return vscode.workspace.findFiles(pattern, "**/{_build,out,.vscode}/**")
         .then((files) => {
         var buildActionsFile = null;
         for (var file of files) {
@@ -34,24 +33,24 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
              {
                 relativePath = relativePath.substr(1);
             }
-            if (relativePath.includes("_BuildActions.lua")) {
-                buildActionsFile = relativePath;
-            }
             var buildLine = isMC ? `_builder:buildMicrocontroller([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`
                 : `_builder:buildAddonScript([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`;
             content += "\n" + buildLine;
         }
-        if (buildActionsFile) {
-            buildActionsFile = buildActionsFile.replace(path.extname(buildActionsFile), "");
-            buildActionsFile = buildActionsFile.replace("\\\\", "\\");
-            buildActionsFile = buildActionsFile.replace("\\", ".");
-            buildActionsFile = buildActionsFile.replace("/", ".");
-            if (buildActionsFile.substr(0, 1) === ".") // remove initial "." that might be left
-             {
-                relativePath = buildActionsFile.substr(1);
-            }
-            content += `\nrequire([[${buildActionsFile}]])`;
-        }
+        //if(buildActionsFile)
+        //{
+        //    buildActionsFile = buildActionsFile.replace(path.extname(buildActionsFile), "");
+        //    buildActionsFile = buildActionsFile.replace("\\\\", "\\");
+        //    buildActionsFile = buildActionsFile.replace("\\", "."); 
+        //    buildActionsFile = buildActionsFile.replace("/", ".");
+        //
+        //    if(buildActionsFile.substr(0,1) === ".") // remove initial "." that might be left
+        //    {
+        //        relativePath = buildActionsFile.substr(1);
+        //    }
+        //
+        //    content += `\nrequire([[${buildActionsFile}]])`;
+        //}
         return content;
     });
 }
@@ -66,7 +65,7 @@ function beginBuild(context) {
             neloAddonDoc = lifeboatapiConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
             neloMCDoc = lifeboatapiConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
         }
-        var buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_process/__build.lua");
+        var buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_build.lua");
         var outputDir = workspace.uri.fsPath + "/out/";
         var rootDir = workspace.uri.fsPath;
         return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(), context)

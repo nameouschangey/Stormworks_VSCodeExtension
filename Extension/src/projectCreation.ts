@@ -10,9 +10,9 @@ const microControllerDefaultScript =
 `
 --- With LifeBoatAPI; you can use the "require(...)" keyword to use code from other files!
 ---     This lets you share code between projects, and organise your work better.
----     The below, includes the content from BasicConfig.lua in the generated /SimulatorConfig/ folder
+---     The below, includes the content from SimulatorConfig.lua in the generated /_build/ folder
 --- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
-require("SimulatorConfig.BasicConfig")
+require("_build.SimulatorConfig")
 
 
 --- default onTick function; called once per in-game tick (60 per second)
@@ -21,7 +21,7 @@ function onTick()
     ticks = ticks + 1
     local myRandomValue = math.random()
 
-    if(ticks == 100) then
+    if(ticks%100 == 0) then
         -- Debugging Tip (F6 to run Simulator):
         --  By clicking just left of the line number (left column), you can set a little red dot; called a "breakpoint"
         --  When you run this in the LifeBoatAPI Simulator, the debugger will stop at each breakpoint and let you see the memory values
@@ -34,6 +34,10 @@ end
 --- default onDraw function; called once for each monitor connected each tick, order is not guaranteed
 function onDraw()
 end
+
+
+--- Ready to put this in the game?
+--- Just hit F7 and then copy the (now tiny) file from the /out/ folder
 
 `;
 
@@ -243,23 +247,23 @@ function setupMicrocontrollerFiles(params : any)
 		})
 		.then(
 		() => {
-			const basicConfigFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/SimulatorConfig/BasicConfig.lua");
+			const basicConfigFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/SimulatorConfig.lua");
 			return utils.doesFileExist(basicConfigFile,
 				() => params,
 				() => {
 					return vscode.workspace.fs.writeFile(basicConfigFile, new TextEncoder().encode(addBoilerplate(microControllerDefaultSimulatorConfig)))
 							.then( () => params );
 				});
-		}).then(
+		});/*.then(
 			() => {
-				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_BuildActions.lua");
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_BuildActions.lua");
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {
 						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
 								.then( () => params );
 					});
-			});
+			});*/
 }
 
 function setupAddonFiles(params : any)
@@ -270,7 +274,7 @@ function setupAddonFiles(params : any)
 		() => {
 			return vscode.workspace.fs.writeFile(scriptFile, new TextEncoder().encode(addBoilerplate(addonDefaultScript)))
 					.then( () => params );
-		}).then(
+		});/*.then(
 			() => {
 				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_BuildActions.lua");
 				return utils.doesFileExist(buildActionsFile,
@@ -279,5 +283,5 @@ function setupAddonFiles(params : any)
 						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
 								.then( () => params );
 					});
-			});
+			});*/
 }

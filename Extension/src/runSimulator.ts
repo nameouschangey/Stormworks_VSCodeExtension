@@ -44,7 +44,7 @@ export function beginSimulator(context:vscode.ExtensionContext)
         && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
     {
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
-        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_process/__simulator.lua");
+        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_simulator.lua");
 
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new TextEncoder().encode(simulatorLua))
         .then(
