@@ -52,6 +52,24 @@
 						"scope": "resource",
 						"description": "Any remaining boiletplate notice you wish to include at the top of the file."
 					},
+					"lifeboatapi.stormworks.overwriteNeloDocsPath" : {
+						"type":"boolean",
+						"default": false,
+						"scope": "resource",
+						"description": "True if you have a local copy of Nelo Lua docs you'd prefer to use (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
+					},
+					"lifeboatapi.stormworks.neloMicrocontrollerDocPath" : {
+						"type":"string",
+						"default": "",
+						"scope": "resource",
+						"description": "Local location of your microcontroller Nelo Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
+					},
+					"lifeboatapi.stormworks.neloAddonDocPath" : {
+						"type":"string",
+						"default": "",
+						"scope": "resource",
+						"description": "Local location of your addon Nelo Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and Nelo may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
+					},
 					"lifeboatapi.stormworks.projectSpecificLibraryPaths": {
 						"type":"array",
 						"items": {

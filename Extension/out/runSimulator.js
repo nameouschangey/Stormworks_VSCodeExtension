@@ -5,6 +5,7 @@ const vscode = require("vscode");
 const path = require("path");
 const util_1 = require("util");
 const utils = require("./utils");
+const projectCreation = require("./projectCreation");
 function generateSimulatorLua(workspaceFolder, fileToSimulate) {
     // turn the relative path into a lua require
     var relativePath = fileToSimulate.fsPath.replace(workspaceFolder.fsPath, "");
@@ -18,7 +19,7 @@ function generateSimulatorLua(workspaceFolder, fileToSimulate) {
     }
     // is that correct?
     // or do we need to do something else?
-    return `
+    var contents = `
 require("LifeBoatAPI.Tools.Simulator.LBSimulator");
 local __simulator = LBSimulator:new() 
 
@@ -27,6 +28,7 @@ require("${relativePath}");
 __simulator:beginSimulation(false, arg[1])
 __simulator:giveControlToMainLoop()
 `;
+    return projectCreation.addBoilerplate(contents);
 }
 function beginSimulator(context) {
     var workspace = utils.getCurrentWorkspaceFolder();
@@ -36,7 +38,7 @@ function beginSimulator(context) {
         && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
      {
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
-        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_simulator.lua");
+        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/__simulator.lua");
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new util_1.TextEncoder().encode(simulatorLua))
             .then(() => {
             var config = {
@@ -44,6 +46,8 @@ function beginSimulator(context) {
                 type: "lua",
                 request: "launch",
                 program: `${simulatedLuaFile?.fsPath}`,
+                stopOnEntry: false,
+                stopOnThreadEntry: false,
                 arg: [
                     context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe"
                 ]

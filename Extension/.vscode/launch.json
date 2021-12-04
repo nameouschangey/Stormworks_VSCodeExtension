@@ -9,7 +9,7 @@
             "name": "Run Lua",
             "type": "lua",
             "request": "launch",
-            "program": "${file}"
+            "program": "${file}",
         },
 		{
 			"name": "Run Extension",

@@ -17,7 +17,7 @@ exports.getCurrentWorkspaceFolder = getCurrentWorkspaceFolder;
 function isMicrocontrollerProject() {
     if (getCurrentWorkspaceFile()) {
         var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
-        return lifeboatConfig.get("isMicrocontrollerProject");
+        return lifeboatConfig.get("isMicrocontrollerProject") ?? false;
     }
     else {
         return false;

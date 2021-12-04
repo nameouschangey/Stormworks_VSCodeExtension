@@ -176,18 +176,47 @@ export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 	);
 }
 
+export function addUserBoilerplate(text : string)
+{
+	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+	var authorName	  = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+	var githubLink    = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+	var workshopLink  = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+	var extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
+
+	var extendedBoilerplate = "";
+	if(extendedLines)
+	{
+		for(var line of extendedLines.split("\n"))
+		{
+			extendedBoilerplate += "\n--" + line;
+		}
+	}
+	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "\n" + text;
+}
+
 export function addBoilerplate(text : string)
 {
 	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
 	var authorName	  = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
 	var githubLink    = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
 	var workshopLink  = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+	var extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
+
+	var extendedBoilerplate = "";
+	if(extendedLines)
+	{
+		for(var line of extendedLines.split("\n"))
+		{
+			extendedBoilerplate += "\n--" + line;
+		}
+	}
 
 	var nameousBoilerplate = 
 `-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)`;
 
-	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n--\n" + nameousBoilerplate + "\n" + text;
+	return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "--\n" + nameousBoilerplate + "\n" + text;
 }
 
 function setupMicrocontrollerFiles(params : any)

@@ -4,6 +4,7 @@ import { Func } from 'mocha';
 import { TextEncoder } from 'util';
 import { settings } from 'cluster';
 import * as utils from "./utils";
+import * as projectCreation from "./projectCreation";
 
 function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscode.Uri)
 {
@@ -21,7 +22,7 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
 
     // is that correct?
     // or do we need to do something else?
-    return `
+    var contents = `
 require("LifeBoatAPI.Tools.Simulator.LBSimulator");
 local __simulator = LBSimulator:new() 
 
@@ -30,6 +31,7 @@ require("${relativePath}");
 __simulator:beginSimulation(false, arg[1])
 __simulator:giveControlToMainLoop()
 `;
+    return projectCreation.addBoilerplate(contents);
 }
 
 export function beginSimulator(context:vscode.ExtensionContext)
@@ -42,7 +44,7 @@ export function beginSimulator(context:vscode.ExtensionContext)
         && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
     {
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
-        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_simulator.lua");
+        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/__simulator.lua");
 
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new TextEncoder().encode(simulatorLua))
         .then(
@@ -52,6 +54,8 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     type: "lua",
                     request: "launch",
                     program: `${simulatedLuaFile?.fsPath}`,
+                    stopOnEntry: false,
+                    stopOnThreadEntry: false,
                     arg: [
                         context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe"
                     ]

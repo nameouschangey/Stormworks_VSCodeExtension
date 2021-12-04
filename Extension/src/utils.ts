@@ -8,7 +8,8 @@ export function getCurrentWorkspaceFile() {
 	return vscode.window.activeTextEditor?.document.uri;
 }
 
-export function getCurrentWorkspaceFolder() {
+export function getCurrentWorkspaceFolder()
+{
 	const currentFile = getCurrentWorkspaceFile();
 	if(currentFile)
 	{
@@ -17,11 +18,12 @@ export function getCurrentWorkspaceFolder() {
 	return undefined;
 }
 
-export function isMicrocontrollerProject() {
+export function isMicrocontrollerProject() : boolean
+{
 	if(getCurrentWorkspaceFile())
 	{
 		var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
-		return lifeboatConfig.get("isMicrocontrollerProject");
+		return lifeboatConfig.get("isMicrocontrollerProject") ?? false;
 	}
 	else
 	{

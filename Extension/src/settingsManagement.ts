@@ -7,13 +7,11 @@ import * as utils from "./utils";
 import { debug } from 'console';
 
 
-
-export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
+export function getLibraryPaths(context : vscode.ExtensionContext)
+{
 	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
-	
-    // setup library paths
-    // copy global (user) and workspace paths, rather than overwriting
-    var lifeboatLibraryPaths : string[] = lifeboatConfig.get("projectSpecificLibraryPaths") ?? [];
+
+	var lifeboatLibraryPaths : string[] = lifeboatConfig.get("projectSpecificLibraryPaths") ?? [];
     var wslifeboatLibraryPaths : string[] = lifeboatConfig.get("workspaceLibraryPaths") ?? [];
     var userlifeboatLibraryPaths : string[] = lifeboatConfig.get("globalLibraryPaths") ?? [];
 
@@ -38,7 +36,12 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		lifeboatLibraryPaths.push(context.extensionPath + "/assets/LifeBoatAPI/Addons");
 	}
 
-    // setup ignore paths
+	return lifeboatLibraryPaths;
+}
+
+export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
+	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+    var lifeboatLibraryPaths = getLibraryPaths(context);
 	var lifeboatIgnorePaths : string[]= lifeboatConfig.get("ignorePaths") ?? [];
 
 	// add standard ignores
@@ -49,7 +52,7 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 	var luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
 	var luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");
 	var luaDebugConfig = vscode.workspace.getConfiguration("lua.debug.settings");
-	var luaIntellisense = vscode.workspace.getConfiguration("Lua.Intellisense");
+	var luaIntellisense = vscode.workspace.getConfiguration("Lua.IntelliSense");
 
 	return Promise.resolve()
 	.then( () => {
@@ -79,8 +82,20 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 
 	}).then( () => { 
 		//Lua.workspace.library
-		return luaLibWorkspace.update("library", lifeboatLibraryPaths, vscode.ConfigurationTarget.Workspace);
+		var paths = lifeboatLibraryPaths.copyWithin(0,0);
 
+		// Nelo Docs root
+		var neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
+		var neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
+		if(lifeboatConfig.get("overwriteNeloDocsPath"))
+		{
+			neloAddonDoc = lifeboatConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
+			neloMCDoc = lifeboatConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
+		}
+		paths.push(neloAddonDoc);
+		paths.push(neloMCDoc);
+
+		return luaLibWorkspace.update("library", paths, vscode.ConfigurationTarget.Workspace);
 	}).then(() => {
 		// lua.debug.cpath
 		var existing : string[] = luaDebugConfig.get("cpath") ?? [];
@@ -102,7 +117,7 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
         var debugPaths = [
 			context.extensionPath + "/assets/luasocket/?.lua",
 		];
-        for(path of lifeboatLibraryPaths)
+        for(var path of lifeboatLibraryPaths)
         {
             debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
 			debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)

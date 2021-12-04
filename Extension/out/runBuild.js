@@ -4,37 +4,72 @@ exports.beginBuild = void 0;
 const vscode = require("vscode");
 const util_1 = require("util");
 const utils = require("./utils");
-function generateSimulatorLua(workspaceFolder) {
-    // is that correct?
-    // or do we need to do something else?
-    return `
-    require("LifeBoatAPI.Tools.Simulator.LBSimulator");
-    local __simulator = LBSimulator:new() 
+const projectCreation = require("./projectCreation");
+const settingsManagement = require("./settingsManagement");
+function generateBuildLua(workspace, isMC, context) {
+    var content = `
+require("LifeBoatAPI.Tools.Builder.LBBuilder")
 
-    __simulator:beginSimulation(false, arg[1])
-    __simulator:giveControlToMainLoop()
-`;
+local neloAddonPath = LBFilepath:new(arg[1]);
+local neloMCPath = LBFilepath:new(arg[2]);
+local outputDir = LBFilepath:new(arg[3]);
+local params = {boilerPlate = arg[4]};
+local rootDirs = {};
+for i=5, #arg do
+    table.insert(rootDirs, LBFilepath(arg[i]));
+end
+
+local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
+    return vscode.workspace.findFiles("**/*.lua", "**/{out,.vscode}/**")
+        .then((files) => {
+        for (var file of files) {
+            // turn the relative path into a lua require
+            var relativePath = file.fsPath.replace(workspace.fsPath, "");
+            //relativePath = relativePath.replace(path.extname(relativePath), "");
+            if (relativePath.substr(0, 1) === "\\") // remove initial "." that might be left
+             {
+                relativePath = relativePath.substr(1);
+            }
+            var buildLine = isMC ? `_builder:buildMicrocontroller(${relativePath}, LBFilepath:new(${file.fsPath}), params)`
+                : `_builder:buildAddonScript(${relativePath}, LBFilepath:new(${file.fsPath}), params)`;
+            content += buildLine;
+        }
+        return content;
+    });
 }
 function beginBuild(context) {
-    var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+    var lifeboatapiConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
     var workspace = utils.getCurrentWorkspaceFolder();
     // we build an entire workspace at once, as the majority of the cost is starting up the combiner
     if (workspace) {
-        var simulatorLua = generateSimulatorLua(workspace.uri);
-        var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/_simulator.lua");
-        return vscode.workspace.fs.writeFile(simulatedLuaFile, new util_1.TextEncoder().encode(simulatorLua))
-            .then(() => {
+        var neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
+        var neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
+        if (lifeboatapiConfig.get("overwriteNeloDocsPath")) {
+            neloAddonDoc = lifeboatapiConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
+            neloMCDoc = lifeboatapiConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
+        }
+        var buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/out/__build.lua");
+        var outputDir = workspace.uri.fsPath + "/out/";
+        return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(), context)
+            .then((buildLua) => vscode.workspace.fs.writeFile(buildLuaFile, new util_1.TextEncoder().encode(buildLua))).then(() => {
             var config = {
-                name: "Run Simulator",
+                name: "Build Workspace",
                 type: "lua",
                 request: "launch",
-                program: `${simulatedLuaFile?.fsPath}`,
+                program: `${buildLuaFile?.fsPath}`,
+                stopOnEntry: false,
+                stopOnThreadEntry: false,
                 arg: [
-                    lifeboatConfig.get("authorName"),
-                    lifeboatConfig.get("githubLink"),
-                    lifeboatConfig.get("workshopLink")
+                    neloAddonDoc,
+                    neloMCDoc,
+                    outputDir,
+                    projectCreation.addUserBoilerplate("")
                 ]
             };
+            // all remaining args are root paths to load scripts from
+            for (var dir in settingsManagement.getLibraryPaths(context)) {
+                config.arg.push(dir);
+            }
             vscode.window.showInformationMessage(`Simulating file: ${utils.getCurrentWorkspaceFile()?.fsPath}`);
             return vscode.debug.startDebugging(workspace, config);
         });

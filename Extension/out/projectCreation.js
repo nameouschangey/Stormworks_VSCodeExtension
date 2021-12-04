@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addBoilerplate = exports.beginCreateNewProjectFolder = void 0;
+exports.addBoilerplate = exports.addUserBoilerplate = exports.beginCreateNewProjectFolder = void 0;
 const vscode = require("vscode");
 const path = require("path");
 const util_1 = require("util");
@@ -140,14 +140,36 @@ function beginCreateNewProjectFolder(isMicrocontrollerProject) {
     });
 }
 exports.beginCreateNewProjectFolder = beginCreateNewProjectFolder;
+function addUserBoilerplate(text) {
+    var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
+    var authorName = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+    var githubLink = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+    var workshopLink = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+    var extendedLines = lifeboatConfig.get("extendedBoilerplate");
+    var extendedBoilerplate = "";
+    if (extendedLines) {
+        for (var line of extendedLines.split("\n")) {
+            extendedBoilerplate += "\n--" + line;
+        }
+    }
+    return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "\n" + text;
+}
+exports.addUserBoilerplate = addUserBoilerplate;
 function addBoilerplate(text) {
     var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
     var authorName = "--Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
     var githubLink = "--GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
     var workshopLink = "--Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+    var extendedLines = lifeboatConfig.get("extendedBoilerplate");
+    var extendedBoilerplate = "";
+    if (extendedLines) {
+        for (var line of extendedLines.split("\n")) {
+            extendedBoilerplate += "\n--" + line;
+        }
+    }
     var nameousBoilerplate = `-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)`;
-    return authorName + "\n" + githubLink + "\n" + workshopLink + "\n--\n" + nameousBoilerplate + "\n" + text;
+    return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "--\n" + nameousBoilerplate + "\n" + text;
 }
 exports.addBoilerplate = addBoilerplate;
 function setupMicrocontrollerFiles(params) {
