@@ -75,8 +75,8 @@ function beginBuild(context) {
                 type: "lua",
                 request: "launch",
                 program: `${buildLuaFile?.fsPath}`,
-                //stopOnEntry: false,
-                //stopOnThreadEntry: false,
+                stopOnEntry: false,
+                stopOnThreadEntry: false,
                 arg: [
                     neloAddonDoc,
                     neloMCDoc,
