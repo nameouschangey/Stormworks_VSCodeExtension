@@ -16,10 +16,12 @@ LifeBoatAPI solves these by providing:
 - Full type hinting and error checking to avoid typos
 - A solid library of code, the LifeBoatAPI, to simplify writing Stormworks code.
 
-
 Developed by Nameous Changey: https://github.com/nameouschangey 
 
-With integrated lua-docs from 'Nelo: https://github.com/Rene-Sackers/StormworksLuaDocsGen
+Using:
+- integrated lua-docs from 'Nelo: https://github.com/Rene-Sackers/StormworksLuaDocsGen
+- lua-debug extension from: actboy169
+- lua language server extension from: sumneko
 
 # Features
 ## Automatic Boilerplate Generation
