@@ -29,25 +29,25 @@
 				"title": "Stormworks Lua with Lifeboat API",
 				"properties":
 				{
-					"lifeboatapi.stormworks.authorName" : {
+					"lifeboatapi.stormworks.user.authorName" : {
 						"type":"string",
 						"default": null,
 						"scope": "resource",
 						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
 					},
-					"lifeboatapi.stormworks.workshopLink" : {
+					"lifeboatapi.stormworks.user.workshopLink" : {
 						"type":"string",
 						"default": null,
 						"scope": "resource",
 						"description": "Link to your steam workshop page"
 					},
-					"lifeboatapi.stormworks.githubLink" : {
+					"lifeboatapi.stormworks.user.githubLink" : {
 						"type":"string",
 						"default": null,
 						"scope": "resource",
 						"description": "Link to your github page"
 					},
-					"lifeboatapi.stormworks.extendedBoilerplate" : {
+					"lifeboatapi.stormworks.user.extendedBoilerplate" : {
 						"type":"string",
 						"default": "",
 						"scope": "resource",
