@@ -39,6 +39,8 @@ local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
         return content;
     }).then((content) => {
         return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_post_buildactions.lua"), () => content + "\n require([[_build._post_buildactions]])", () => content);
+    }).then((content) => {
+        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_pre_buildactions.lua"), () => "require([[_build._pre_buildactions]])\n" + content, () => content);
     });
 }
 function beginBuild(context) {

@@ -91,17 +91,27 @@ end
 
 `;
 
-const buildActionsDefault =
+const preBuildActionsDefault =
+`
+-- This file is called just prior to the build process starting
+-- Can add any pre-build actions; such as any code generation processes you wish, or other tool chains
+-- Regular lua - you have access to the filesystem etc. via LBFilesystem
+-- Recommend using LBFilepath for paths, to keep things easy
+
+-- default is no actions
+print("Build Started - No additional actions taken in _build/_pre_buildactions.lua")
+`;
+
+
+const postBuildActionsDefault =
 `
 -- This file is called after the build process finished
 -- Can be used to copy data into the game, trigger deployments, etc.
 -- Regular lua - you have access to the filesystem etc. via LBFilesystem
 -- Recommend using LBFilepath for paths, to keep things easy
 
--- Note: This file will get picked up, so long as it is called _BuildActions.lua in any folder
-
 -- default is no actions
-print("Build Success - No additional actions in _BuildActions file")
+print("Build Success - No additional actions in _build/_post_buildactions.lua file")
 `;
 
 
@@ -262,10 +272,19 @@ function setupMicrocontrollerFiles(params : any)
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {
-						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
+						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(postBuildActionsDefault)))
 								.then( () => params );
 					});
-			});
+		}).then(
+			() => {
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_pre_buildactions.lua");
+				return utils.doesFileExist(buildActionsFile,
+					() => params,
+					() => {
+						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(preBuildActionsDefault)))
+								.then( () => params );
+					});
+		});
 }
 
 function setupAddonFiles(params : any)
@@ -282,8 +301,17 @@ function setupAddonFiles(params : any)
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {
-						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(buildActionsDefault)))
+						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(postBuildActionsDefault)))
 								.then( () => params );
 					});
-			});
+		}).then(
+			() => {
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_pre_buildactions.lua");
+				return utils.doesFileExist(buildActionsFile,
+					() => params,
+					() => {
+						return vscode.workspace.fs.writeFile(buildActionsFile, new TextEncoder().encode(addBoilerplate(preBuildActionsDefault)))
+								.then( () => params );
+					});
+		});
 }
