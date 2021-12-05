@@ -39,7 +39,7 @@ LBParsingConstantsLoader = {
         return this
     end;
 
-    loadNeloDocFile = function(this, filepath) -- 'Nelo Docs, with well formatted class definitions and function names ready to be plucked out
+    loadNeloDocFile = function(this, filepath) -- 'René Sackers Docs, with well formatted class definitions and function names ready to be plucked out
         local text = LBFileSystem_readAllText(filepath)
 
         -- find all unreachable class members
