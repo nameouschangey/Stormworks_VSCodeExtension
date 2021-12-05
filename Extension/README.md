@@ -199,6 +199,28 @@ myClass = {
 ---@endsection _MYCLASS_
 ```
 
+## Pre and Post Build Steps
+To allow for more complex build chains, two additional lua files are generated with your project:
+`/_build/_pre_buildactions.lua`
+`/_build/_post_buildactions.lua`
+
+These are entirely optional, but if they exist - they are run just before ("_pre_") and just after ("_post_") the build (`F7`) is run.
+This allows you to integrate the build chain with other tools or processes more easily.
+
+For example, if you are using Réne Sackers Lua-Extract tool; https://github.com/Rene-Sackers/StormworksLuaExtract
+A potential build chain might be:
+- In `_post_buildactions.lua`
+- Copy the output from /out/release/ to the Lua-Extract /workspace/ directory (overwriting the relevant MC file)
+- Lua-Extract will then take this data, and copy it into the game for you
+
+This would allow you to update the files in-game, simply by pressing `F7`
+
+
+Similarly, in `_pre_buildactions.lua`, if you have code generation you wish to run you can do so - for example:
+- a find-and-replace Macro that lets you write code that acts like a function, without the function overhead
+- running an external image to lua tool, so you can just stick the images in your `Project` folder, and automatically include them into your lua script every time you hit `F7`
+
+
 \!\[feature X\]\(images/feature-x.png\)
 
 ## Requirements
@@ -210,6 +232,10 @@ Lua by sumneko
 Lua-Debug by actboy168
 
 ## Version History
+
+### 0.0.5
+- Improved pre and post build steps in lua.
+
 ### 0.0.4
 - Updated creditations to René Sackers - lua-docs generation
 

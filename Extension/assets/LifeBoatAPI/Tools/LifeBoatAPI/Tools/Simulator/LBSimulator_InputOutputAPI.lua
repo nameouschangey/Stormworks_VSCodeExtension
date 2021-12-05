@@ -1,7 +1,7 @@
 -- Nameous Changey
 
 -- Based on work by Rene-Sackers:
---      Auto generated docs by StormworksLuaDocsGen (https://github.com/Rene-Sackers/StormworksLuaDocsGen)
+--      Auto generated docs by René Sackers, StormworksLuaDocsGen (https://github.com/Rene-Sackers/StormworksLuaDocsGen)
 --      Based on data in: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go
 --      Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go, then create an issue on the GitHub repo
 
