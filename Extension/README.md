@@ -19,7 +19,7 @@ LifeBoatAPI solves these by providing:
 Developed by Nameous Changey: https://github.com/nameouschangey 
 
 Using:
-- integrated lua-docs from 'Nelo: https://github.com/Rene-Sackers/StormworksLuaDocsGen
+- integrated lua-docs from René Sackers: https://github.com/Rene-Sackers/StormworksLuaDocsGen
 - lua-debug extension from: actboy169
 - lua language server extension from: sumneko
 
@@ -210,7 +210,10 @@ Lua by sumneko
 Lua-Debug by actboy168
 
 ## Version History
-### 1.0.0
+### 0.0.4
+- Updated creditations to René Sackers - lua-docs generation
+
+### 0.0.0
 Initial testing release
 - LifeBoatAPI for Microcontrollers has some useful utilities
 - LifeBoatAPI for Addons needs re-written from scratch, (not - included)
