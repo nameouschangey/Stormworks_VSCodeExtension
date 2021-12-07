@@ -32,8 +32,8 @@ LBSimulatorConnection = {
         local command = commandName .. "|" .. table.concat({...}, "|")
 
         -- using first 4 characters for length
-        local lengthString = string.format("%04d", #command + 1)
-        this:sendBytes(lengthString .. command .. "\n");
+        local lengthString = string.format("%04d", #command)
+        this:sendBytes(lengthString .. command);
     end;
 
     ---@return boolean messageExists whether a message is ready to be read or not
