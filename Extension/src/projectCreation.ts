@@ -10,9 +10,9 @@ const microControllerDefaultScript =
 `
 --- With LifeBoatAPI; you can use the "require(...)" keyword to use code from other files!
 ---     This lets you share code between projects, and organise your work better.
----     The below, includes the content from SimulatorConfig.lua in the generated /_build/ folder
+---     The below, includes the content from _simulator_config.lua in the generated /_build/ folder
 --- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
-require("_build.SimulatorConfig")
+require("_build._simulator_config")
 
 
 --- default onTick function; called once per in-game tick (60 per second)
@@ -259,7 +259,7 @@ function setupMicrocontrollerFiles(params : any)
 		})
 		.then(
 		() => {
-			const basicConfigFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/SimulatorConfig.lua");
+			const basicConfigFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_simulator_config.lua");
 			return utils.doesFileExist(basicConfigFile,
 				() => params,
 				() => {

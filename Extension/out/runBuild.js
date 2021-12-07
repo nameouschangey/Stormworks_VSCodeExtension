@@ -10,8 +10,8 @@ function generateBuildLua(workspace, isMC, context) {
     var content = `
 require("LifeBoatAPI.Tools.Builder.LBBuilder")
 
-local neloAddonPath = LBFilepath:new(arg[1]);
-local neloMCPath = LBFilepath:new(arg[2]);
+local luaDocsAddonPath = LBFilepath:new(arg[1]);
+local luaDocsMCPath = LBFilepath:new(arg[2]);
 local outputDir = LBFilepath:new(arg[3]);
 local params = {boilerPlate = arg[4]};
 local rootDirs = {};
@@ -20,14 +20,14 @@ for i=5, #arg do
     table.insert(rootDirs, LBFilepath:new(arg[i]));
 end
 
-local _builder = LBBuilder:new(rootDirs, outputDir, neloMCPath, neloAddonPath)`;
+local _builder = LBBuilder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)`;
     var pattern = new vscode.RelativePattern(workspace, "**/*.lua");
     return vscode.workspace.findFiles(pattern, "**/{_build,out,.vscode}/**")
         .then((files) => {
         for (var file of files) {
             // turn the relative path into a lua require
-            var relativePath = file.fsPath.replace(workspace.fsPath, "");
-            //relativePath = relativePath.replace(path.extname(relativePath), "");
+            var relativePath = file.fsPath.replaceAll(workspace.fsPath, "");
+            //relativePath = relativePath.replaceAll(path.extname(relativePath), "");
             if (relativePath.substr(0, 1) === "\\") // remove initial "." that might be left
              {
                 relativePath = relativePath.substr(1);

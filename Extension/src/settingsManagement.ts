@@ -9,13 +9,14 @@ import { debug } from 'console';
 
 function sanitisePath(path : string)
 {
-	path = path.replace("\\", "/");
+	path = path.replaceAll("\\", "/");
 	if(path.charAt(path. length-1) !== "/")
 	{
 		return path + "/";
 	}
-	return path
+	return path;
 }
+
 export function getLibraryPaths(context : vscode.ExtensionContext)
 {
 	var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());

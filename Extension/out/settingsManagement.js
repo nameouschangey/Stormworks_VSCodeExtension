@@ -4,7 +4,7 @@ exports.beginUpdateWorkspaceSettings = exports.getLibraryPaths = void 0;
 const vscode = require("vscode");
 const utils = require("./utils");
 function sanitisePath(path) {
-    path = path.replace("\\", "/");
+    path = path.replaceAll("\\", "/");
     if (path.charAt(path.length - 1) !== "/") {
         return path + "/";
     }

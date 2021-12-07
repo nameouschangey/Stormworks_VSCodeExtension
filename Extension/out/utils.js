@@ -2,6 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.doesFileExist = exports.isStormworksProject = exports.isMicrocontrollerProject = exports.getCurrentWorkspaceFolder = exports.getCurrentWorkspaceFile = void 0;
 const vscode = require("vscode");
+String.prototype.replaceAll = function (searchValue, replacement) {
+    let current = String(this);
+    let changed = String(this);
+    do {
+        current = changed;
+        changed = current.replace(searchValue, replacement);
+    } while (current !== changed);
+    return current;
+};
 function getCurrentWorkspaceFile() {
     return vscode.window.activeTextEditor?.document.uri;
 }

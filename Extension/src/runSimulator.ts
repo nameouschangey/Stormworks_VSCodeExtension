@@ -9,11 +9,11 @@ import * as projectCreation from "./projectCreation";
 function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscode.Uri)
 {
     // turn the relative path into a lua require
-    var relativePath = fileToSimulate.fsPath.replace(workspaceFolder.fsPath, "");
-    relativePath = relativePath.replace(path.extname(relativePath), "");
-    relativePath = relativePath.replace("\\\\", "\\");
-    relativePath = relativePath.replace("\\", "."); 
-    relativePath = relativePath.replace("/", ".");
+    var relativePath = fileToSimulate.fsPath.replaceAll(workspaceFolder.fsPath, "");
+    relativePath = relativePath.replaceAll(path.extname(relativePath), "");
+    relativePath = relativePath.replaceAll("\\", "/");
+    relativePath = relativePath.replaceAll("//", "/");
+    relativePath = relativePath.replaceAll("/", ".");
 
     if(relativePath.substr(0,1) === ".") // remove initial "." that might be left
     {

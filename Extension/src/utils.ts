@@ -4,6 +4,27 @@ import { Func } from 'mocha';
 import { TextEncoder } from 'util';
 import { settings } from 'cluster';
 
+declare global
+{
+	interface String {
+		replaceAll(searchValue: string | RegExp, replacement: string): string;
+	}
+}
+
+String.prototype.replaceAll = function (searchValue: string | RegExp, replacement: string)
+{
+	let current = String(this);
+	let changed = String(this);
+	do 
+	{
+		current = changed;
+		changed = current.replace(searchValue, replacement);
+	}
+	while(current !== changed);
+
+	return current;
+};
+
 export function getCurrentWorkspaceFile() {
 	return vscode.window.activeTextEditor?.document.uri;
 }
