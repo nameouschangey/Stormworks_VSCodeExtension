@@ -179,8 +179,8 @@ namespace STORMWORKS_Simulator
 
         private void SetupMapColours()
         {
-            MapOceanColour    = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 50, 150, 150));
-            MapShallowsColour = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 75, 170, 170));
+            MapOceanColour    = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 50,  150, 150));
+            MapShallowsColour = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 75,  170, 170));
             MapLandColour     = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 220, 220, 220));
             MapSandColour     = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 230, 230, 140));
             MapGrassColour    = WriteableBitmapExtensions.ConvertColor(Color.FromArgb(255, 190, 215, 150));

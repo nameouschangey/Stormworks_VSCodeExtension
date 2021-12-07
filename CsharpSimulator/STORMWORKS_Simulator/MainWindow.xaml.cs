@@ -91,7 +91,10 @@ namespace STORMWORKS_Simulator
         private void SendTouchDataIfChanged(object sender, ScreenVM vm)
         {
             // only send the update if things actually changed
-            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{vm.TouchPosition.X}|{vm.TouchPosition.Y}";
+            var xTouchPos = Math.Min(Math.Max(vm.TouchPosition.X, 0), vm.Monitor.Size.X-1);
+            var yTouchPos = Math.Min(Math.Max(vm.TouchPosition.Y, 0), vm.Monitor.Size.Y-1);
+
+            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{xTouchPos}|{yTouchPos}";
             if (newCommand != vm.LastTouchCommand)
             {
                 vm.LastTouchCommand = newCommand;
