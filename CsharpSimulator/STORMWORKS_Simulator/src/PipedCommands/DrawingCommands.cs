@@ -143,8 +143,8 @@ namespace STORMWORKS_Simulator
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
             textBlock.VerticalAlignment = VerticalAlignment.Top;
             
-            Canvas.SetLeft(textBlock, x);
-            Canvas.SetTop(textBlock, y);
+            Canvas.SetLeft(textBlock, x * screen.DrawScale);
+            Canvas.SetTop(textBlock, y * screen.DrawScale);
             
             screen.DrawText(textBlock);
         }
