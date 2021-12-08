@@ -10,11 +10,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Drawing.Imaging;
+using SkiaSharp;
 
 namespace STORMWORKS_Simulator
 {
     public class StormworksMonitor
-    {
+    { // redundant can be removed
         public event EventHandler OnMonitorSizeChanged;
         public Point Size
         {
@@ -39,7 +40,7 @@ namespace STORMWORKS_Simulator
 
     public class ScreenVM : INotifyPropertyChanged
     {
-        public readonly double DrawScale = 5.0f;
+        public readonly double CanvasScale = 5.0f;
         public static List<string> ScreenDescriptionsList { get; private set; } = new List<string>() { "1x1", "2x1", "2x2", "3x2", "3x3", "5x3", "9x5" };
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -47,6 +48,7 @@ namespace STORMWORKS_Simulator
         public event EventHandler<ScreenVM> OnTouchChanged;
         public event EventHandler<ScreenVM> OnPowerChanged;
 
+        #region ScreenInfo
         public string ScreenResolutionDescription
         {
             // using Strings for screen resolution as we also need to handle this from a text based pipe, and it's an extremely
@@ -66,11 +68,13 @@ namespace STORMWORKS_Simulator
 
                 Monitor.Size = new Point(width, height);
 
-                _Buffer1 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
-                _Buffer2 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Pbgra32, null);
+                _Buffer1 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
+                _Buffer2 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
 
                 FrontBuffer = _Buffer1;
-                BackBuffer = _Buffer2;
+                _BackBuffer = _Buffer2;
+
+                PrepareBackBufferForDrawing();
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
@@ -80,14 +84,9 @@ namespace STORMWORKS_Simulator
                 }
             }
         }
-
         public int ScreenResolutionDescriptionIndex { get; set; }
 
-        public Point CanvasSize
-        {
-            get => new Point(Monitor.Size.X * DrawScale,
-                             Monitor.Size.Y * DrawScale);
-        }
+        public StormworksMonitor Monitor { get; private set; }
 
         public double CanvasRotation
         {
@@ -115,19 +114,29 @@ namespace STORMWORKS_Simulator
             }
         }
 
-        public StormworksMonitor Monitor { get; private set; }
+        private bool _IsPortrait = false;
+        private bool _IsPowered = true;
+        #endregion
 
-        public List<UIElement> TextChildren { get; private set; } = new List<UIElement>();
+
+
+        #region Drawing
+        public Point CanvasSize { get => new Point(Monitor.Size.X * CanvasScale, Monitor.Size.Y * CanvasScale); }
+        public WriteableBitmap BitmapCanvas; // for removal
+
         public WriteableBitmap FrontBuffer { get; private set; }
-        public WriteableBitmap BackBuffer { get; private set; }
+        public SKSurface DrawingCanvas { get; private set; }
+        private WriteableBitmap _BackBuffer;
         private WriteableBitmap _Buffer1;
         private WriteableBitmap _Buffer2;
+        #endregion
+
 
         public int ScreenNumber { get; private set; }
 
-        private bool _IsPortrait = false;
-        private bool _IsPowered = true;
 
+
+        #region Touches
         // touch data
         public string LastTouchCommand = "";
         public Point TouchPosition = new Point(0, 0);
@@ -138,6 +147,8 @@ namespace STORMWORKS_Simulator
         private bool _IsLDown = false;
         private bool _IsRDown = false;
         private bool _IsInCanvas = false;
+        #endregion
+
 
         public ScreenVM(int screenNumber)
         {
@@ -146,38 +157,52 @@ namespace STORMWORKS_Simulator
             ScreenResolutionDescription = ScreenDescriptionsList[0];
         }
 
-        public void DrawText(UIElement text)
-        {
-            if (_Canvas != null)
-            {
-                TextChildren.Add(text);
-            }
-        }
-
         public void SwapFrameBuffers()
         {
-            var tempBuffer = FrontBuffer;
-            FrontBuffer = BackBuffer;
-            BackBuffer = tempBuffer;
+            _BackBuffer.AddDirtyRect(new Int32Rect(0, 0, (int)_BackBuffer.Width, (int)_BackBuffer.Height));
+            _BackBuffer.Unlock();
 
-            // swap in text
-            _Canvas.Children.RemoveRange(1, _Canvas.Children.Count - 1);
-            foreach (var child in TextChildren)
-            {
-                _Canvas.Children.Add(child);
-            }
-            TextChildren.Clear();
+            var temp = FrontBuffer;
+            FrontBuffer = _BackBuffer;
+            _BackBuffer = temp;
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+            PrepareBackBufferForDrawing();
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FrontBuffer"));
         }
+
+        public void PrepareBackBufferForDrawing()
+        {
+            if (DrawingCanvas != null)
+            {
+                DrawingCanvas.Dispose();
+            }
+
+            var skImageInfo = new SKImageInfo()
+            {
+                Width = (int)_BackBuffer.Width,
+                Height = (int)_BackBuffer.Height,
+                ColorType = SKColorType.Bgra8888,
+                AlphaType = SKAlphaType.Premul,
+                ColorSpace = SKColorSpace.CreateSrgb()
+            };
+            _BackBuffer.Lock();
+            DrawingCanvas = SKSurface.Create(skImageInfo, _BackBuffer.BackBuffer);
+        }
+
+
+        public void Test()
+        {
+            SKCanvas canvas = DrawingCanvas.Canvas;
+            canvas.Clear(new SKColor(255, 130, 130));
+            canvas.DrawRect(5, 5, 10, 10, new SKPaint() { Color = new SKColor(125, 125, 125, 125) });
+            canvas.DrawText("SkiaSharp in Wpf!", 5, 10, new SKPaint() { Color = new SKColor(0, 0, 0), TextSize = 5 });
+            canvas.DrawText("Using SkiaSharp for making graphs in WPF", new SKPoint(5, 20), new SKPaint(new SKFont(SKTypeface.FromFamilyName("Microsoft YaHei UI"))));
+        }       
 
         public void Clear()
         {
-            if (_Canvas != null)
-            {
-                TextChildren.Clear();
-            }
-            BackBuffer.Clear();
+            _BackBuffer.Clear();
         }
 
         // mouse event handling
@@ -231,8 +256,8 @@ namespace STORMWORKS_Simulator
             if (IsRDown || IsLDown)
             {
                 TouchPosition = e.GetPosition(canvas);
-                TouchPosition.X = Math.Floor(TouchPosition.X / DrawScale);
-                TouchPosition.Y = Math.Floor(TouchPosition.Y / DrawScale);
+                TouchPosition.X = Math.Floor(TouchPosition.X / CanvasScale);
+                TouchPosition.Y = Math.Floor(TouchPosition.Y / CanvasScale);
             }
 
             if (IsPowered)

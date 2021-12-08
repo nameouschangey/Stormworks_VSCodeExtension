@@ -39,7 +39,7 @@ namespace STORMWORKS_Simulator
             x *= zoom * 50;
             y *= zoom * 50;
 
-            var buffer = screen.BackBuffer;
+            var buffer = screen.BitmapCanvas;
             buffer.FillRectangle(0, 0, buffer.PixelWidth, buffer.PixelHeight, vm.MapOceanColour);
 
             DrawIsland(vm, buffer,(int)(x/50000 * buffer.PixelWidth) + (buffer.PixelWidth / 5), (int)(y / 50000 * buffer.PixelHeight) + buffer.PixelHeight / 5,     zoom * buffer.PixelWidth / 5, zoom * buffer.PixelHeight / 3);

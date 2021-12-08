@@ -23,21 +23,21 @@ screen = {
     end;
 
     getSimulatorScreenIndex = function ()
-        return screen._simulator.currentScreen.screenNumber
+        return screen._simulator._currentScreen.screenNumber
     end;
 
     --- Gets the width of the screen (pixels)
     --- @return number width
     getWidth = function()
         screen.ensureIsRendering()
-        return screen._simulator.currentScreen.width
+        return screen._simulator._currentScreen.width
     end;
 
     --- Gets the height of the screen (pixels)
     --- @return number height
     getHeight = function()
         screen.ensureIsRendering()
-        return screen._simulator.currentScreen.height
+        return screen._simulator._currentScreen.height
     end;
 
     --- Set the current drawing color

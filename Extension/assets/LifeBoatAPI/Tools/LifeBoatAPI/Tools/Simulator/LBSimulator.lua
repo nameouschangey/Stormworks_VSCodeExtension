@@ -174,7 +174,7 @@ LBSimulator = {
 
                     for screenNumber, screenData in pairs(this._screens) do 
                         if screenData.poweredOn then
-                            this.currentScreen = screenData
+                            this._currentScreen = screenData
                             this.isRendering = true
                             if this._connection.isAlive then screen.drawClear() end
                             if this._connection.isAlive then onDraw() end

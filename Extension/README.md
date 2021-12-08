@@ -17,6 +17,7 @@ LifeBoatAPI solves these by providing:
 - A solid library of code, the LifeBoatAPI, to simplify writing Stormworks code.
 
 Developed by Nameous Changey: https://github.com/nameouschangey 
+Please report any issues here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
 
 Using:
 - integrated lua-docs from René Sackers: https://github.com/Rene-Sackers/StormworksLuaDocsGen

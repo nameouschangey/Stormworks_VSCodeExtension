@@ -46,7 +46,7 @@ namespace STORMWORKS_Simulator
             VSConnection.OnLineRead += TickHandler.OnLineRead;
 
 
-            ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
+            //ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
             ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
             ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
             ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
@@ -57,6 +57,8 @@ namespace STORMWORKS_Simulator
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             
             var screen = ViewModel.GetOrAddScreen(1);
+            screen.ScreenResolutionDescription = "9x5";
+            //TickHandler.OnLineRead(this, "CIRCLE|1|1|16|16|16");
         }
 
         private void OnKeepAliveTimer(object state)
@@ -85,7 +87,7 @@ namespace STORMWORKS_Simulator
 
         private void OnResetClicked(object sender, RoutedEventArgs e)
         {
-            CanvasZoom.Reset();
+            //CanvasZoom.Reset();
         }
 
         private void SendTouchDataIfChanged(object sender, ScreenVM vm)
@@ -123,11 +125,12 @@ namespace STORMWORKS_Simulator
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseMove(sender as Canvas, e); }
 
-        private void Canvas_Initialized(object sender, EventArgs e)
-        { // irritating hack, but needed for drawing text without a bunch of other bodges.
-            Canvas canvas = sender as Canvas;
-            ScreenVM vm = canvas.DataContext as ScreenVM;
-            vm._Canvas = canvas;
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var screen = ViewModel.GetOrAddScreen(1);
+            screen.Test();
+            screen.SwapFrameBuffers();
+            //MyImage.InvalidateVisual();
         }
     }
 }

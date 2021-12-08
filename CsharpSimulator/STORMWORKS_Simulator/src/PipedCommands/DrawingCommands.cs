@@ -40,11 +40,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BackBuffer.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt, true);
+                screen.BitmapCanvas.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt, true);
             }
             else
             {
-                screen.BackBuffer.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt);
+                screen.BitmapCanvas.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt);
             }
         }
     }
@@ -71,17 +71,17 @@ namespace STORMWORKS_Simulator
 
             if (radius < 1)
             {
-                screen.BackBuffer.DrawSinglePoint((int)x, (int)y, vm.ColorInt);
+                screen.BitmapCanvas.DrawSinglePoint((int)x, (int)y, vm.ColorInt);
             }
             else
             {
                 if (filled)
                 {
-                    screen.BackBuffer.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
+                    screen.BitmapCanvas.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
                 }
                 else
                 {
-                    screen.BackBuffer.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
+                    screen.BitmapCanvas.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
                 }
             }
             
@@ -108,7 +108,7 @@ namespace STORMWORKS_Simulator
             var x2  = double.Parse(commandParts[4]) + 0.5;
             var y2  = double.Parse(commandParts[5]) + 0.5;
 
-            screen.BackBuffer.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, vm.ColorInt);
+            screen.BitmapCanvas.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, vm.ColorInt);
         }
     }
 
@@ -138,15 +138,15 @@ namespace STORMWORKS_Simulator
             var textBlock = new TextBlock();
             textBlock.Text = text.ToUpper();
             textBlock.Foreground = vm.FontBrush;
-            textBlock.FontSize   = 5 * screen.DrawScale;
+            textBlock.FontSize   = 5 * screen.CanvasScale;
             textBlock.FontFamily = MonitorFont;
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
             textBlock.VerticalAlignment = VerticalAlignment.Top;
             
-            Canvas.SetLeft(textBlock, x * screen.DrawScale);
-            Canvas.SetTop(textBlock, y * screen.DrawScale);
+            Canvas.SetLeft(textBlock, x * screen.CanvasScale);
+            Canvas.SetTop(textBlock, y * screen.CanvasScale);
             
-            screen.DrawText(textBlock);
+           // screen.DrawText(textBlock);
         }
     }
 
@@ -202,12 +202,12 @@ namespace STORMWORKS_Simulator
 
             var container = new StackPanel();
             container.Orientation = Orientation.Vertical;
-            container.Width = width * screen.DrawScale;
-            container.Height = (height/5) * 6 * screen.DrawScale;
+            container.Width = width * screen.CanvasScale;
+            container.Height = (height/5) * 6 * screen.CanvasScale;
             container.ClipToBounds = true;
             //container.Background = Brushes.Yellow;
-            Canvas.SetLeft(container, x * screen.DrawScale);
-            Canvas.SetTop(container, y * screen.DrawScale);
+            Canvas.SetLeft(container, x * screen.CanvasScale);
+            Canvas.SetTop(container, y * screen.CanvasScale);
 
             var align = TextAlignment.Center;
             if (horizontalAlign == -1)
@@ -226,17 +226,17 @@ namespace STORMWORKS_Simulator
                 textBlock.TextWrapping = TextWrapping.NoWrap;
                 textBlock.TextAlignment = align;
                 textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign + 1);
-                textBlock.Width = width * screen.DrawScale;
-                textBlock.Height = 6 * screen.DrawScale;
+                textBlock.Width = width * screen.CanvasScale;
+                textBlock.Height = 6 * screen.CanvasScale;
                 textBlock.Foreground = vm.FontBrush;
                 //textBlock.Background = Brushes.Red;
-                textBlock.FontSize = 5 * screen.DrawScale;
+                textBlock.FontSize = 5 * screen.CanvasScale;
                 textBlock.FontFamily = MonitorFont;
 
                 container.Children.Add(textBlock);
             }
 
-            screen.DrawText(container);
+            //screen.DrawText(container);
         }
     }
 
@@ -267,11 +267,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BackBuffer.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
+                screen.BitmapCanvas.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
             }
             else
             {
-                screen.BackBuffer.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
+                screen.BitmapCanvas.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
             }
         }
     }

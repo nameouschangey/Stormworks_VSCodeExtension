@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:STORMWORKS_Simulator"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
         mc:Ignorable="d"
         Title="LifeBoatAPI Simulator by Nameous Changey" Height="768" Width="1024"
         Style="{StaticResource WindowStyle}">
@@ -89,9 +90,26 @@
                           ItemsSource="{Binding TickRateOptions}"
                           SelectedItem="{Binding TickRateOption}"
                           SelectedIndex="{Binding TickRateIndex}" />
+                <Button Margin="10,0" Content="Click Me" Click="Button_Click" Background="Red"/>
             </DockPanel>
+
+            <!--<Border Grid.Row="1"
+                    BorderBrush="Black"
+                    BorderThickness="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Image  
+                    Name ="MyImage"
+                    Width="250"
+                    Height="250"
+                    IsHitTestVisible="False"
+                    RenderOptions.BitmapScalingMode="NearestNeighbor"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"></Image>
+                
+            </Border> -->
             
-            <!-- Main Canvas Area-->
+            <!-- Main Canvas Area -->
             <local:ZoomBorder x:Name="CanvasZoom"
                               Grid.Row="1"
                               ClipToBounds="True"
@@ -113,7 +131,6 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Canvas
-                                Initialized="Canvas_Initialized"
                                 DockPanel.Dock="Left"
                                 Width="{Binding CanvasSize.X}"
                                 Height="{Binding CanvasSize.Y}"
@@ -127,7 +144,7 @@
                                 MouseRightButtonDown="Canvas_MouseRightButtonDown"
                                 MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
                                 MouseRightButtonUp="Canvas_MouseRightButtonUp"
-                                Background="Black"
+                                Background="Yellow"
                                 ClipToBounds = "True">
                                 <Canvas.LayoutTransform>
                                     <RotateTransform Angle="{Binding CanvasRotation}"/>
@@ -154,7 +171,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </local:ZoomBorder>
-            
+
             <!--- List of screen settings -->
             <ListView
                 Grid.Row="2"
