@@ -85,7 +85,7 @@ namespace STORMWORKS_Simulator
 
         private void child_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (child != null)
+            if (child != null && !IsDown)
             {
                 var st = GetScaleTransform(child);
                 var tt = GetTranslateTransform(child);
