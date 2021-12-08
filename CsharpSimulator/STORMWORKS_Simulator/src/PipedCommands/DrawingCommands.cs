@@ -42,9 +42,9 @@ namespace STORMWORKS_Simulator
 
             var paint = new SKPaint()
             {
-                StrokeMiter = 0f,
+                StrokeMiter = 2f,
                 StrokeJoin = SKStrokeJoin.Miter,
-                StrokeCap = SKStrokeCap.Butt,
+                StrokeCap = SKStrokeCap.Square,
                 StrokeWidth = 1f,
                 IsAntialias = false,
                 BlendMode = SKBlendMode.SrcOver,
@@ -133,9 +133,27 @@ namespace STORMWORKS_Simulator
     [Export(typeof(IPipeCommandHandler))]
     public class DrawText : IPipeCommandHandler
     {
-        public static FontFamily MonitorFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#PixelFont");
-
         public string Command => "TEXT";
+
+        private static SKTypeface _Typeface;
+
+        private static SKTypeface GetTypeface()
+        {
+
+            if (_Typeface == null)
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var stream = assembly.GetManifestResourceStream("STORMWORKS_Simulator.Fonts.pixelfont.ttf");
+                if (stream == null)
+                {
+                    return null;
+                }
+
+                _Typeface = SKTypeface.FromStream(stream);
+            }
+
+            return _Typeface;
+        }
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -147,22 +165,20 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x = (float.Parse(commandParts[2]));//   * screen.DrawScale;
-            var y = (float.Parse(commandParts[3]) - 1);// * screen.DrawScale;
-            var text = commandParts[4];
-            
-            var textBlock = new TextBlock();
-            textBlock.Text = text.ToUpper();
-            //textBlock.Foreground = vm.FontBrush;
-            textBlock.FontSize   = 5 * screen.CanvasScale;
-            textBlock.FontFamily = MonitorFont;
-            textBlock.HorizontalAlignment = HorizontalAlignment.Left;
-            textBlock.VerticalAlignment = VerticalAlignment.Top;
-            
-            Canvas.SetLeft(textBlock, x * screen.CanvasScale);
-            Canvas.SetTop(textBlock, y * screen.CanvasScale);
-            
-           // screen.DrawText(textBlock);
+            var x = float.Parse(commandParts[2]);
+            var y = float.Parse(commandParts[3]) - 1;
+            var text = commandParts[4].Replace("%__SIMPIPE__%", "|").ToUpper();
+
+            var paint = new SKPaint()
+            {
+                BlendMode = SKBlendMode.SrcOver,
+                Color = vm.Color,
+                TextAlign = SKTextAlign.Left,
+                TextSize = 5,
+                Typeface = GetTypeface()
+            };
+
+            screen.DrawingCanvas.Canvas.DrawText(text, x, y, paint);
         }
     }
 
@@ -173,6 +189,25 @@ namespace STORMWORKS_Simulator
         public static FontFamily MonitorFont = new FontFamily(new Uri("pack://application:,,,/"), "./Fonts/#PixelFont");
 
         public string Command => "TEXTBOX";
+
+        private static SKTypeface _Typeface;
+
+        private static SKTypeface GetTypeface()
+        {
+            if (_Typeface == null)
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var stream = assembly.GetManifestResourceStream("STORMWORKS_Simulator.Fonts.pixelfont.ttf");
+                if (stream == null)
+                {
+                    return null;
+                }
+
+                _Typeface = SKTypeface.FromStream(stream);
+            }
+
+            return _Typeface;
+        }
 
         public void Handle(MainVM vm, string[] commandParts)
         {
@@ -190,17 +225,17 @@ namespace STORMWORKS_Simulator
             var height          = float.Parse(commandParts[5]);
             var horizontalAlign = (int)float.Parse(commandParts[6]);
             var verticalAlign   = (int)float.Parse(commandParts[7]);
-            var text            = commandParts[8];
+            var text            = commandParts[8].Replace("%__SIMPIPE__%", "|").ToUpper();
 
-            // custom wrapping
-            var charsPerLine = (int)(Math.Max(1, width / 5));
+            // wrap text into lines
+            var charsPerLine = (int)Math.Max(1, width / 5);
             var lines = new List<string>();
             var index = 0;
 
             while (index < (text.Length - charsPerLine + 1))
             {
                 var nextIndex = text.LastIndexOf(" ", index + charsPerLine + 1, charsPerLine + 1) + 1;
-                if (nextIndex == -1
+                if (nextIndex == 0
                     || nextIndex > index + charsPerLine)
                 {
                     nextIndex = index + charsPerLine;
@@ -216,43 +251,62 @@ namespace STORMWORKS_Simulator
             }
 
 
-            var container = new StackPanel();
-            container.Orientation = Orientation.Vertical;
-            container.Width = width * screen.CanvasScale;
-            container.Height = (height/5) * 6 * screen.CanvasScale;
-            container.ClipToBounds = true;
-            //container.Background = Brushes.Yellow;
-            Canvas.SetLeft(container, x * screen.CanvasScale);
-            Canvas.SetTop(container, y * screen.CanvasScale);
+            var lineHeight = 6;
 
-            var align = TextAlignment.Center;
-            if (horizontalAlign == -1)
-            {
-                align = TextAlignment.Left;
+            var startX = x;
+            var startY = 0f;
+
+            // calculate vertical align
+            var textBlockHeight = (lines.Count * lineHeight);
+
+            if (verticalAlign == 0)
+            {// center
+                var centerY = (y + height / 2);
+                startY = centerY - (textBlockHeight/2);
             }
-            else if (horizontalAlign == 1)
-            {
-                align = TextAlignment.Right;
+            else if(verticalAlign == 1)
+            { // bottom
+                startY = (y+height) - textBlockHeight;
             }
-
-            foreach (var line in lines)
-            {
-                var textBlock = new TextBlock();
-                textBlock.Text = line.ToUpper();
-                textBlock.TextWrapping = TextWrapping.NoWrap;
-                textBlock.TextAlignment = align;
-                textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign + 1);
-                textBlock.Width = width * screen.CanvasScale;
-                textBlock.Height = 6 * screen.CanvasScale;
-                //textBlock.Foreground = vm.FontBrush;
-                //textBlock.Background = Brushes.Red;
-                textBlock.FontSize = 5 * screen.CanvasScale;
-                textBlock.FontFamily = MonitorFont;
-
-                container.Children.Add(textBlock);
+            else
+            { // top
+                startY = y;
             }
 
-            //screen.DrawText(container);
+
+            var paint = new SKPaint()
+            {
+                BlendMode = SKBlendMode.SrcOver,
+                Color = vm.Color,
+                TextAlign = SKTextAlign.Left,
+                TextSize = 5,
+                Typeface = GetTypeface()
+            };
+
+
+            for(var i = 0; i < lines.Count; ++i)
+            {
+                var line = lines[i];
+
+                // calculate vertical align
+                var textBlockWidth = (line.Length * 5);
+
+                if (horizontalAlign == 0)
+                {// center
+                    var centerX = (x + width / 2);
+                    startX = centerX - textBlockWidth / 2;
+                }
+                else if (horizontalAlign == 1)
+                { // bottom
+                    startX = (x + width) - textBlockHeight;
+                }
+                else
+                { // top
+                    startX = x;
+                }
+
+                screen.DrawingCanvas.Canvas.DrawText(line, startX, startY + (i * lineHeight), paint);
+            }
         }
     }
 

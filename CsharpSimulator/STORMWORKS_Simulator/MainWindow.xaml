@@ -90,7 +90,6 @@
                           ItemsSource="{Binding TickRateOptions}"
                           SelectedItem="{Binding TickRateOption}"
                           SelectedIndex="{Binding TickRateIndex}" />
-                <Button Margin="10,0" Content="Click Me" Click="Button_Click" Background="Red"/>
             </DockPanel>
 
             <!--<Border Grid.Row="1"

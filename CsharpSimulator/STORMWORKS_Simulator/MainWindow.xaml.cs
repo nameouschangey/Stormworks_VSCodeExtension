@@ -124,25 +124,5 @@ namespace STORMWORKS_Simulator
         private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseEnter(sender as Canvas, e); }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseMove(sender as Canvas, e); }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            var screen = ViewModel.GetOrAddScreen(1);
-            TickHandler.OnLineRead(this, "COLOUR|255|155|125|100");
-            TickHandler.OnLineRead(this, "RECT|1|1|5|10|25|25");
-
-            TickHandler.OnLineRead(this, "COLOUR|155|255|125|50");
-            TickHandler.OnLineRead(this, "CIRCLE|1|1|15|15|20");
-            TickHandler.OnLineRead(this, "CIRCLE|1|0|15|15|20");
-
-
-            TickHandler.OnLineRead(this, "COLOUR|50|50|255|100");
-            TickHandler.OnLineRead(this, "TRIANGLE|1|1|15|15|20|20|55|10");
-            TickHandler.OnLineRead(this, "TRIANGLE|1|0|15|15|20|20|55|10");
-
-            TickHandler.OnLineRead(this, "TICKEND");
-            screen.SwapFrameBuffers();
-            //screen.TriggerRedraw();
-        }
     }
 }

@@ -161,7 +161,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Resource Include="Fonts\pixelfont.ttf" />
+    <EmbeddedResource Include="Fonts\pixelfont.ttf" />
     <None Include="lib\WriteableBitmapEx\LICENSE" />
     <None Include="lib\WriteableBitmapEx\README.md" />
     <None Include="OpenTK.dll.config" />
