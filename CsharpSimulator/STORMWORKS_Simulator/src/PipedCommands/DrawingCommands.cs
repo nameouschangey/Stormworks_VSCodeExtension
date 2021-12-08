@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using System.Reflection;
+using SkiaSharp;
 
 namespace STORMWORKS_Simulator
 {
@@ -33,19 +34,12 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = double.Parse(commandParts[3]);
-            var y       = double.Parse(commandParts[4]);
-            var width   = double.Parse(commandParts[5]);
-            var height  = double.Parse(commandParts[6]);
+            var x       = float.Parse(commandParts[3]);
+            var y       = float.Parse(commandParts[4]);
+            var width   = float.Parse(commandParts[5]);
+            var height  = float.Parse(commandParts[6]);
 
-            if (filled)
-            {
-                screen.BitmapCanvas.FillRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt, true);
-            }
-            else
-            {
-                screen.BitmapCanvas.DrawRectangle((int)x, (int)y, (int)(x + width), (int)(y + height), vm.ColorInt);
-            }
+            screen.DrawingCanvas.Canvas.DrawRect(x, y, width, height, new SkiaSharp.SKPaint() {Color = vm.Color, IsStroke=!filled });
         }
     }
 
@@ -65,23 +59,36 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x = double.Parse(commandParts[3]);
-            var y = double.Parse(commandParts[4]);
-            var radius = double.Parse(commandParts[5]);
+            var x = float.Parse(commandParts[3]);
+            var y = float.Parse(commandParts[4]);
+            var radius = float.Parse(commandParts[5]);
 
+            screen.DrawingCanvas.Canvas.DrawCircle(x, y, radius,
+                new SKPaint() {
+                    Color = vm.Color,
+                    Style = filled? SKPaintStyle.StrokeAndFill : SKPaintStyle.Stroke,
+                    
+                    StrokeMiter=0f,
+                    StrokeJoin= SKStrokeJoin.Miter,
+                    StrokeCap = SKStrokeCap.Butt,
+                    StrokeWidth = 1f,
+
+                    IsAntialias=false,
+                    BlendMode=SKBlendMode.SrcOver
+                });
             if (radius < 1)
             {
-                screen.BitmapCanvas.DrawSinglePoint((int)x, (int)y, vm.ColorInt);
+                //screen.BitmapCanvas.DrawSinglePoint((int)x, (int)y, vm.ColorInt);
             }
             else
             {
                 if (filled)
                 {
-                    screen.BitmapCanvas.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
+                    //screen.BitmapCanvas.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
                 }
                 else
                 {
-                    screen.BitmapCanvas.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
+                    //screen.BitmapCanvas.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
                 }
             }
             
@@ -108,7 +115,7 @@ namespace STORMWORKS_Simulator
             var x2  = double.Parse(commandParts[4]) + 0.5;
             var y2  = double.Parse(commandParts[5]) + 0.5;
 
-            screen.BitmapCanvas.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, vm.ColorInt);
+            //screen.BitmapCanvas.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, vm.ColorInt);
         }
     }
 
@@ -137,7 +144,7 @@ namespace STORMWORKS_Simulator
             
             var textBlock = new TextBlock();
             textBlock.Text = text.ToUpper();
-            textBlock.Foreground = vm.FontBrush;
+            //textBlock.Foreground = vm.FontBrush;
             textBlock.FontSize   = 5 * screen.CanvasScale;
             textBlock.FontFamily = MonitorFont;
             textBlock.HorizontalAlignment = HorizontalAlignment.Left;
@@ -228,7 +235,7 @@ namespace STORMWORKS_Simulator
                 textBlock.VerticalAlignment = (VerticalAlignment)(verticalAlign + 1);
                 textBlock.Width = width * screen.CanvasScale;
                 textBlock.Height = 6 * screen.CanvasScale;
-                textBlock.Foreground = vm.FontBrush;
+                //textBlock.Foreground = vm.FontBrush;
                 //textBlock.Background = Brushes.Red;
                 textBlock.FontSize = 5 * screen.CanvasScale;
                 textBlock.FontFamily = MonitorFont;
@@ -267,11 +274,11 @@ namespace STORMWORKS_Simulator
 
             if (filled)
             {
-                screen.BitmapCanvas.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
+               // screen.BitmapCanvas.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
             }
             else
             {
-                screen.BitmapCanvas.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
+               // screen.BitmapCanvas.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
             }
         }
     }
@@ -293,8 +300,7 @@ namespace STORMWORKS_Simulator
             var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
             var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
 
-            var colour = Color.FromArgb(a, r, g, b);
-            vm.Color = colour;
+            vm.Color = new SkiaSharp.SKColor(r,g,b,a);
         }
     }
 

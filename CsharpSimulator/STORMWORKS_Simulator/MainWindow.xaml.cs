@@ -57,7 +57,7 @@ namespace STORMWORKS_Simulator
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             
             var screen = ViewModel.GetOrAddScreen(1);
-            screen.ScreenResolutionDescription = "9x5";
+            screen.ScreenResolutionDescription = "3x3";
             //TickHandler.OnLineRead(this, "CIRCLE|1|1|16|16|16");
         }
 
@@ -128,9 +128,17 @@ namespace STORMWORKS_Simulator
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var screen = ViewModel.GetOrAddScreen(1);
-            screen.Test();
+            TickHandler.OnLineRead(this, "COLOUR|255|155|125|100");
+            TickHandler.OnLineRead(this, "RECT|1|1|5|10|25|25");
+
+            TickHandler.OnLineRead(this, "COLOUR|155|255|125|50");
+            TickHandler.OnLineRead(this, "CIRCLE|1|1|15|15|20");
+
+            TickHandler.OnLineRead(this, "COLOUR|0|0|255|50");
+            TickHandler.OnLineRead(this, "CIRCLE|1|0|15|15|20");
+            TickHandler.OnLineRead(this, "TICKEND");
             screen.SwapFrameBuffers();
-            //MyImage.InvalidateVisual();
+            //screen.TriggerRedraw();
         }
     }
 }

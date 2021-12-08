@@ -40,7 +40,7 @@ namespace STORMWORKS_Simulator
             y *= zoom * 50;
 
             var buffer = screen.BitmapCanvas;
-            buffer.FillRectangle(0, 0, buffer.PixelWidth, buffer.PixelHeight, vm.MapOceanColour);
+            //buffer.FillRectangle(0, 0, buffer.PixelWidth, buffer.PixelHeight, vm.MapOceanColour);
 
             DrawIsland(vm, buffer,(int)(x/50000 * buffer.PixelWidth) + (buffer.PixelWidth / 5), (int)(y / 50000 * buffer.PixelHeight) + buffer.PixelHeight / 5,     zoom * buffer.PixelWidth / 5, zoom * buffer.PixelHeight / 3);
             DrawIsland(vm, buffer,(int)(x/50000 * buffer.PixelWidth) + (2 * buffer.PixelWidth / 3), (int)(y / 50000 * buffer.PixelHeight) + 2 * buffer.PixelHeight / 3, zoom * buffer.PixelWidth / 3, zoom * buffer.PixelHeight / 5);
@@ -48,13 +48,13 @@ namespace STORMWORKS_Simulator
 
         private void DrawIsland(MainVM vm, WriteableBitmap buffer, int x, int y, double width, double length)
         {
-            buffer.FillEllipseCentered(x, y, (int)width, (int)length, vm.MapShallowsColour);
-
-            buffer.FillEllipseCentered(x, y, (int)(width * 0.9), (int)(length * 0.9), vm.MapShallowsColour);
-            buffer.FillEllipseCentered(x, y, (int)(width * 0.8), (int)(length * 0.8), vm.MapSandColour);
-            buffer.FillEllipseCentered(x, y, (int)(width * 0.7), (int)(length * 0.7), vm.MapLandColour);
-            buffer.FillEllipseCentered(x, y, (int)(width * 0.6), (int)(length * 0.6), vm.MapGrassColour);
-            buffer.FillEllipseCentered((int)(x+width * 0.1), (int)(y+length * 0.1), (int)(width * 0.1), (int)(length * 0.1), vm.MapSnowColour);
+            //buffer.FillEllipseCentered(x, y, (int)width, (int)length, vm.MapShallowsColour);
+            //
+            //buffer.FillEllipseCentered(x, y, (int)(width * 0.9), (int)(length * 0.9), vm.MapShallowsColour);
+            //buffer.FillEllipseCentered(x, y, (int)(width * 0.8), (int)(length * 0.8), vm.MapSandColour);
+            //buffer.FillEllipseCentered(x, y, (int)(width * 0.7), (int)(length * 0.7), vm.MapLandColour);
+            //buffer.FillEllipseCentered(x, y, (int)(width * 0.6), (int)(length * 0.6), vm.MapGrassColour);
+            //buffer.FillEllipseCentered((int)(x+width * 0.1), (int)(y+length * 0.1), (int)(width * 0.1), (int)(length * 0.1), vm.MapSnowColour);
         }
     }
 
@@ -78,7 +78,7 @@ namespace STORMWORKS_Simulator
 
             var colour = Color.FromArgb(a, r, g, b);
 
-            vm.MapOceanColour = WriteableBitmapExtensions.ConvertColor(colour);
+           // vm.MapOceanColour = WriteableBitmapExtensions.ConvertColor(colour);
         }
     }
 
@@ -101,7 +101,7 @@ namespace STORMWORKS_Simulator
 
             var colour = Color.FromArgb(a, r, g, b);
 
-            vm.MapShallowsColour = WriteableBitmapExtensions.ConvertColor(colour);
+           // vm.MapShallowsColour = WriteableBitmapExtensions.ConvertColor(colour);
         }
     }
 
@@ -124,7 +124,7 @@ namespace STORMWORKS_Simulator
 
             var colour = Color.FromArgb(a, r, g, b);
 
-            vm.MapLandColour = WriteableBitmapExtensions.ConvertColor(colour);
+           // vm.MapLandColour = WriteableBitmapExtensions.ConvertColor(colour);
         }
     }
 
@@ -147,7 +147,7 @@ namespace STORMWORKS_Simulator
 
             var colour = Color.FromArgb(a, r, g, b);
 
-            vm.MapSandColour = WriteableBitmapExtensions.ConvertColor(colour);
+           // vm.MapSandColour = WriteableBitmapExtensions.ConvertColor(colour);
         }
     }
 
@@ -170,7 +170,7 @@ namespace STORMWORKS_Simulator
 
             var colour = Color.FromArgb(a, r, g, b);
 
-            vm.MapGrassColour = WriteableBitmapExtensions.ConvertColor(colour);
+           // vm.MapGrassColour = WriteableBitmapExtensions.ConvertColor(colour);
         }
     }
 
@@ -193,7 +193,7 @@ namespace STORMWORKS_Simulator
 
             var colour = Color.FromArgb(a, r, g, b);
 
-            vm.MapSnowColour = WriteableBitmapExtensions.ConvertColor(colour);
+            //vm.MapSnowColour = WriteableBitmapExtensions.ConvertColor(colour);
         }
     }
 }

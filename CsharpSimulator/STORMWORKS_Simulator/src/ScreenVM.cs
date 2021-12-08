@@ -159,6 +159,8 @@ namespace STORMWORKS_Simulator
 
         public void SwapFrameBuffers()
         {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+
             _BackBuffer.AddDirtyRect(new Int32Rect(0, 0, (int)_BackBuffer.Width, (int)_BackBuffer.Height));
             _BackBuffer.Unlock();
 
@@ -168,7 +170,8 @@ namespace STORMWORKS_Simulator
 
             PrepareBackBufferForDrawing();
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FrontBuffer"));
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
         public void PrepareBackBufferForDrawing()
