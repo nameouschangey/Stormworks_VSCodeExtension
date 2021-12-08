@@ -18,6 +18,7 @@ using SkiaSharp;
 
 namespace STORMWORKS_Simulator
 {
+
     [Export(typeof(IPipeCommandHandler))]
     public class DrawRect : IPipeCommandHandler
     {
@@ -39,7 +40,19 @@ namespace STORMWORKS_Simulator
             var width   = float.Parse(commandParts[5]);
             var height  = float.Parse(commandParts[6]);
 
-            screen.DrawingCanvas.Canvas.DrawRect(x, y, width, height, new SkiaSharp.SKPaint() {Color = vm.Color, IsStroke=!filled });
+            var paint = new SKPaint()
+            {
+                StrokeMiter = 0f,
+                StrokeJoin = SKStrokeJoin.Miter,
+                StrokeCap = SKStrokeCap.Butt,
+                StrokeWidth = 1f,
+                IsAntialias = false,
+                BlendMode = SKBlendMode.SrcOver,
+                Style = filled ? SKPaintStyle.Fill : SKPaintStyle.Stroke,
+                Color = vm.Color
+            };
+
+            screen.DrawingCanvas.Canvas.DrawRect(x, y, width, height, paint);
         }
     }
 
@@ -58,40 +71,24 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var filled = commandParts[2] == "1";
-            var x = float.Parse(commandParts[3]);
-            var y = float.Parse(commandParts[4]);
-            var radius = float.Parse(commandParts[5]);
+            var filled  = commandParts[2] == "1";
+            var x       = float.Parse(commandParts[3]);
+            var y       = float.Parse(commandParts[4]);
+            var radius  = float.Parse(commandParts[5]);
 
-            screen.DrawingCanvas.Canvas.DrawCircle(x, y, radius,
-                new SKPaint() {
-                    Color = vm.Color,
-                    Style = filled? SKPaintStyle.StrokeAndFill : SKPaintStyle.Stroke,
-                    
-                    StrokeMiter=0f,
-                    StrokeJoin= SKStrokeJoin.Miter,
-                    StrokeCap = SKStrokeCap.Butt,
-                    StrokeWidth = 1f,
+            var paint = new SKPaint()
+            {
+                StrokeMiter = 0f,
+                StrokeJoin = SKStrokeJoin.Miter,
+                StrokeCap = SKStrokeCap.Butt,
+                StrokeWidth = 1f,
+                IsAntialias = false,
+                BlendMode = SKBlendMode.SrcOver,
+                Style = filled ? SKPaintStyle.StrokeAndFill : SKPaintStyle.Stroke,
+                Color = vm.Color
+            };
 
-                    IsAntialias=false,
-                    BlendMode=SKBlendMode.SrcOver
-                });
-            if (radius < 1)
-            {
-                //screen.BitmapCanvas.DrawSinglePoint((int)x, (int)y, vm.ColorInt);
-            }
-            else
-            {
-                if (filled)
-                {
-                    //screen.BitmapCanvas.FillEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
-                }
-                else
-                {
-                    //screen.BitmapCanvas.DrawEllipseCentered((int)(x), (int)(y), (int)radius, (int)radius, vm.ColorInt);
-                }
-            }
-            
+            screen.DrawingCanvas.Canvas.DrawCircle(x, y, radius, paint);
         }
     }
 
@@ -110,12 +107,24 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x   = double.Parse(commandParts[2]) + 0.5;
-            var y   = double.Parse(commandParts[3]) + 0.5;
-            var x2  = double.Parse(commandParts[4]) + 0.5;
-            var y2  = double.Parse(commandParts[5]) + 0.5;
+            var x   = float.Parse(commandParts[2]);
+            var y   = float.Parse(commandParts[3]);
+            var x2  = float.Parse(commandParts[4]);
+            var y2  = float.Parse(commandParts[5]);
 
-            //screen.BitmapCanvas.DrawLineBresenham((int)x, (int)y, (int)x2, (int)y2, vm.ColorInt);
+            var paint = new SKPaint()
+            {
+                StrokeMiter = 0f,
+                StrokeJoin = SKStrokeJoin.Miter,
+                StrokeCap = SKStrokeCap.Butt,
+                StrokeWidth = 1f,
+                IsAntialias = false,
+                BlendMode = SKBlendMode.SrcOver,
+                Style = SKPaintStyle.Stroke,
+                Color = vm.Color
+            };
+
+            screen.DrawingCanvas.Canvas.DrawLine(x, y, x2, y2, paint);
         }
     }
 
@@ -138,8 +147,8 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x = (double.Parse(commandParts[2]));//   * screen.DrawScale;
-            var y = (double.Parse(commandParts[3]) - 1);// * screen.DrawScale;
+            var x = (float.Parse(commandParts[2]));//   * screen.DrawScale;
+            var y = (float.Parse(commandParts[3]) - 1);// * screen.DrawScale;
             var text = commandParts[4];
             
             var textBlock = new TextBlock();
@@ -175,12 +184,12 @@ namespace STORMWORKS_Simulator
             var screenNumber    = int.Parse(commandParts[1]);
             var screen          = vm.GetScreen(screenNumber);
 
-            var x               = double.Parse(commandParts[2]);
-            var y               = double.Parse(commandParts[3]) - 1;
-            var width           = double.Parse(commandParts[4]);
-            var height          = double.Parse(commandParts[5]);
-            var horizontalAlign = (int)double.Parse(commandParts[6]);
-            var verticalAlign   = (int)double.Parse(commandParts[7]);
+            var x               = float.Parse(commandParts[2]);
+            var y               = float.Parse(commandParts[3]) - 1;
+            var width           = float.Parse(commandParts[4]);
+            var height          = float.Parse(commandParts[5]);
+            var horizontalAlign = (int)float.Parse(commandParts[6]);
+            var verticalAlign   = (int)float.Parse(commandParts[7]);
             var text            = commandParts[8];
 
             // custom wrapping
@@ -263,23 +272,34 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var p1x = double.Parse(commandParts[3]) + 0.5;
-            var p1y = double.Parse(commandParts[4])+ 0.5;
+            var p1x = float.Parse(commandParts[3]);
+            var p1y = float.Parse(commandParts[4]);
                                                
-            var p2x = double.Parse(commandParts[5])+ 0.5;
-            var p2y = double.Parse(commandParts[6])+ 0.5;
+            var p2x = float.Parse(commandParts[5]);
+            var p2y = float.Parse(commandParts[6]);
                                            
-            var p3x = double.Parse(commandParts[7])+ 0.5;
-            var p3y = double.Parse(commandParts[8])+ 0.5;
+            var p3x = float.Parse(commandParts[7]);
+            var p3y = float.Parse(commandParts[8]);
 
-            if (filled)
+            var path = new SKPath { FillType = SKPathFillType.EvenOdd };
+            path.MoveTo(p1x, p1y);
+            path.LineTo(p2x, p2y);
+            path.LineTo(p3x, p3y);
+            path.Close();
+
+            var paint = new SKPaint()
             {
-               // screen.BitmapCanvas.FillTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
-            }
-            else
-            {
-               // screen.BitmapCanvas.DrawTriangle((int)p1x, (int)p1y, (int)p2x, (int)p2y, (int)p3x, (int)p3y, vm.ColorInt);
-            }
+                StrokeMiter = 0f,
+                StrokeJoin = SKStrokeJoin.Miter,
+                StrokeCap = SKStrokeCap.Butt,
+                StrokeWidth = 1f,
+                IsAntialias = false,
+                BlendMode = SKBlendMode.SrcOver,
+                Style = filled ? SKPaintStyle.StrokeAndFill : SKPaintStyle.Stroke,
+                Color = vm.Color
+            };
+
+            screen.DrawingCanvas.Canvas.DrawPath(path, paint);
         }
     }
 

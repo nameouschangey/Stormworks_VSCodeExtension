@@ -133,9 +133,13 @@ namespace STORMWORKS_Simulator
 
             TickHandler.OnLineRead(this, "COLOUR|155|255|125|50");
             TickHandler.OnLineRead(this, "CIRCLE|1|1|15|15|20");
-
-            TickHandler.OnLineRead(this, "COLOUR|0|0|255|50");
             TickHandler.OnLineRead(this, "CIRCLE|1|0|15|15|20");
+
+
+            TickHandler.OnLineRead(this, "COLOUR|50|50|255|100");
+            TickHandler.OnLineRead(this, "TRIANGLE|1|1|15|15|20|20|55|10");
+            TickHandler.OnLineRead(this, "TRIANGLE|1|0|15|15|20|20|55|10");
+
             TickHandler.OnLineRead(this, "TICKEND");
             screen.SwapFrameBuffers();
             //screen.TriggerRedraw();
