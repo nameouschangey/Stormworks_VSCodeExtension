@@ -30,7 +30,7 @@ namespace STORMWORKS_Simulator
             for (var i = 0; i < 32; ++i)
             {
                 vm.Inputs[i].BoolValue = commandParts[(i * 2) + 1] == "1";
-                vm.Inputs[i].NumberValue = double.Parse(commandParts[(i * 2) + 2]);
+                vm.Inputs[i].NumberValue = float.Parse(commandParts[(i * 2) + 2]);
             }
         }
     }
@@ -49,7 +49,7 @@ namespace STORMWORKS_Simulator
             for (var i = 0; i < 32; ++i)
             {
                 vm.Outputs[i].BoolValue = commandParts[(i * 2) + 1] == "1";
-                vm.Outputs[i].NumberValue = double.Parse(commandParts[(i * 2) + 2]);
+                vm.Outputs[i].NumberValue = float.Parse(commandParts[(i * 2) + 2]);
             }
         }
     }

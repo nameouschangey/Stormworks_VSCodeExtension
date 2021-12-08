@@ -143,7 +143,7 @@
                                 MouseRightButtonDown="Canvas_MouseRightButtonDown"
                                 MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
                                 MouseRightButtonUp="Canvas_MouseRightButtonUp"
-                                Background="Yellow"
+                                Background="Black"
                                 ClipToBounds = "True">
                                 <Canvas.LayoutTransform>
                                     <RotateTransform Angle="{Binding CanvasRotation}"/>
@@ -157,13 +157,24 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Canvas.Style>
+                                <Grid>
                                 <Image Source="{Binding FrontBuffer}"
+                                       Width="{Binding CanvasSize.X}"
+                                       Height="{Binding CanvasSize.Y}"
+                                       Panel.ZIndex="1"
+                                       IsHitTestVisible="False"
+                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch"></Image>
+                                <Image Source="{Binding MapBuffer}"
+                                       Panel.ZIndex="-1"
                                        Width="{Binding CanvasSize.X}"
                                        Height="{Binding CanvasSize.Y}"
                                        IsHitTestVisible="False"
                                        RenderOptions.BitmapScalingMode="NearestNeighbor"
                                        HorizontalAlignment="Stretch"
                                        VerticalAlignment="Stretch"></Image>
+                                </Grid>
                             </Canvas>
 
                         </DataTemplate>

@@ -369,10 +369,10 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
+            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1]))));
+            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2]))));
+            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3]))));
+            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4]))));
 
             vm.Color = new SkiaSharp.SKColor(r,g,b,a);
         }

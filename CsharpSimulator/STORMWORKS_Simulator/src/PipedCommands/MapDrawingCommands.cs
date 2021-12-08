@@ -14,9 +14,23 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using System.Reflection;
+using SkiaSharp;
 
 namespace STORMWORKS_Simulator
 {
+    public class MapHelper
+    {
+        public static SKColor ColourFromCommandParts(string[] commandParts)
+        {
+            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1]))));
+            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2]))));
+            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3]))));
+            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4]))));
+
+            return new SKColor(r, g, b, a);
+        }
+    }
+
     [Export(typeof(IPipeCommandHandler))]
     public class DrawMap : IPipeCommandHandler
     {
@@ -32,29 +46,50 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            var x = double.Parse(commandParts[2]);
-            var y = double.Parse(commandParts[3]);
-            var zoom = 1 - (double.Parse(commandParts[4]) / 50);  // 0.1 -> 50
+            var x = float.Parse(commandParts[2]);
+            var y = float.Parse(commandParts[3]);
+            var zoom = 1 - (float.Parse(commandParts[4]) / 50);  // 0.1 -> 50
 
             x *= zoom * 50;
             y *= zoom * 50;
 
-            var buffer = screen.BitmapCanvas;
-            //buffer.FillRectangle(0, 0, buffer.PixelWidth, buffer.PixelHeight, vm.MapOceanColour);
+            
+            var screenWidth = (float)screen.Monitor.Size.X;
+            var screenHeight = (float)screen.Monitor.Size.Y;
 
-            DrawIsland(vm, buffer,(int)(x/50000 * buffer.PixelWidth) + (buffer.PixelWidth / 5), (int)(y / 50000 * buffer.PixelHeight) + buffer.PixelHeight / 5,     zoom * buffer.PixelWidth / 5, zoom * buffer.PixelHeight / 3);
-            DrawIsland(vm, buffer,(int)(x/50000 * buffer.PixelWidth) + (2 * buffer.PixelWidth / 3), (int)(y / 50000 * buffer.PixelHeight) + 2 * buffer.PixelHeight / 3, zoom * buffer.PixelWidth / 3, zoom * buffer.PixelHeight / 5);
+            var paint =
+            new SKPaint {
+                Style=SKPaintStyle.StrokeAndFill
+            };
+
+            var canvas = screen.MapCanvas.Canvas;
+
+            // draw the ocean
+            paint.Color = vm.MapOceanColour;
+            screen.MapCanvas.Canvas.DrawRect(0, 0, screenWidth, screenHeight, paint);
+
+            // draw a bunch of janky overlapping ovals to represent the "islands"
+            // it's better than nothing
+            DrawIsland(vm, paint, canvas, (x/50000 * screenWidth) + (screenWidth / 5), (y / 50000 * screenHeight) + screenHeight / 5,     zoom * screenWidth / 5, zoom * screenHeight / 3);
+            DrawIsland(vm, paint, canvas, (x/50000 * screenWidth) + (2 * screenWidth / 3), (y / 50000 * screenHeight) + 2 * screenHeight / 3, zoom * screenWidth / 3, zoom * screenHeight / 5);
         }
 
-        private void DrawIsland(MainVM vm, WriteableBitmap buffer, int x, int y, double width, double length)
+        private void DrawIsland(MainVM vm, SKPaint paint, SKCanvas canvas, float x, float y, float width, float length)
         {
-            //buffer.FillEllipseCentered(x, y, (int)width, (int)length, vm.MapShallowsColour);
-            //
-            //buffer.FillEllipseCentered(x, y, (int)(width * 0.9), (int)(length * 0.9), vm.MapShallowsColour);
-            //buffer.FillEllipseCentered(x, y, (int)(width * 0.8), (int)(length * 0.8), vm.MapSandColour);
-            //buffer.FillEllipseCentered(x, y, (int)(width * 0.7), (int)(length * 0.7), vm.MapLandColour);
-            //buffer.FillEllipseCentered(x, y, (int)(width * 0.6), (int)(length * 0.6), vm.MapGrassColour);
-            //buffer.FillEllipseCentered((int)(x+width * 0.1), (int)(y+length * 0.1), (int)(width * 0.1), (int)(length * 0.1), vm.MapSnowColour);
+            paint.Color = vm.MapShallowsColour;
+            canvas.DrawOval(x, y, width * 0.9f, length * 0.9f, paint);
+
+            paint.Color = vm.MapSandColour;
+            canvas.DrawOval(x, y, width * 0.8f, length * 0.8f, paint);
+
+            paint.Color = vm.MapLandColour;
+            canvas.DrawOval(x, y, width * 0.7f, length * 0.7f, paint);
+
+            paint.Color = vm.MapGrassColour;
+            canvas.DrawOval(x, y, width * 0.6f, length * 0.6f, paint);
+
+            paint.Color = vm.MapSnowColour;
+            canvas.DrawOval(x+width * 0.1f, y+length * 0.1f, width * 0.1f, length * 0.1f, paint);
         }
     }
 
@@ -71,14 +106,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-
-            var colour = Color.FromArgb(a, r, g, b);
-
-           // vm.MapOceanColour = WriteableBitmapExtensions.ConvertColor(colour);
+            vm.MapOceanColour = MapHelper.ColourFromCommandParts(commandParts);
         }
     }
 
@@ -94,14 +122,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-
-            var colour = Color.FromArgb(a, r, g, b);
-
-           // vm.MapShallowsColour = WriteableBitmapExtensions.ConvertColor(colour);
+            vm.MapShallowsColour = MapHelper.ColourFromCommandParts(commandParts);
         }
     }
 
@@ -117,14 +138,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-
-            var colour = Color.FromArgb(a, r, g, b);
-
-           // vm.MapLandColour = WriteableBitmapExtensions.ConvertColor(colour);
+            vm.MapLandColour = MapHelper.ColourFromCommandParts(commandParts);
         }
     }
 
@@ -140,14 +154,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-
-            var colour = Color.FromArgb(a, r, g, b);
-
-           // vm.MapSandColour = WriteableBitmapExtensions.ConvertColor(colour);
+            vm.MapSandColour = MapHelper.ColourFromCommandParts(commandParts);
         }
     }
 
@@ -163,14 +170,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-
-            var colour = Color.FromArgb(a, r, g, b);
-
-           // vm.MapGrassColour = WriteableBitmapExtensions.ConvertColor(colour);
+            vm.MapGrassColour = MapHelper.ColourFromCommandParts(commandParts);
         }
     }
 
@@ -186,14 +186,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)double.Parse(commandParts[4]))));
-
-            var colour = Color.FromArgb(a, r, g, b);
-
-            //vm.MapSnowColour = WriteableBitmapExtensions.ConvertColor(colour);
+            vm.MapSnowColour = MapHelper.ColourFromCommandParts(commandParts);
         }
     }
 }

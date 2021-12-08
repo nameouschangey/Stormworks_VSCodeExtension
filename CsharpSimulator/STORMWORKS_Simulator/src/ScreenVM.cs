@@ -68,13 +68,14 @@ namespace STORMWORKS_Simulator
 
                 Monitor.Size = new Point(width, height);
 
-                _Buffer1 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
-                _Buffer2 = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
+                FrontBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
+                _BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
 
-                FrontBuffer = _Buffer1;
-                _BackBuffer = _Buffer2;
+                MapBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
+                _BackMapBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
 
-                PrepareBackBufferForDrawing();
+                PrepareBufferForDrawing(_BackBuffer, ref DrawingCanvas);
+                PrepareBufferForDrawing(_BackMapBuffer, ref MapCanvas);
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
@@ -122,19 +123,18 @@ namespace STORMWORKS_Simulator
 
         #region Drawing
         public Point CanvasSize { get => new Point(Monitor.Size.X * CanvasScale, Monitor.Size.Y * CanvasScale); }
-        public WriteableBitmap BitmapCanvas; // for removal
-
+        public SKSurface DrawingCanvas;
         public WriteableBitmap FrontBuffer { get; private set; }
-        public SKSurface DrawingCanvas { get; private set; }
         private WriteableBitmap _BackBuffer;
-        private WriteableBitmap _Buffer1;
-        private WriteableBitmap _Buffer2;
         #endregion
 
+        #region MapDrawing
+        public SKSurface MapCanvas;
+        public WriteableBitmap MapBuffer { get; private set; }
+        private WriteableBitmap _BackMapBuffer;
+        #endregion
 
         public int ScreenNumber { get; private set; }
-
-
 
         #region Touches
         // touch data
@@ -159,8 +159,7 @@ namespace STORMWORKS_Simulator
 
         public void SwapFrameBuffers()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-
+            // swap front buffers
             _BackBuffer.AddDirtyRect(new Int32Rect(0, 0, (int)_BackBuffer.Width, (int)_BackBuffer.Height));
             _BackBuffer.Unlock();
 
@@ -168,40 +167,41 @@ namespace STORMWORKS_Simulator
             FrontBuffer = _BackBuffer;
             _BackBuffer = temp;
 
-            PrepareBackBufferForDrawing();
+            PrepareBufferForDrawing(_BackBuffer, ref DrawingCanvas);
+
+
+            // swap map buffers
+            _BackMapBuffer.AddDirtyRect(new Int32Rect(0, 0, (int)_BackMapBuffer.Width, (int)_BackMapBuffer.Height));
+            _BackMapBuffer.Unlock();
+
+            temp = MapBuffer;
+            MapBuffer = _BackMapBuffer;
+            _BackMapBuffer = temp;
+
+            PrepareBufferForDrawing(_BackMapBuffer, ref MapCanvas);
 
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
-        public void PrepareBackBufferForDrawing()
+        public void PrepareBufferForDrawing(WriteableBitmap buffer, ref SKSurface canvas)
         {
-            if (DrawingCanvas != null)
+            if (canvas != null)
             {
-                DrawingCanvas.Dispose();
+                canvas.Dispose();
             }
 
             var skImageInfo = new SKImageInfo()
             {
-                Width = (int)_BackBuffer.Width,
-                Height = (int)_BackBuffer.Height,
+                Width = (int)buffer.Width,
+                Height = (int)buffer.Height,
                 ColorType = SKColorType.Bgra8888,
                 AlphaType = SKAlphaType.Premul,
                 ColorSpace = SKColorSpace.CreateSrgb()
             };
-            _BackBuffer.Lock();
-            DrawingCanvas = SKSurface.Create(skImageInfo, _BackBuffer.BackBuffer);
+            buffer.Lock();
+            canvas = SKSurface.Create(skImageInfo, buffer.BackBuffer);
         }
-
-
-        public void Test()
-        {
-            SKCanvas canvas = DrawingCanvas.Canvas;
-            canvas.Clear(new SKColor(255, 130, 130));
-            canvas.DrawRect(5, 5, 10, 10, new SKPaint() { Color = new SKColor(125, 125, 125, 125) });
-            canvas.DrawText("SkiaSharp in Wpf!", 5, 10, new SKPaint() { Color = new SKColor(0, 0, 0), TextSize = 5 });
-            canvas.DrawText("Using SkiaSharp for making graphs in WPF", new SKPoint(5, 20), new SKPaint(new SKFont(SKTypeface.FromFamilyName("Microsoft YaHei UI"))));
-        }       
 
         public void Clear()
         {

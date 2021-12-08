@@ -27,7 +27,7 @@ namespace STORMWORKS_Simulator
             set { _BoolValue = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null)); }
         }
 
-        public double NumberValue
+        public float NumberValue
         {
             get => _NumberValue;
             set { _NumberValue = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null)); }
@@ -35,7 +35,7 @@ namespace STORMWORKS_Simulator
 
         private string _Name;
         private bool _BoolValue;
-        private double _NumberValue;
+        private float _NumberValue;
 
         public StormworksInputOutput(string name)
         {
@@ -168,11 +168,11 @@ namespace STORMWORKS_Simulator
 
         private void SetupMapColours()
         {
-            MapOceanColour    = new SKColor(255, 50,  150, 150);
-            MapShallowsColour = new SKColor(255, 75,  170, 170);
-            MapLandColour     = new SKColor(255, 220, 220, 220);
-            MapSandColour     = new SKColor(255, 230, 230, 140);
-            MapGrassColour    = new SKColor(255, 190, 215, 150);
+            MapOceanColour    = new SKColor(50,  150, 150, 255);
+            MapShallowsColour = new SKColor(75,  170, 170, 255);
+            MapLandColour     = new SKColor(220, 220, 220, 255);
+            MapSandColour     = new SKColor(230, 230, 140, 255);
+            MapGrassColour    = new SKColor(190, 215, 150, 255);
             MapSnowColour     = new SKColor(255, 255, 255, 255);
         }
     }
