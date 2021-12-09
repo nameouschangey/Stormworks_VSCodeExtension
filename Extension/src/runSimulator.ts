@@ -24,11 +24,11 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     // or do we need to do something else?
     var contents = `
 require("LifeBoatAPI.Tools.Simulator.LBSimulator");
-local __simulator = LBSimulator:new() 
+__simulator = LBSimulator:new() 
+__simulator:beginSimulation(false, arg[1], arg[2])
 
 require("${relativePath}");
 
-__simulator:beginSimulation(false, arg[1])
 __simulator:giveControlToMainLoop()
 `;
     return projectCreation.addBoilerplate(contents);
@@ -47,6 +47,8 @@ export function beginSimulator(context:vscode.ExtensionContext)
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
         var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_simulator.lua");
 
+        var ws : vscode.WorkspaceFolder = workspace;
+
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new TextEncoder().encode(simulatorLua))
         .then(
             () => {
@@ -57,8 +59,11 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     program: `${simulatedLuaFile?.fsPath}`,
                     stopOnEntry: false,
                     stopOnThreadEntry: false,
+                    cpath:"",
+                    path:"",
                     arg: [
-                        context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe"
+                        context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe",
+                        ws.uri.fsPath + "/_build/_debug_simulator_log.txt"
                     ]
                 };
                 

@@ -42,8 +42,12 @@ function beginUpdateWorkspaceSettings(context) {
     var lifeboatLibraryPaths = getLibraryPaths(context);
     var lifeboatIgnorePaths = lifeboatConfig.get("ignorePaths") ?? [];
     // add standard ignores
-    lifeboatIgnorePaths.push(".vscode");
-    lifeboatIgnorePaths.push("/out/");
+    if (!lifeboatIgnorePaths.includes(".vscode")) {
+        lifeboatIgnorePaths.push(".vscode");
+    }
+    if (!lifeboatIgnorePaths.includes("/out/")) {
+        lifeboatIgnorePaths.push("/out/");
+    }
     var luaDiagnosticsConfig = vscode.workspace.getConfiguration("Lua.diagnostics");
     var luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
     var luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");
@@ -71,8 +75,8 @@ function beginUpdateWorkspaceSettings(context) {
         // lua.debug.cpath
         var existing = luaDebugConfig.get("cpath") ?? [];
         const defaultCPaths = [
-            context.extensionPath + "/assets/luasocket/dll/socket/core.dll",
-            context.extensionPath + "/assets/luasocket/dll/mime/core.dll"
+            sanitisePath(context.extensionPath) + "/assets/luasocket/dll/socket/core.dll",
+            sanitisePath(context.extensionPath) + "/assets/luasocket/dll/mime/core.dll"
         ];
         for (const cPathElement of defaultCPaths) {
             if (existing.indexOf(cPathElement) === -1) {
@@ -83,7 +87,7 @@ function beginUpdateWorkspaceSettings(context) {
     }).then(() => {
         //lua.debug.path
         var debugPaths = [
-            context.extensionPath + "/assets/luasocket/?.lua",
+            sanitisePath(context.extensionPath) + "/assets/luasocket/?.lua",
         ];
         for (var path of lifeboatLibraryPaths) {
             debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
@@ -94,8 +98,8 @@ function beginUpdateWorkspaceSettings(context) {
         //Lua.workspace.library
         var docConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.nelo", utils.getCurrentWorkspaceFile());
         // Nelo Docs root
-        var neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
-        var neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
+        var neloAddonDoc = sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_missions.lua";
+        var neloMCDoc = sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_vehicles.lua";
         if (docConfig.get("overwriteNeloDocsPath") === true) {
             neloAddonDoc = docConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
             neloMCDoc = docConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;

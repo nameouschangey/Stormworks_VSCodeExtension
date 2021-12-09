@@ -55,13 +55,11 @@ function activate(context) {
     }));
     // New MC
     context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newMCProject', () => {
-        return projectCreation.beginCreateNewProjectFolder(true)
-            .then((folder) => vscode.commands.executeCommand("workbench.view.explorer"));
+        return projectCreation.beginCreateNewProjectFolder(true);
     }));
     // New Addon
     context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newAddonProject', () => {
-        return projectCreation.beginCreateNewProjectFolder(false)
-            .then((folder) => vscode.commands.executeCommand("workbench.view.explorer"));
+        return projectCreation.beginCreateNewProjectFolder(false);
     }));
 }
 exports.activate = activate;

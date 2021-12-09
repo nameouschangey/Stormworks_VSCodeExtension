@@ -5,13 +5,15 @@ const vscode = require("vscode");
 const path = require("path");
 const util_1 = require("util");
 const utils = require("./utils");
-const microControllerDefaultScript = `
+const microControllerDefaultScript = `--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
+--- 	Please try to describe the issue clearly, and send a copy of the /_build/_debug_simulator_log.txt file, with any screenshots (thank you!)
+
+
 --- With LifeBoatAPI; you can use the "require(...)" keyword to use code from other files!
 ---     This lets you share code between projects, and organise your work better.
 ---     The below, includes the content from _simulator_config.lua in the generated /_build/ folder
 --- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
 require("_build._simulator_config")
-
 
 --- default onTick function; called once per in-game tick (60 per second)
 ticks = 0
@@ -50,30 +52,34 @@ const microControllerDefaultSimulatorConfig = `
 
 ---@section __SIMULATORONLY__ 1 _MAIN_SIMSECTION_INIT
 
-    --- Runs once when the simulator starts up
-    --- Put simulator configuration here, included automatic handlers for inputs, or screen sizes
-    ---@param simulator LBSimulator
-    ---@param config LBSimulatorConfig
-    ---@param helpers LBSimulatorInputHelpers
-    function onLBSimulatorInit(simulator, config, helpers)
-        config:configureScreen(1, "3x2", true, false)
-        config:setProperty("ExampleProperty", 50)
 
-        -- handlers that automatically update the inputs each frame
-        -- useful for simple inputs (sweeps/wraps etc.)
-        config:addBoolHandler(10,   function() return math.random() * 100 < 20 end)
-        config:addNumberHandler(10, function() return math.random() * 100 end)
-    end
+-- When running the simulator, the global variable __simulator is created
+-- Make sure to do any configuration before the the start of your main file
+---@param simulator LBSimulator
+---@param config LBSimulatorConfig
+---@param helpers LBSimulatorInputHelpers
+__simulator.config:configureScreen(1, "3x2", true, false)
+__simulator.config:setProperty("ExampleProperty", 50)
 
-    --- runs every tick, prior to onTick and onDraw
-    --- Usually not needed, can allow you to do some custom manipulation
-    --- Or set breakpoints based on simulator state
-    ---@param simulator LBSimulator
-    function onLBSimulatorTick(simulator)end
+-- handlers that automatically update the inputs each frame
+-- useful for simple inputs (sweeps/wraps etc.)
+__simulator.config:addBoolHandler(10,   function() return math.random() * 100 < 20 end)
+__simulator.config:addNumberHandler(10, function() return math.random() * 100 end)
 
-    --- For easier debugging, called when an output value is changed
-    function onLBSimulatorOutputBoolChanged(index, oldValue, newValue)end
-    function onLBSimulatorOutputNumberChanged(index, oldValue, newValue)end
+-- there's also a helpers library with a number of handling functions for you to try!
+__simulator.config:addNumberHandler(10, LBSimulatorInputHelpers.contantNumber(5001))
+
+
+--- runs every tick, prior to onTick and onDraw
+--- Usually not needed, can allow you to do some custom manipulation
+--- Or set breakpoints based on simulator state
+---@param simulator LBSimulator
+function onLBSimulatorTick(simulator)end
+
+--- For easier debugging, called when an output value is changed
+function onLBSimulatorOutputBoolChanged(index, oldValue, newValue)end
+function onLBSimulatorOutputNumberChanged(index, oldValue, newValue)end
+
 ---@endsection _MAIN_SIMSECTION_INIT
 
 
@@ -118,25 +124,16 @@ function beginCreateNewProjectFolder(isMicrocontrollerProject) {
             return {
                 isMicrocontroller: isMicrocontrollerProject,
                 selectedFolder: { index: workspaceCount, uri: folders[0], name: projectName },
-                settingsFilePath: vscode.Uri.prototype
+                settingsFilePath: vscode.Uri.prototype,
+                launchFilepath: vscode.Uri.prototype
             };
         }
         else {
             return Promise.reject("No folder selected");
         }
-    }).then((params) => {
-        params.settingsFilePath = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/settings.json");
-        return utils.doesFileExist(params.settingsFilePath, () => {
-            return vscode.window
-                .showErrorMessage("Project folder isn't empty. Are you sure?", ...["Overwrite existing", "Cancel"])
-                .then((item) => {
-                return (item === "Overwrite existing") ? params : Promise.reject();
-            });
-        }, () => {
-            return params; // we don't want that settings file to already exist, otherwise a misclick could trample somebody's project.
-        });
     })
         .then((params) => {
+        params.settingsFilePath = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/settings.json");
         return vscode.workspace.fs.readFile(params.settingsFilePath).then((data) => {
             const stringData = new util_1.TextDecoder().decode(data);
             const jsonData = JSON.parse(stringData);
@@ -151,16 +148,50 @@ function beginCreateNewProjectFolder(isMicrocontrollerProject) {
         });
     })
         .then((params) => {
-        if (params.isMicrocontroller) {
-            return setupMicrocontrollerFiles(params);
-        }
-        else {
-            return setupAddonFiles(params);
-        }
+        params.launchFilepath = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/launch.json");
+        return vscode.workspace.fs.readFile(params.launchFilepath).then((data) => {
+            const stringData = new util_1.TextDecoder().decode(data);
+            const jsonData = JSON.parse(stringData);
+            return jsonData;
+        }, (err) => {
+            return {
+                version: "0.2.0",
+                configurations: []
+            };
+        }).then((launchJson) => {
+            launchJson["configurations"].push({
+                name: "Run Lua",
+                type: "lua",
+                request: "launch",
+                program: "${file}",
+            });
+            return vscode.workspace.fs.writeFile(params.launchFilepath, new util_1.TextEncoder().encode(JSON.stringify(launchJson, null, 4)))
+                .then(() => params);
+        });
     })
         .then((params) => {
-        // must be last in the chain, as it can cause VSCode to restart
-        vscode.workspace.updateWorkspaceFolders(0, 0, params.selectedFolder);
+        if (params.isMicrocontroller) {
+            return setupMicrocontrollerFiles(params).then(() => params);
+        }
+        else {
+            return setupAddonFiles(params).then(() => params);
+        }
+    })
+        .then((params) => vscode.commands.executeCommand("workbench.view.explorer").then(() => params))
+        .then((params) => {
+        if (!vscode.workspace.workspaceFile) {
+            let workspaceName = path.basename(params.selectedFolder.uri.fsPath);
+            let workspaceFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/" + workspaceName + ".code-workspace");
+            return vscode.workspace.fs.writeFile(workspaceFile, new util_1.TextEncoder().encode(JSON.stringify({
+                "folders": [
+                    {
+                        "path": ".."
+                    }
+                ]
+            }, null, 4)))
+                .then(() => vscode.commands.executeCommand("vscode.openFolder", workspaceFile));
+        }
+        return vscode.workspace.updateWorkspaceFolders(0, 0, params.selectedFolder);
     });
 }
 exports.beginCreateNewProjectFolder = beginCreateNewProjectFolder;

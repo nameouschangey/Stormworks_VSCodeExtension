@@ -32,10 +32,13 @@ namespace STORMWORKS_Simulator
         public Timer KeepAliveTimer;
         public TickHandler TickHandler;
 
-        public MainWindow()
+        public MainWindow(CommandLineArgs args)
         {
-            Logger.SetLog(@"C:\personal\STORMWORKS_VSCodeExtension\debug.txt");
-            Logger.Enabled = false;
+            Logger.SetLog(args.LogFilepath);
+            Logger.ErrorEnabled = args.EnableLogging;
+            Logger.InfoEnabled = args.EnableLogging;
+
+            Logger.Log("Launching, time stamp.");
 
             InitializeComponent();
 
@@ -46,7 +49,7 @@ namespace STORMWORKS_Simulator
             VSConnection.OnLineRead += TickHandler.OnLineRead;
 
 
-            //ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
+            ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
             ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
             ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
             ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
@@ -57,8 +60,10 @@ namespace STORMWORKS_Simulator
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             
             var screen = ViewModel.GetOrAddScreen(1);
-            screen.ScreenResolutionDescription = "3x3";
+            //screen.ScreenResolutionDescription = "3x3";
             //TickHandler.OnLineRead(this, "CIRCLE|1|1|16|16|16");
+
+            Logger.Log("MainWindow Initialized and running");
         }
 
         private void OnKeepAliveTimer(object state)
@@ -70,6 +75,7 @@ namespace STORMWORKS_Simulator
             }
             catch (Exception e)
             {   // squash the error or it will confuse users in VSCode wondering why there's a bright red error
+                Logger.Error($"OnKeepAliveTimer - Exception - Closing Application - {e}");
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     Application.Current.Shutdown();
@@ -79,6 +85,8 @@ namespace STORMWORKS_Simulator
 
         private void Pipe_OnPipeClosed(object sender, EventArgs e)
         {
+            Logger.Error($"Pipe_OnPipeClosed - Closing Application");
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Application.Current.Shutdown();
@@ -87,7 +95,7 @@ namespace STORMWORKS_Simulator
 
         private void OnResetClicked(object sender, RoutedEventArgs e)
         {
-            //CanvasZoom.Reset();
+            CanvasZoom.Reset();
         }
 
         private void SendTouchDataIfChanged(object sender, ScreenVM vm)
