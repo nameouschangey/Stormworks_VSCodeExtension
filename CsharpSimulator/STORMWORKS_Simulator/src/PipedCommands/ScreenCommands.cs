@@ -47,14 +47,14 @@ namespace STORMWORKS_Simulator
 
         public void Handle(MainVM vm, string[] commandParts)
         {
-            if (commandParts.Length < 2)
-            {
-                return;
-            }
-
-            var screenNumber = int.Parse(commandParts[1]);
-            var screen = vm.GetOrAddScreen(screenNumber);
-            screen.SwapFrameBuffers();
+            //if (commandParts.Length < 2)
+            //{
+            //    return;
+            //}
+            //
+            //var screenNumber = int.Parse(commandParts[1]);
+            //var screen = vm.GetOrAddScreen(screenNumber);
+            //screen.SwapFrameBuffers();
         }
     }
 }

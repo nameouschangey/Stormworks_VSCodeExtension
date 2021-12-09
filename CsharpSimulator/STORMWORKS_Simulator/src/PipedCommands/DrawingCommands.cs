@@ -166,7 +166,7 @@ namespace STORMWORKS_Simulator
             var screen = vm.GetScreen(screenNumber);
 
             var x = float.Parse(commandParts[2]);
-            var y = float.Parse(commandParts[3]) - 1;
+            var y = float.Parse(commandParts[3]) + 5; // add the length of the character, some reason skia doesn't?
             var text = commandParts[4].Replace("%__SIMPIPE__%", "|").ToUpper();
 
             var paint = new SKPaint()
@@ -220,7 +220,7 @@ namespace STORMWORKS_Simulator
             var screen          = vm.GetScreen(screenNumber);
 
             var x               = float.Parse(commandParts[2]);
-            var y               = float.Parse(commandParts[3]) - 1;
+            var y               = float.Parse(commandParts[3]);
             var width           = float.Parse(commandParts[4]);
             var height          = float.Parse(commandParts[5]);
             var horizontalAlign = (int)float.Parse(commandParts[6]);
@@ -305,7 +305,7 @@ namespace STORMWORKS_Simulator
                     startX = x;
                 }
 
-                screen.DrawingCanvas.Canvas.DrawText(line, startX, startY + (i * lineHeight), paint);
+                screen.DrawingCanvas.Canvas.DrawText(line, startX, 5 + startY + (i * lineHeight), paint);
             }
         }
     }
@@ -393,7 +393,7 @@ namespace STORMWORKS_Simulator
             var screenNumber = int.Parse(commandParts[1]);
             var screen = vm.GetScreen(screenNumber);
 
-            screen.Clear();
+            screen.DrawingCanvas.Canvas.Clear(vm.Color);
         }
     }
 }

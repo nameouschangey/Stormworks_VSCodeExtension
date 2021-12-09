@@ -82,6 +82,12 @@ namespace STORMWORKS_Simulator
                                     handler.Handle(_ViewModel, splits);
                                 }
                             }
+
+                            foreach (var screen in _ViewModel.ScreenVMs)
+                            {
+                                screen.SwapFrameBuffers();
+                                screen.Clear();
+                            }
                         }
                         catch (Exception e)
                         {
