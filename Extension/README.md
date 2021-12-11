@@ -26,7 +26,7 @@ Using:
 - lua-debug extension from: actboy169
 - lua language server extension from: sumneko
 
-# Features
+# Quick Start Guide
 ## Automatic Boilerplate Generation
 Boilerplate is generated with your details at the top of all files you create and build.
 
