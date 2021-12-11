@@ -53,7 +53,7 @@ export function isMicrocontrollerProject() : boolean
 {
 	if(getCurrentWorkspaceFile())
 	{
-		var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
+		let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
 		return lifeboatConfig.get("isMicrocontrollerProject") ?? false;
 	}
 	else
@@ -65,7 +65,7 @@ export function isMicrocontrollerProject() : boolean
 export function isStormworksProject() {
 	if(getCurrentWorkspaceFile())
 	{
-		var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
+		let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
 		return lifeboatConfig.get("isAddonProject") || lifeboatConfig.get("isMicrocontrollerProject");
 	}
 	else

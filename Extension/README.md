@@ -1,5 +1,6 @@
 # Stormworks Lua with LifeBoatAPI
 
+
 An extension to provide proper build processes to the Stormworks community.
 
 Key Features:
@@ -16,8 +17,9 @@ LifeBoatAPI solves these by providing:
 - Full type hinting and error checking to avoid typos
 - A solid library of code, the LifeBoatAPI, to simplify writing Stormworks code.
 
-Developed by Nameous Changey: https://github.com/nameouschangey 
-Please report any issues here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
+**Developed by Nameous Changey:** https://github.com/nameouschangey 
+
+**Please report any issues here:** https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
 
 Using:
 - integrated lua-docs from René Sackers: https://github.com/Rene-Sackers/StormworksLuaDocsGen
@@ -236,9 +238,26 @@ Lua-Debug by actboy168
 
 ### 0.0.5
 - Improved pre and post build steps in lua.
+- Fixed issue where running files that are in sub-folders wouldn't work, due to an incorrectly generated require path.
+- Replaced internal renderer for more accurate results
+- Removed onLBSimulatorInit method, to account for MCs where properties are read in global space, before the first tick
+- Set cpath and path of the debugger when running, to reduce the chance of an occasional issue when using multiple workspaces
+- Simulator now displays 32-bit floats, rather than 64-bit doubles
+- Fixed simulator config "portrait mode" previously not working
+- Fixed touch coordinates going outside normal range
+- Fixed simulator zoom issue
+- Fixed screen.drawText() positioning, rendering issue
+- Fixed screen.drawClear() not respecting the colour
+- Fixed simulator "skipFrames" causing a black screen
+- Renamed default simulator config "_simulator_config" for consistency.
+- Added error log file for the simulator, so we can solve more issues
+- Now creates a .code-workspace file by default in the first project you make. Which simplifies life for new VSCode users.
+- Added "Open Found Workspaces" for when users accidentally open a folder, instead of a workspace; again, to simplify life for new VSCode users.
 
 ### 0.0.4
+- First official release
 - Updated creditations to René Sackers - lua-docs generation
+- Minor fixes
 
 ### 0.0.0
 Initial testing release

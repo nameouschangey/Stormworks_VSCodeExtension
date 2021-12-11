@@ -135,8 +135,8 @@ export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 	.then((folders) => {
 		if (folders !== undefined)
 		{
-			var workspaceCount = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0;
-			var projectName = path.basename(folders[0].fsPath);
+			let workspaceCount = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0;
+			let projectName = path.basename(folders[0].fsPath);
 			return {
 				isMicrocontroller: isMicrocontrollerProject,
 				selectedFolder: {index: workspaceCount, uri:folders[0], name: projectName},
@@ -239,16 +239,16 @@ export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 
 export function addUserBoilerplate(text : string)
 {
-	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks.user", utils.getCurrentWorkspaceFile());
-	var authorName	  = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
-	var githubLink    = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
-	var workshopLink  = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
-	var extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
+	let lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks.user", utils.getCurrentWorkspaceFile());
+	let authorName	  = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+	let githubLink    = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+	let workshopLink  = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+	let extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
 
-	var extendedBoilerplate = "";
+	let extendedBoilerplate = "";
 	if(extendedLines)
 	{
-		for(var line of extendedLines.split("\n"))
+		for(let line of extendedLines.split("\n"))
 		{
 			extendedBoilerplate += "\n--" + line;
 		}
@@ -263,22 +263,22 @@ export function addUserBoilerplate(text : string)
 
 export function addBoilerplate(text : string)
 {
-	var lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks.user", utils.getCurrentWorkspaceFile());
-	var authorName	  = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
-	var githubLink    = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
-	var workshopLink  = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
-	var extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
+	let lifeboatConfig 	= vscode.workspace.getConfiguration("lifeboatapi.stormworks.user", utils.getCurrentWorkspaceFile());
+	let authorName	  = "-- Author: " + (lifeboatConfig.get("authorName") ?? "<Authorname> (Please change this in user settings, Ctrl+Comma)");
+	let githubLink    = "-- GitHub: " + (lifeboatConfig.get("githubLink") ?? "<GithubLink>");
+	let workshopLink  = "-- Workshop: " + (lifeboatConfig.get("workshopLink") ?? "<WorkshopLink>");
+	let extendedLines : string | undefined = lifeboatConfig.get("extendedBoilerplate");
 
-	var extendedBoilerplate = "";
+	let extendedBoilerplate = "";
 	if(extendedLines)
 	{
-		for(var line of extendedLines.split("\n"))
+		for(let line of extendedLines.split("\n"))
 		{
 			extendedBoilerplate += "\n--" + line;
 		}
 	}
 
-	var nameousBoilerplate = 
+	let nameousBoilerplate = 
 `-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)`;
 

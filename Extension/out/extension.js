@@ -13,13 +13,49 @@ const runBuild = require("./runBuild");
 // your extension is activated the very first time the command is executed
 function activate(context) {
     console.log('LifeBoatAPI for Stormworks Lua now active. Please contact Nameous Changey if you discover issues.');
+    // when folders change, check if there's any code-workspace files that could be opened
+    // (this may become annoying for experienced devs)
+    {
+        if (vscode.workspace.workspaceFolders
+            && vscode.workspace.workspaceFolders.length === 1
+            && !vscode.workspace.workspaceFile) {
+            let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks");
+            if (config.get("shouldOpenWorkspacesFound") === true) {
+                //&& !vscode.workspace.workspaceFolders) {
+                vscode.workspace.findFiles(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0].uri, "**/*.code-workspace"))
+                    .then((wsFilesFound) => {
+                    if (wsFilesFound.length > 0) {
+                        return vscode.window.showInformationMessage(`Found ${wsFilesFound.length} workspaces in this folder. Did you mean you open them instead? (lifeboatapi.stormworks.shouldOpenWorkspacesFound)`, "Open Them (recommended)", "Ignore")
+                            .then((selected) => {
+                            if (selected === "Open Them (recommended)") {
+                                return wsFilesFound;
+                            }
+                            else {
+                                return Promise.reject();
+                            }
+                        });
+                    }
+                    else {
+                        // no need to continue, nothing to load
+                        return Promise.reject();
+                    }
+                }).then((filesFound) => {
+                    let openFolderTasks = [];
+                    for (let wsFile of filesFound) {
+                        openFolderTasks.push(vscode.commands.executeCommand("vscode.openFolder", wsFile, true));
+                    }
+                    return Promise.all(openFolderTasks);
+                });
+            }
+        }
+    }
     // when a lua file is created, if it's empty - add the boilerplate
     vscode.workspace.onDidOpenTextDocument((document) => {
         if (utils.isStormworksProject()
             && document.languageId === "lua"
             && document.lineCount === 1) {
             const boilerPlate = projectCreation.addBoilerplate("");
-            var edit = new vscode.WorkspaceEdit();
+            let edit = new vscode.WorkspaceEdit();
             edit.insert(document.uri, new vscode.Position(0, 0), boilerPlate);
             return vscode.workspace.applyEdit(edit);
         }

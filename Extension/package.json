@@ -124,6 +124,12 @@
 						"default": false,
 						"scope": "resource",
 						"description": "(Recommended that you do not change this.) True if this project is a Stormworks Addon project"
+					},
+					"lifeboatapi.stormworks.shouldOpenWorkspacesFound" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "application",
+						"description": "If enabled, when using Open Folder - presents the option to open any .code-workspace files found in sub folders; in separate windows. Apologies to any developer this annoys - but it should make VSCode more palatable for newcomers."
 					}
 				}
 			}
