@@ -57,6 +57,8 @@ namespace STORMWORKS_Simulator
             }
             else
             {
+                var tickEndCommandParts = messageFromVS.Split('|');
+
                 var messagesToProcess = new List<string>(Messages);
                 Messages.Clear();
                 if (!IsRendering)
@@ -83,10 +85,14 @@ namespace STORMWORKS_Simulator
                                 }
                             }
 
-                            foreach (var screen in _ViewModel.ScreenVMs)
+                            // TICKEND | ShouldSwapFrameBuffers (1 or 0)
+                            if (tickEndCommandParts.Length < 2 || tickEndCommandParts[1] == "1")
                             {
-                                screen.SwapFrameBuffers();
-                                screen.Clear();
+                                foreach (var screen in _ViewModel.ScreenVMs)
+                                {
+                                    screen.SwapFrameBuffers();
+                                    screen.Clear();
+                                }
                             }
                         }
                         catch (Exception e)

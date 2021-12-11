@@ -178,11 +178,12 @@ LBSimulator = {
                             if this._connection.isAlive then onDraw() end
                         end
                     end
+
+                    if this._connection.isAlive then this._connection:sendCommand("TICKEND", 1) end
                 else
                     framesSinceRender = framesSinceRender + 1
+                    if this._connection.isAlive then this._connection:sendCommand("TICKEND", 0) end
                 end
-
-                if this._connection.isAlive then this._connection:sendCommand("TICKEND") end
             end
         end
 
