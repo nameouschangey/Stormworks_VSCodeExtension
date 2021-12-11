@@ -67,7 +67,7 @@ __simulator.config:addBoolHandler(10,   function() return math.random() * 100 < 
 __simulator.config:addNumberHandler(10, function() return math.random() * 100 end)
 
 -- there's also a helpers library with a number of handling functions for you to try!
-__simulator.config:addNumberHandler(10, LBSimulatorInputHelpers.contantNumber(5001))
+__simulator.config:addNumberHandler(10, LBSimulatorInputHelpers.constantNumber(5001))
 
 
 --- runs every tick, prior to onTick and onDraw

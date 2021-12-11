@@ -11,6 +11,7 @@ namespace STORMWORKS_Simulator
         private static string Logfile;
         public static bool InfoEnabled;
         public static bool ErrorEnabled = true;
+        public static object LogLock = new object();
 
         public static void SetLog(string path, bool enabled = true, bool errorEnabled = true)
         {
@@ -28,7 +29,10 @@ namespace STORMWORKS_Simulator
         {
             if (InfoEnabled && Logfile != null)
             {
-                System.IO.File.AppendAllText(Logfile, DateTime.UtcNow.ToString() +  " " + message + "\n");
+                lock (LogLock)
+                {
+                    System.IO.File.AppendAllText(Logfile, DateTime.UtcNow.ToString() + " " + message + "\n");
+                }
             }
         }
 
@@ -36,7 +40,10 @@ namespace STORMWORKS_Simulator
         {
             if (ErrorEnabled && Logfile != null)
             {
-                System.IO.File.AppendAllText(Logfile, "\n" + DateTime.UtcNow.ToString() + " ERROR: " + message + "\n\n");
+                lock (LogLock)
+                {
+                    System.IO.File.AppendAllText(Logfile, "\n" + DateTime.UtcNow.ToString() + " " + message + "\n\n");
+                }
             }
         }
     }

@@ -98,7 +98,7 @@ LBSimulator = {
 
         if not attachToExistingProcess then
             local simulatorExePath = LBFilepath:new(simulatorFile)
-            this._simulatorProcess = io.popen(simulatorExePath:win() .. " " .. simulatorLogFile, "w")
+            this._simulatorProcess = io.popen(simulatorExePath:win() .. " -logfile " .. simulatorLogFile, "w")
         end
 
         this._connection = LBSimulatorConnection:new()

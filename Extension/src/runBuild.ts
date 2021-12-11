@@ -81,6 +81,9 @@ export function beginBuild(context:vscode.ExtensionContext)
         var outputDir = workspace.uri.fsPath + "/out/";
         var rootDir = workspace.uri.fsPath;
 
+        var path = settingsManagement.getDebugPaths(context);
+        path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
+
         return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(), context)
         .then(
             (buildLua) => vscode.workspace.fs.writeFile(buildLuaFile, new TextEncoder().encode(buildLua))
@@ -93,6 +96,8 @@ export function beginBuild(context:vscode.ExtensionContext)
                     program: `${buildLuaFile?.fsPath}`,
                     stopOnEntry: false,
                     stopOnThreadEntry: false,
+                    path: path.join(";"),
+                    cpath: settingsManagement.getDebugCPaths(context).join(";"),
                     arg: [
                         neloAddonDoc,
                         neloMCDoc,

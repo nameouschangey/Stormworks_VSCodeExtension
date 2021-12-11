@@ -80,7 +80,7 @@ namespace STORMWORKS_Simulator
                     var stream = _Client.GetStream();
                     var reader = new SocketReadBuffer(2048);
 
-                    Logger.Log("Client accepted, beginning Message Loop");
+                    Logger.Log($"Client accepted - Client Connected: {_Client.Connected}, beginning Message Loop");
                     while (IsActive)
                     {
                         var message = reader.ReadNextMessage(stream);
@@ -92,7 +92,7 @@ namespace STORMWORKS_Simulator
                 }
                 catch (Exception e)
                 {
-                    Logger.Error($"SocketReadTask - Exception - Closing Pipe - {e}");
+                    Logger.Error($"SocketReadTask - Exception - Closing Pipe - Client Connected: {_Client.Connected} - {e}");
                     OnPipeClosed?.Invoke(this, new EventArgs());
 #if DEBUG
                     throw e;

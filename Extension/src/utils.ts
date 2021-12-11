@@ -25,6 +25,16 @@ String.prototype.replaceAll = function (searchValue: string | RegExp, replacemen
 	return current;
 };
 
+export function sanitisePath(path : string)
+{
+	path = path.replaceAll("\\", "/");
+	if(path.charAt(path. length-1) !== "/")
+	{
+		return path + "/";
+	}
+	return path;
+}
+
 export function getCurrentWorkspaceFile() {
 	return vscode.window.activeTextEditor?.document.uri;
 }

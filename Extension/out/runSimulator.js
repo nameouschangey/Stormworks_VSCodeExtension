@@ -6,6 +6,7 @@ const path = require("path");
 const util_1 = require("util");
 const utils = require("./utils");
 const projectCreation = require("./projectCreation");
+const settingsManagement = require("./settingsManagement");
 function generateSimulatorLua(workspaceFolder, fileToSimulate) {
     // turn the relative path into a lua require
     var relativePath = fileToSimulate.fsPath.replaceAll(workspaceFolder.fsPath, "");
@@ -41,6 +42,10 @@ function beginSimulator(context) {
         var simulatorLua = generateSimulatorLua(workspace.uri, file);
         var simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_simulator.lua");
         var ws = workspace;
+        // load the path and cpath, this means if the settings file is wrong - at least the simulator works
+        // although the lua-debug probably won't. It shouldn't be needed, but it will make life a bit more stable.
+        var path = settingsManagement.getDebugPaths(context);
+        path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new util_1.TextEncoder().encode(simulatorLua))
             .then(() => {
             var config = {
@@ -50,11 +55,11 @@ function beginSimulator(context) {
                 program: `${simulatedLuaFile?.fsPath}`,
                 stopOnEntry: false,
                 stopOnThreadEntry: false,
-                cpath: "",
-                path: "",
+                cpath: settingsManagement.getDebugCPaths(context).join(";"),
+                path: path.join(";"),
                 arg: [
-                    context.extensionPath + "/assets/simulator/STORMWORKS_Simulator.exe",
-                    ws.uri.fsPath + "/_build/_debug_simulator_log.txt"
+                    utils.sanitisePath(context.extensionPath) + "/assets/simulator/STORMWORKS_Simulator.exe",
+                    utils.sanitisePath(ws.uri.fsPath) + "/_build/_debug_simulator_log.txt"
                 ]
             };
             return vscode.debug.startDebugging(workspace, config);

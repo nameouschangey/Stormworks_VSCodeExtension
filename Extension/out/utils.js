@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doesFileExist = exports.isStormworksProject = exports.isMicrocontrollerProject = exports.getCurrentWorkspaceFolder = exports.getCurrentWorkspaceFile = void 0;
+exports.doesFileExist = exports.isStormworksProject = exports.isMicrocontrollerProject = exports.getCurrentWorkspaceFolder = exports.getCurrentWorkspaceFile = exports.sanitisePath = void 0;
 const vscode = require("vscode");
 String.prototype.replaceAll = function (searchValue, replacement) {
     let current = String(this);
@@ -11,6 +11,14 @@ String.prototype.replaceAll = function (searchValue, replacement) {
     } while (current !== changed);
     return current;
 };
+function sanitisePath(path) {
+    path = path.replaceAll("\\", "/");
+    if (path.charAt(path.length - 1) !== "/") {
+        return path + "/";
+    }
+    return path;
+}
+exports.sanitisePath = sanitisePath;
 function getCurrentWorkspaceFile() {
     return vscode.window.activeTextEditor?.document.uri;
 }

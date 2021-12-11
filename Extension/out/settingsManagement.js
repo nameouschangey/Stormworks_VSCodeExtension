@@ -1,15 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.beginUpdateWorkspaceSettings = exports.getLibraryPaths = void 0;
+exports.beginUpdateWorkspaceSettings = exports.getDebugCPaths = exports.getDebugPaths = exports.getLibraryPaths = void 0;
 const vscode = require("vscode");
 const utils = require("./utils");
-function sanitisePath(path) {
-    path = path.replaceAll("\\", "/");
-    if (path.charAt(path.length - 1) !== "/") {
-        return path + "/";
-    }
-    return path;
-}
 function getLibraryPaths(context) {
     var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
     var lbPaths = [];
@@ -17,26 +10,52 @@ function getLibraryPaths(context) {
     var wslifeboatLibraryPaths = lifeboatConfig.get("workspaceLibraryPaths") ?? [];
     var userlifeboatLibraryPaths = lifeboatConfig.get("globalLibraryPaths") ?? [];
     for (var path of lifeboatLibraryPaths) {
-        lbPaths.push(sanitisePath(path));
+        lbPaths.push(utils.sanitisePath(path));
     }
     for (var path of wslifeboatLibraryPaths) {
-        lbPaths.push(sanitisePath(path));
+        lbPaths.push(utils.sanitisePath(path));
     }
     for (var path of userlifeboatLibraryPaths) {
-        lbPaths.push(sanitisePath(path));
+        lbPaths.push(utils.sanitisePath(path));
     }
     // add lifeboatAPI to the library path
     if (utils.isMicrocontrollerProject()) {
-        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/");
-        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
+        lbPaths.push(utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/");
+        lbPaths.push(utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
     }
     else {
-        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addons/");
-        lbPaths.push(sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
+        lbPaths.push(utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addons/");
+        lbPaths.push(utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/");
     }
     return lbPaths;
 }
 exports.getLibraryPaths = getLibraryPaths;
+function getDebugPaths(context) {
+    var debugPaths = [
+        utils.sanitisePath(context.extensionPath) + "/assets/luasocket/?.lua",
+    ];
+    for (var path of getLibraryPaths(context)) {
+        debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
+        debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)
+    }
+    return debugPaths;
+}
+exports.getDebugPaths = getDebugPaths;
+function getDebugCPaths(context) {
+    var luaDebugConfig = vscode.workspace.getConfiguration("lua.debug.settings");
+    const defaultCPaths = [
+        utils.sanitisePath(context.extensionPath) + "/assets/luasocket/dll/socket/core.dll",
+        utils.sanitisePath(context.extensionPath) + "/assets/luasocket/dll/mime/core.dll"
+    ];
+    var existing = luaDebugConfig.get("cpath") ?? [];
+    for (const cPathElement of defaultCPaths) {
+        if (existing.indexOf(cPathElement) === -1) {
+            existing.push(cPathElement);
+        }
+    }
+    return existing;
+}
+exports.getDebugCPaths = getDebugCPaths;
 function beginUpdateWorkspaceSettings(context) {
     var lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
     var lifeboatLibraryPaths = getLibraryPaths(context);
@@ -73,33 +92,16 @@ function beginUpdateWorkspaceSettings(context) {
         return luaLibWorkspace.update("ignoreDir", lifeboatIgnorePaths, vscode.ConfigurationTarget.Workspace);
     }).then(() => {
         // lua.debug.cpath
-        var existing = luaDebugConfig.get("cpath") ?? [];
-        const defaultCPaths = [
-            sanitisePath(context.extensionPath) + "/assets/luasocket/dll/socket/core.dll",
-            sanitisePath(context.extensionPath) + "/assets/luasocket/dll/mime/core.dll"
-        ];
-        for (const cPathElement of defaultCPaths) {
-            if (existing.indexOf(cPathElement) === -1) {
-                existing.push(cPathElement);
-            }
-        }
-        return luaDebugConfig.update("cpath", existing, vscode.ConfigurationTarget.Workspace);
+        return luaDebugConfig.update("cpath", getDebugCPaths(context), vscode.ConfigurationTarget.Workspace);
     }).then(() => {
         //lua.debug.path
-        var debugPaths = [
-            sanitisePath(context.extensionPath) + "/assets/luasocket/?.lua",
-        ];
-        for (var path of lifeboatLibraryPaths) {
-            debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
-            debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)
-        }
-        return luaDebugConfig.update("path", debugPaths, vscode.ConfigurationTarget.Workspace);
+        return luaDebugConfig.update("path", getDebugPaths(context), vscode.ConfigurationTarget.Workspace);
     }).then(() => {
         //Lua.workspace.library
         var docConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.nelo", utils.getCurrentWorkspaceFile());
         // Nelo Docs root
-        var neloAddonDoc = sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_missions.lua";
-        var neloMCDoc = sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_vehicles.lua";
+        var neloAddonDoc = utils.sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_missions.lua";
+        var neloMCDoc = utils.sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_vehicles.lua";
         if (docConfig.get("overwriteNeloDocsPath") === true) {
             neloAddonDoc = docConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
             neloMCDoc = docConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
