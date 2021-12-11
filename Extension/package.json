@@ -16,8 +16,7 @@
 		"*",
         "onCommand:lifeboatapi.build",
 		"onCommand:lifeboatapi.newMCProject",
-		"onCommand:lifeboatapi.newAddonProject",
-		"onCommand:lifeboatapi.test"
+		"onCommand:lifeboatapi.newAddonProject"
 	],
 	"extensionPack": [
 		"sumneko.lua",
@@ -125,12 +124,6 @@
 						"default": false,
 						"scope": "resource",
 						"description": "(Recommended that you do not change this.) True if this project is a Stormworks Addon project"
-					},
-					"lifeboatapi.stormworks.extensionVersion" : {
-						"type":"string",
-						"default": "0",
-						"scope": "resource",
-						"description": "(Recommended that you do not change this.) Version of extension this project was made with. Allows auto-updating folders"
 					}
 				}
 			}

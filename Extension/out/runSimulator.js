@@ -27,6 +27,11 @@ __simulator:beginSimulation(false, arg[1], arg[2])
 
 require("${relativePath}");
 
+-- compatibility with 0.0.4 projects
+if onSimulatorInit then
+    onSimulatorInit(__simulator, __simulator.config, LBSimulatorInputHelpers)
+end
+
 __simulator:giveControlToMainLoop()
 `;
     return projectCreation.addBoilerplate(contents);
