@@ -148,6 +148,8 @@ screen = {
     --- @param verticalAlign number How to align the text vertically (-1 = top, 0 = center, 1 = bottom)
     drawTextBox = function(x, y, width, height, text, horizontalAlign, verticalAlign)
         screen.ensureIsRendering()
+        horizontalAlign = horizontalAlign or -1
+        verticalAlign = verticalAlign or -1
         screen._simulator._connection:sendCommand("TEXTBOX", screen.getSimulatorScreenIndex(), x, y, width, height, horizontalAlign, verticalAlign, text)
     end;
 
@@ -168,6 +170,7 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorOcean = function(r,g,b,a)
         screen.ensureIsRendering()
+        a = a or 255
         screen._simulator._connection:sendCommand("MAPOCEAN", r,g,b,a)
     end;
 
@@ -179,6 +182,7 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorShallows = function(r,g,b,a)
         screen.ensureIsRendering()
+        a = a or 255
         screen._simulator._connection:sendCommand("MAPSHALLOWS", r,g,b,a)
     end;
 
@@ -190,6 +194,7 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorLand = function(r,g,b,a)
         screen.ensureIsRendering()
+        a = a or 255
         screen._simulator._connection:sendCommand("MAPLAND", r,g,b,a)
     end;
 
@@ -201,6 +206,7 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorGrass = function(r,g,b,a)
         screen.ensureIsRendering()
+        a = a or 255
         screen._simulator._connection:sendCommand("MAPGRASS", r,g,b,a)
     end;
 
@@ -212,6 +218,7 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorSand = function(r,g,b,a)
         screen.ensureIsRendering()
+        a = a or 255
         screen._simulator._connection:sendCommand("MAPSAND", r,g,b,a)
     end;
 
@@ -223,6 +230,7 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setMapColorSnow = function(r,g,b,a)
         screen.ensureIsRendering()
+        a = a or 255
         screen._simulator._connection:sendCommand("MAPSNOW", r,g,b,a)
     end;
 }
