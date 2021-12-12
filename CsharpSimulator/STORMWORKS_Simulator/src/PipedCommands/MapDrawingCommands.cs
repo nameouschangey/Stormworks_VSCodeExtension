@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using System.Reflection;
 using SkiaSharp;
+using System.Globalization;
 
 namespace STORMWORKS_Simulator
 {
@@ -22,10 +23,10 @@ namespace STORMWORKS_Simulator
     {
         public static SKColor ColourFromCommandParts(string[] commandParts)
         {
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4]))));
+            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1], CultureInfo.InvariantCulture))));
+            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2], CultureInfo.InvariantCulture))));
+            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3], CultureInfo.InvariantCulture))));
+            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4], CultureInfo.InvariantCulture))));
 
             return new SKColor(r, g, b, a);
         }
@@ -43,12 +44,12 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
-            var x = float.Parse(commandParts[2]);
-            var y = float.Parse(commandParts[3]);
-            var zoom = 1 - (float.Parse(commandParts[4]) / 50);  // 0.1 -> 50
+            var x = float.Parse(commandParts[2], CultureInfo.InvariantCulture);
+            var y = float.Parse(commandParts[3], CultureInfo.InvariantCulture);
+            var zoom = 1 - (float.Parse(commandParts[4], CultureInfo.InvariantCulture) / 50);  // 0.1 -> 50
 
             x *= zoom * 50;
             y *= zoom * 50;

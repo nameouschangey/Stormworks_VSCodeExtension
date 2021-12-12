@@ -9,8 +9,6 @@ require("LifeBoatAPI.Tools.Simulator.LBSimulatorScreen")
 require("LifeBoatAPI.Tools.Simulator.LBSimulatorConfig")
 require("LifeBoatAPI.Tools.Simulator.LBSimulatorInputHelpers")
 
-function Empty() end;
-
 ---@class LBSimulator : LBBaseClass
 ---@field config LBSimulatorConfig reference to the Simulator input/output config
 ---@field timePerFrame number in seconds
@@ -98,7 +96,7 @@ LBSimulator = {
 
         if not attachToExistingProcess then
             local simulatorExePath = LBFilepath:new(simulatorFile)
-            this._simulatorProcess = io.popen(simulatorExePath:win() .. " -logfile " .. simulatorLogFile, "w")
+            this._simulatorProcess = io.popen(simulatorExePath:win() .. " -logfile \"" .. simulatorLogFile .. "\"", "w")
         end
 
         this._connection = LBSimulatorConnection:new()

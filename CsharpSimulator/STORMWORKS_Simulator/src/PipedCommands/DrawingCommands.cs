@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using System.Reflection;
 using SkiaSharp;
+using System.Globalization;
 
 namespace STORMWORKS_Simulator
 {
@@ -31,14 +32,14 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var x       = float.Parse(commandParts[3]);
-            var y       = float.Parse(commandParts[4]);
-            var width   = float.Parse(commandParts[5]);
-            var height  = float.Parse(commandParts[6]);
+            var x       = float.Parse(commandParts[3], CultureInfo.InvariantCulture);
+            var y       = float.Parse(commandParts[4], CultureInfo.InvariantCulture);
+            var width   = float.Parse(commandParts[5], CultureInfo.InvariantCulture);
+            var height  = float.Parse(commandParts[6], CultureInfo.InvariantCulture);
 
             var paint = new SKPaint()
             {
@@ -68,13 +69,13 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
             var filled  = commandParts[2] == "1";
-            var x       = float.Parse(commandParts[3]);
-            var y       = float.Parse(commandParts[4]);
-            var radius  = float.Parse(commandParts[5]);
+            var x       = float.Parse(commandParts[3], CultureInfo.InvariantCulture);
+            var y       = float.Parse(commandParts[4], CultureInfo.InvariantCulture);
+            var radius  = float.Parse(commandParts[5], CultureInfo.InvariantCulture);
 
             var paint = new SKPaint()
             {
@@ -104,13 +105,13 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
-            var x   = float.Parse(commandParts[2]);
-            var y   = float.Parse(commandParts[3]);
-            var x2  = float.Parse(commandParts[4]);
-            var y2  = float.Parse(commandParts[5]);
+            var x   = float.Parse(commandParts[2], CultureInfo.InvariantCulture);
+            var y   = float.Parse(commandParts[3], CultureInfo.InvariantCulture);
+            var x2  = float.Parse(commandParts[4], CultureInfo.InvariantCulture);
+            var y2  = float.Parse(commandParts[5], CultureInfo.InvariantCulture);
 
             var paint = new SKPaint()
             {
@@ -162,11 +163,11 @@ namespace STORMWORKS_Simulator
                 return;
             }
             
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
-            var x = float.Parse(commandParts[2]);
-            var y = float.Parse(commandParts[3]) + 5; // add the length of the character, some reason skia doesn't?
+            var x = float.Parse(commandParts[2], CultureInfo.InvariantCulture);
+            var y = float.Parse(commandParts[3], CultureInfo.InvariantCulture) + 5; // add the length of the character, some reason skia doesn't?
             var text = commandParts[4].Replace("%__SIMPIPE__%", "|").ToUpper();
 
             var paint = new SKPaint()
@@ -216,15 +217,15 @@ namespace STORMWORKS_Simulator
                 return;
             }
             
-            var screenNumber    = int.Parse(commandParts[1]);
+            var screenNumber    = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen          = vm.GetScreen(screenNumber);
 
-            var x               = float.Parse(commandParts[2]);
-            var y               = float.Parse(commandParts[3]);
-            var width           = float.Parse(commandParts[4]);
-            var height          = float.Parse(commandParts[5]);
-            var horizontalAlign = (int)float.Parse(commandParts[6]);
-            var verticalAlign   = (int)float.Parse(commandParts[7]);
+            var x               = float.Parse(commandParts[2], CultureInfo.InvariantCulture);
+            var y               = float.Parse(commandParts[3], CultureInfo.InvariantCulture);
+            var width           = float.Parse(commandParts[4], CultureInfo.InvariantCulture);
+            var height          = float.Parse(commandParts[5], CultureInfo.InvariantCulture);
+            var horizontalAlign = (int)float.Parse(commandParts[6], CultureInfo.InvariantCulture);
+            var verticalAlign   = (int)float.Parse(commandParts[7], CultureInfo.InvariantCulture);
             var text            = commandParts[8].Replace("%__SIMPIPE__%", "|").ToUpper();
 
             // wrap text into lines
@@ -322,18 +323,18 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
             var filled = commandParts[2] == "1";
-            var p1x = float.Parse(commandParts[3]);
-            var p1y = float.Parse(commandParts[4]);
+            var p1x = float.Parse(commandParts[3], CultureInfo.InvariantCulture);
+            var p1y = float.Parse(commandParts[4], CultureInfo.InvariantCulture);
                                                
-            var p2x = float.Parse(commandParts[5]);
-            var p2y = float.Parse(commandParts[6]);
+            var p2x = float.Parse(commandParts[5], CultureInfo.InvariantCulture);
+            var p2y = float.Parse(commandParts[6], CultureInfo.InvariantCulture);
                                            
-            var p3x = float.Parse(commandParts[7]);
-            var p3y = float.Parse(commandParts[8]);
+            var p3x = float.Parse(commandParts[7], CultureInfo.InvariantCulture);
+            var p3y = float.Parse(commandParts[8], CultureInfo.InvariantCulture);
 
             var path = new SKPath { FillType = SKPathFillType.EvenOdd };
             path.MoveTo(p1x, p1y);
@@ -369,10 +370,10 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1]))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2]))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3]))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4]))));
+            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1], CultureInfo.InvariantCulture))));
+            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2], CultureInfo.InvariantCulture))));
+            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3], CultureInfo.InvariantCulture))));
+            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4], CultureInfo.InvariantCulture))));
 
             vm.Color = new SkiaSharp.SKColor(r,g,b,a);
         }
@@ -390,7 +391,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var screen = vm.GetScreen(screenNumber);
 
             screen.DrawingCanvas.Canvas.Clear(vm.Color);

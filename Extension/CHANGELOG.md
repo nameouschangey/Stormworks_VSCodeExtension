@@ -1,4 +1,13 @@
 # Change Log
+### [0.0.6] - 12th December 2021
+**major**
+- Fixed number parsing issue affecting everybody outside of English-language countries! (sorry!)
+- Fixed _debug_simulator_log.txt not generating if the folder has spaces in it's path
+
+**minor**
+- Resolved two warnings generated in the _build.lua and _simulator.lua files that were annoying to people who like clean code.
+- Further improvements to logging simulator errors
+
 
 ### [0.0.5] - 11th December 2021
 **major**

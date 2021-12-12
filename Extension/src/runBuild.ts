@@ -10,6 +10,8 @@ import * as settingsManagement from "./settingsManagement";
 function generateBuildLua(workspace: vscode.Uri, isMC : boolean, context:vscode.ExtensionContext)
 {
     let content =  `
+--- @diagnostic disable: undefined-global
+
 require("LifeBoatAPI.Tools.Builder.LBBuilder")
 
 local luaDocsAddonPath = LBFilepath:new(arg[1]);
@@ -46,7 +48,7 @@ local _builder = LBBuilder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonP
     }).then(
         (content) => {
             return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_post_buildactions.lua"),
-                () => content + "\n require([[_build._post_buildactions]])",
+                () => content + "\nrequire([[_build._post_buildactions]])",
                 () => content
             );
         }
@@ -57,6 +59,8 @@ local _builder = LBBuilder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonP
                 () => content
             );
         }
+    ).then(
+        (content) => content + "\n" + "--- @diagnostic enable: undefined-global\n"
     );
 }
 

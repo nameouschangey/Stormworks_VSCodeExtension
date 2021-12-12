@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
+using System.Globalization;
 
 namespace STORMWORKS_Simulator
 {
@@ -28,7 +29,7 @@ namespace STORMWORKS_Simulator
                 return;
             }
 
-            var screenNumber = int.Parse(commandParts[1]);
+            var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             var isPowered       = commandParts[2] == "1";
             var sizeDescriptor  = commandParts[3];
             var isPortrait      = commandParts[4] == "1";
@@ -52,7 +53,7 @@ namespace STORMWORKS_Simulator
             //    return;
             //}
             //
-            //var screenNumber = int.Parse(commandParts[1]);
+            //var screenNumber = int.Parse(commandParts[1], CultureInfo.InvariantCulture);
             //var screen = vm.GetOrAddScreen(screenNumber);
             //screen.SwapFrameBuffers();
         }

@@ -3,6 +3,8 @@
 
 ---@diagnostic disable: undefined-doc-name
 
+function Empty() end;
+
 ------------------------------------------------------------------------------------------------------------------
 --- Copies data from (from) to (to)
 --- underwrites values copied (leaves original if it exists)

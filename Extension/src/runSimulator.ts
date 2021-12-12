@@ -24,6 +24,8 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     // is that correct?
     // or do we need to do something else?
     let contents = `
+--- @diagnostic disable: undefined-global
+
 require("LifeBoatAPI.Tools.Simulator.LBSimulator");
 __simulator = LBSimulator:new() 
 __simulator:beginSimulation(false, arg[1], arg[2])
@@ -36,6 +38,8 @@ if onLBSimulatorInit then
 end
 
 __simulator:giveControlToMainLoop()
+
+--- @diagnostic enable: undefined-global
 `;
     return projectCreation.addBoilerplate(contents);
 }

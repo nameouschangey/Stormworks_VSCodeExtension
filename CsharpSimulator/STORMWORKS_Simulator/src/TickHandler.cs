@@ -64,6 +64,7 @@ namespace STORMWORKS_Simulator
                 if (!IsRendering)
                 {   // near impossible to recieve 2 TICKEND commands between these 2 commands
                     // but you know, if it does happen - happy Race Condition Day.
+                    var lastMessage = "";
                     IsRendering = true;
                     Application.Current.Dispatcher.Invoke(() =>
                     {
@@ -72,6 +73,7 @@ namespace STORMWORKS_Simulator
                             foreach (var message in messagesToProcess)
                             {
                                 // format is: COMMAND|PARAM|PARAM|PARAM|...
+                                lastMessage = message;
                                 var splits = message.Split('|');
                                 if (splits.Length < 1)
                                 {
@@ -99,7 +101,7 @@ namespace STORMWORKS_Simulator
                         {
                             // keep the UI running, despite any issue that arise
                             // this will be called when non-standard commands get sent etc.
-                            Logger.Error($"TickHandler - OnLineRead - Exception Continuing - {e}");
+                            Logger.Error($"TickHandler - OnLineRead - Exception Continuing - {lastMessage} - {e}");
                         }
                         IsRendering = false;
                     });

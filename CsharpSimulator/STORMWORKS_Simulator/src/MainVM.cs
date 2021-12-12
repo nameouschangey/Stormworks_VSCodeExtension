@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using SkiaSharp;
+using System.Globalization;
 
 namespace STORMWORKS_Simulator
 {
@@ -63,7 +64,7 @@ namespace STORMWORKS_Simulator
             set
             {
                 FrameSkipIndex = FrameSkipOptions.IndexOf(value);
-                FrameSkip = int.Parse(value);
+                FrameSkip = int.Parse(value, CultureInfo.InvariantCulture);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
                 OnTickrateChanged?.Invoke(this, this);
             }
@@ -95,7 +96,7 @@ namespace STORMWORKS_Simulator
                 else
                 {
                     TickRateIndex = TickRateOptions.IndexOf(value);
-                    TickRate = int.Parse(value);
+                    TickRate = int.Parse(value, CultureInfo.InvariantCulture);
                 }
                 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));

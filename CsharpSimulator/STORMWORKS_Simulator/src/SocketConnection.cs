@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Linq;
 using System.Collections.Concurrent;
+using System.Globalization;
 
 namespace STORMWORKS_Simulator
 {
@@ -35,7 +36,7 @@ namespace STORMWORKS_Simulator
 
         public string ReadNextMessage(NetworkStream stream)
         {
-            var length = int.Parse(ReadString(stream, 4));
+            var length = int.Parse(ReadString(stream, 4), CultureInfo.InvariantCulture);
             return ReadString(stream, length);
         }
 

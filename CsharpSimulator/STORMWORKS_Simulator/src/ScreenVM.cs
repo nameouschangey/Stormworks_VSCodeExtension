@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using System.Drawing.Imaging;
 using SkiaSharp;
+using System.Globalization;
 
 namespace STORMWORKS_Simulator
 {
@@ -61,8 +62,8 @@ namespace STORMWORKS_Simulator
             set
             {
                 var splits = value.Split('x');
-                var width = int.Parse(splits[0]) * 32;
-                var height = int.Parse(splits[1]) * 32;
+                var width = int.Parse(splits[0], CultureInfo.InvariantCulture) * 32;
+                var height = int.Parse(splits[1], CultureInfo.InvariantCulture) * 32;
 
                 ScreenResolutionDescriptionIndex = ScreenDescriptionsList.IndexOf(value);
 

@@ -8,6 +8,8 @@ const projectCreation = require("./projectCreation");
 const settingsManagement = require("./settingsManagement");
 function generateBuildLua(workspace, isMC, context) {
     let content = `
+--- @diagnostic disable: undefined-global
+
 require("LifeBoatAPI.Tools.Builder.LBBuilder")
 
 local luaDocsAddonPath = LBFilepath:new(arg[1]);
@@ -37,10 +39,10 @@ local _builder = LBBuilder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonP
         }
         return content;
     }).then((content) => {
-        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_post_buildactions.lua"), () => content + "\n require([[_build._post_buildactions]])", () => content);
+        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_post_buildactions.lua"), () => content + "\nrequire([[_build._post_buildactions]])", () => content);
     }).then((content) => {
         return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_pre_buildactions.lua"), () => "require([[_build._pre_buildactions]])\n" + content, () => content);
-    });
+    }).then((content) => content + "\n" + "--- @diagnostic enable: undefined-global\n");
 }
 function beginBuild(context) {
     let lifeboatapiConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
