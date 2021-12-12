@@ -27,7 +27,7 @@ Using:
 - lua language server extension from: sumneko
 
 # Quick Start Guide
-## Automatic Boilerplate Generation
+## (0. Set your name so you can be credited!)
 Boilerplate is generated with your details at the top of all files you create and build.
 
 Goto Settings, and set your AuthorName, GithubLink and WorkshopLink:
@@ -37,14 +37,14 @@ Goto Settings, and set your AuthorName, GithubLink and WorkshopLink:
 - Fill in those fields and a creditation notice will be automatically generated on files you create
 - The optional "extended boilerplate" allows you to write a custom line, if you also wish
 
-## Create a New Stormworks Code Project
+## 1. Create a New Stormworks Code Project
 To create a New Project:
 
 - From the "Get Started" screen click "New File", then select **`Stormworks: New Microcontroller Project`**
-- From the "File" menu, select "New File..." (not "New File")
-- Open the command-palette (CTRL+P) and search for "Stormworks: New Microcontroller Project"
+- Or, From the "File" menu, select "New File..." (not "New File")
+- Or, Open the command-palette (`CTRL+SHIFT+P`) and type in "`Stormworks: New Microcontroller Project`"
 
-## Run, Simulate, Build
+## 2. Run, Simulate, Build
 Once the project is open, you can:
 
 ### `F5` Run
@@ -65,10 +65,14 @@ To compile your project into the smallest, 4K character, form needed by the game
 This combines all your require(...) directives correctly, and then minimizes the output into the **`/out/release/`** folder.
 
 >The basic use of the minimizer is more powerful than both lua-min and FlaffyPonyIDE's minimizers. However, it also adds redundancy removal functionality; which opens a new world of options. See below.
- 
- 
 
-### Reminder: Let the Minimizer do it for you!
+## 3. Got stuck? Ask for help!
+This extension is in active development; I'm happy to try and help you get setup - and of course, when there are bugs, I'd always appreciate them being noted.
+
+Please report any bugs you find here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
+And if you want some help, you can find me on the Stormworks discord as "Nameous" and ask there: https://discord.com/invite/stormworks
+
+## (Reminder: Let the Minimizer do it for you!)
 
 When writing code, it's tempting to try and shorten everything; or do clever tricks to "get the size down".
 
@@ -89,6 +93,7 @@ m = math
 a = m.min(1,0)
 ```
 
+# Features
 
 ## Use the Lua "require(...)" Function
 LifeBoatAPI also adds the "require(...)" lua function.
@@ -225,6 +230,14 @@ Similarly, in `_pre_buildactions.lua`, if you have code generation you wish to r
 
 
 \!\[feature X\]\(images/feature-x.png\)
+
+## What is the "LifeBoatAPI"
+
+The lifeboat API, is name such as the functionality being provided is more than just a few library functions - but a framework to simplify writing Stormworks mods, and Stormworks is a rescue game (a.k.a/ "Nameous is not very good at naming things")
+
+It's currently in development and so much of it is hidden from the current version of the extension.
+
+In future versions, you will be able to use LifeBoatAPI features via the `require(...)` command.
 
 ## Requirements
 
