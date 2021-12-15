@@ -233,7 +233,7 @@ namespace STORMWORKS_Simulator
             var lines = new List<string>();
             var index = 0;
 
-            while (index < (text.Length - charsPerLine + 1))
+            while (index < (text.Length - (charsPerLine + 1)))
             {
                 var nextIndex = text.LastIndexOf(" ", index + charsPerLine + 1, charsPerLine + 1) + 1;
                 if (nextIndex == 0
@@ -336,21 +336,32 @@ namespace STORMWORKS_Simulator
             var p3x = float.Parse(commandParts[7], CultureInfo.InvariantCulture);
             var p3y = float.Parse(commandParts[8], CultureInfo.InvariantCulture);
 
-            var path = new SKPath { FillType = SKPathFillType.EvenOdd };
-            path.MoveTo(p1x, p1y);
-            path.LineTo(p2x, p2y);
-            path.LineTo(p3x, p3y);
-            path.Close();
+            var path = new SKPath { FillType = SKPathFillType.Winding };
+
+            if(filled)
+            {
+                path.MoveTo(p1x - 0.5f, p1y - 0.5f);
+                path.LineTo(p2x - 0.5f, p2y - 0.5f);
+                path.LineTo(p3x - 0.5f, p3y - 0.5f);
+                path.Close();
+            }
+            else
+            {
+                path.MoveTo(p1x + 0.5f, p1y + 0.5f);
+                path.LineTo(p2x + 0.5f, p2y + 0.5f);
+                path.LineTo(p3x + 0.5f, p3y + 0.5f);
+                path.Close();
+            }
 
             var paint = new SKPaint()
             {
-                StrokeMiter = 0f,
-                StrokeJoin = SKStrokeJoin.Miter,
+                StrokeMiter = 2f,
+                StrokeJoin = SKStrokeJoin.Bevel,
                 StrokeCap = SKStrokeCap.Butt,
                 StrokeWidth = 1f,
                 IsAntialias = false,
                 BlendMode = SKBlendMode.SrcOver,
-                Style = filled ? SKPaintStyle.StrokeAndFill : SKPaintStyle.Stroke,
+                Style = filled ? SKPaintStyle.Fill : SKPaintStyle.Stroke,
                 Color = vm.Color
             };
 
