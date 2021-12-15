@@ -10,6 +10,8 @@
 --- @diagnostic disable: undefined-global
 
 _mcs = {}
+_originalSim = __simulator
+_originalSim._isInputOutputChanged = true
 
 function CopyTable(from, into, onlyExists)
     into = into or {}
@@ -57,8 +59,6 @@ function CopyENV(name, env)
     return _env
 end
 
-
-
 function LoadMC(name)
     local originalEnv = _ENV
     _ENV = CopyENV("MAIN", _ENV)
@@ -85,6 +85,7 @@ function multiTick()
         local originalENV = _ENV
         input = _env.input
         output = _env.output
+        property = _env.property
 
         _ENV = _env
 
@@ -99,6 +100,19 @@ function multiTick()
         _globalTicks = _globalTicks + 1
 
         _ENV = originalENV
+        input = originalENV.input
+        output = originalENV.output
+        property = originalENV.property
+    end
+
+    if _displayableMC then
+        for i=1, 32 do
+            _originalSim:setInputNumber(i, _displayableMC.input._numbers[i])
+            _originalSim:setInputBool(i, _displayableMC.input._bools[i])
+
+            output.setNumber(i, _displayableMC.output._numbers[i])
+            output.setBool(i, _displayableMC.output._bools[i])
+        end
     end
 end
 
@@ -119,5 +133,8 @@ function multiDraw()
     end
 end
 
+function displayMCInOut(mc)
+    _displayableMC = mc
+end
 
 --- @diagnostic enable: undefined-global
