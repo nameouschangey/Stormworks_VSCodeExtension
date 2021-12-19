@@ -103,8 +103,9 @@ LBSimulator = {
             
         -- set the global screen and output to be simulated
         -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
-        screen.setSimulator(this)
-        output.setSimulator(this)
+        screen._setSimulator(this)
+        input._setSimulator(this)
+        output._setSimulator(this)
 
         -- default screen
         this.config:configureScreen(1, "1x1", true)

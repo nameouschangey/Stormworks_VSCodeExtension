@@ -12,9 +12,20 @@ input = {
     _numbers = {};
     _bools = {};
 
+    _setSimulator = function(simulator)
+        input._simulator = simulator
+    end;
+
+    _ensureNotRendering = function()
+        if input._simulator and input._simulator.isRendering then
+            error("Cannot use input functions outside of onTick.")
+        end
+    end;
+
     --- @param index number The composite index to read from
     --- @return boolean value
     getBool = function(index)
+        input._ensureNotRendering()
         if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " getting bool ") end
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " getting bool ") end
         return input._bools[index]
@@ -23,6 +34,7 @@ input = {
     --- @param index number The composite index to read from
     --- @return number value
     getNumber = function(index)
+        input._ensureNotRendering()
         if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " getting number ") end
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " getting number ") end
         return input._numbers[index]
@@ -37,14 +49,21 @@ output = {
     _numbers = {};
     _bools = {};
 
-    setSimulator = function(simulator)
+    _setSimulator = function(simulator)
         output._simulator = simulator
+    end;
+
+    _ensureNotRendering = function()
+        if output._simulator and output._simulator.isRendering then
+            error("Cannot use output functions outside of onTick.")
+        end
     end;
 
     --- Set an on/off value on the composite output
     --- @param index number The composite index to write to
     --- @param value boolean The on/off value to write
     setBool = function(index, value)
+        output._ensureNotRendering()
         if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
 
@@ -62,6 +81,7 @@ output = {
     --- @param index number The composite index to write to
     --- @param value number The number value to write
     setNumber = function(index, value)
+        output._ensureNotRendering()
         if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
 
