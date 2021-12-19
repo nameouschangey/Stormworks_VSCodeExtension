@@ -120,6 +120,13 @@ print("Build Success - No additional actions in _build/_post_buildactions.lua fi
 
 export const lbMultiSimulatorExtension =
 `
+-- Author: <Authorname> (Please change this in user settings, Ctrl+Comma)
+-- GitHub: <GithubLink>
+-- Workshop: <WorkshopLink>
+--
+-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)
+
 -- Author: Nameous Changey
 -- Please do not remove this notice
 -- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
@@ -134,6 +141,8 @@ export const lbMultiSimulatorExtension =
 _mcs = {}
 _originalSim = __simulator
 _originalSim._isInputOutputChanged = true
+_originalInput = input -- for displaying to screen
+_originalOutput = output -- for displaying to screen
 
 function CopyTable(from, into, onlyExists)
     into = into or {}
@@ -227,14 +236,27 @@ function multiTick()
         property = originalENV.property
     end
 
+    hasChanged = false
     if _displayableMC then
         for i=1, 32 do
-            _originalSim:setInputNumber(i, _displayableMC.input._numbers[i])
-            _originalSim:setInputBool(i, _displayableMC.input._bools[i])
 
-            output.setNumber(i, _displayableMC.output._numbers[i])
-            output.setBool(i, _displayableMC.output._bools[i])
+            hasChanged = hasChanged or
+                (_originalInput._bools[i] ~= _displayableMC.input._bools[i] or
+                _originalInput._numbers[i] ~= _displayableMC.input._numbers[i] or
+                _originalOutput._bools[i] ~= _displayableMC.output._bools[i] or
+                _originalOutput._numbers[i] ~= _displayableMC.output._numbers[i])
+
+            _originalInput._bools[i] = _displayableMC.input._bools[i]
+            _originalInput._numbers[i] = _displayableMC.input._numbers[i]
+
+            _originalOutput._bools[i] = _displayableMC.output._bools[i]
+            _originalOutput._numbers[i] = _displayableMC.output._numbers[i]
+
         end
+    end
+
+    if hasChanged then
+        _originalSim._isInputOutputChanged = true
     end
 end
 
@@ -260,6 +282,7 @@ function displayMCInOut(mc)
 end
 
 --- @diagnostic enable: undefined-global
+
 `;
 
 export const simulateMultipleExample =
