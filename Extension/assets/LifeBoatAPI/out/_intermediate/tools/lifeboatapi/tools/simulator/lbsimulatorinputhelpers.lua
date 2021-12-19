@@ -32,27 +32,24 @@ LBSimulatorInputHelpers = {
         end
     end;
 
-    ---@deprecated 
-    touchScreenIsQTouched = function (simulator, screenNumber)
-        return LBSimulatorInputHelpers.touchScreenIsTouched(simulator, screenNumber)
-    end;
-
-    ---@deprecated 
-    touchScreenIsETouched = function (simulator, screenNumber)
-        return LBSimulatorInputHelpers.touchScreenIsTouched(simulator, screenNumber)
-    end;
-
-    ---Connect the "is the screen being touched" input (normally input.getBool(1))
     ---@param simulator LBSimulator
-    ---@param screenNumber number 
+    ---@param screenNumber number futureproofing, for now there's only 1
     ---@return boolean
-    touchScreenIsTouched = function (simulator, screenNumber)
+    touchScreenIsQTouched = function (simulator, screenNumber)
+        screenNumber = 1
+        return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].isTouchedR or false end
+    end;
+
+    ---@param simulator LBSimulator
+    ---@param screenNumber number futureproofing, for now there's only 1
+    ---@return boolean
+    touchScreenIsETouched = function (simulator, screenNumber)
         screenNumber = 1
         return function()
-            return simulator._screens[screenNumber] and (simulator._screens[screenNumber].isTouchedL or simulator._screens[screenNumber].isTouchedR) or false
+            local a = simulator._screens[screenNumber].isTouchedL
+            return simulator._screens[screenNumber] and simulator._screens[screenNumber].isTouchedL or false
         end
     end;
-    
 
     ---@param simulator LBSimulator
     ---@param screenNumber number futureproofing, for now there's only 1 
