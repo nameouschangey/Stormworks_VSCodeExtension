@@ -209,7 +209,7 @@ function setupMicrocontrollerFiles(params : any)
 					});
 		}).then(
 			() => {
-				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_multi/_simulate_multiple_example.lua");
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_multi/_simulate_multiple_example.lua");
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {
@@ -218,7 +218,7 @@ function setupMicrocontrollerFiles(params : any)
 					});
 		}).then(
 			() => {
-				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_multi/LBMultiSimulatorExtension.lua");
+				const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_multi/LBMultiSimulatorExtension.lua");
 				return utils.doesFileExist(buildActionsFile,
 					() => params,
 					() => {

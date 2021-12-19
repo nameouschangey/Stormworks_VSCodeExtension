@@ -1,4 +1,16 @@
 # Change Log
+
+### [0.0.7] - 19th December 2021
+**major**
+- Fixed screen.drawTextBox exception on certain strings (causing nothing to display)
+- **Added Multi-MC simulation support; in the _build/_multi folder for advanced users**
+- Fixed "using input and output in onDraw should be an error"
+- Fixed "input.getBool(1) is E OR Q pressed, not just Q"
+
+**minor**
+- Minor cleanup of input, output and screen tables containing non-SW functions not starting with an underscore
+
+
 ### [0.0.6] - 12th December 2021
 **major**
 - Fixed number parsing issue affecting everybody outside of English-language countries! (sorry!)

@@ -258,14 +258,14 @@ exports.simulateMultipleExample = `
 -- After configuring this, you would run it with F6, and it should simulate multiple MCs for you.
 -- That said, it is fully supported; hence the lua for the extension is provided for you to edit if needed
 
-require("_multi.LBMultiSimulatorExtension")
+require("_build._multi.LBMultiSimulatorExtension")
 
 -----------LOAD MCS-------------------------------------------------------------------------------
 -- set your MCs here
 -- LoadMC takes the same parameter as require(...)
 -- Order matters, they will draw to screen in this order (last over the top)
 
-local loadingScreen = LoadMC("Loading_Screen")
+local loadingScreen = LoadMC("Loading_Screen") -- replace each of these with one of your MC files you'd be chaining
 local navigation    = LoadMC("Navigation_at_top_of_page")
 local menuLayout    = LoadMC("Menu_Layout")
 
@@ -298,7 +298,7 @@ menuLayout.onLBSimulatorShouldDraw = function (screenNumber) return screenNumber
 
 
 -----------RUN----------------------------------------------------------------------------------
--- do not remove this
+-- do not remove or edit this
 onTick = multiTick
 onDraw = multiDraw
 `;

@@ -231,6 +231,13 @@ Similarly, in `_pre_buildactions.lua`, if you have code generation you wish to r
 
 \!\[feature X\]\(images/feature-x.png\)
 
+
+## Multi-MC Simulation
+
+Please see the /_build/_multi/ folder for this feature
+It is an experimental feature, for advanced lua users; to support chaining multiple MCs together to multiple (potentially different) monitors.
+
+
 ## What is the "LifeBoatAPI"
 
 The lifeboat API, is name such as the functionality being provided is more than just a few library functions - but a framework to simplify writing Stormworks mods, and Stormworks is a rescue game (a.k.a/ "Nameous is not very good at naming things")
