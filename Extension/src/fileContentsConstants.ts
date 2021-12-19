@@ -287,6 +287,13 @@ end
 
 export const simulateMultipleExample =
 `
+-- Author: <Authorname> (Please change this in user settings, Ctrl+Comma)
+-- GitHub: <GithubLink>
+-- Workshop: <WorkshopLink>
+--
+-- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)
+
 -- Please note, this is an example setup, but as you do not have the MCs it expects - it will NOT "just run"
 -- If you are not confident with Lua, it is advised you DO NOT use this feature
 -- Simulating multiple MCs has a lot of quirks and you may be making your life harder.
@@ -302,13 +309,13 @@ require("_build._multi.LBMultiSimulatorExtension")
 -- LoadMC takes the same parameter as require(...)
 -- Order matters, they will draw to screen in this order (last over the top)
 
-local loadingScreen = LoadMC("Loading_Screen") -- replace each of these with one of your MC files you'd be chaining
-local navigation    = LoadMC("Navigation_at_top_of_page")
-local menuLayout    = LoadMC("Menu_Layout")
+local loadingScreen = LoadMC("MyMicrocontroller") -- replace each of these with one of your MC files you'd be chaining
+--local navigation    = LoadMC("Navigation_at_top_of_page")
+--local menuLayout    = LoadMC("Menu_Layout")
 
 -----------CONFIG----------------------------------------------------------------------------------
 -- set which MC should show it's inputs and outputs
-displayMCInOut(navigation)
+displayMCInOut(loadingScreen)
 
 -- configure how many screens to use
 __simulator.config:configureScreen(1, "2x2", true, false)
@@ -323,19 +330,20 @@ loadingScreen.__simulator.config:addBoolHandler(11, function() return loadingScr
 
 -- wait for loading screen to set output 11
 --  and only connect to Monitor 1
-navigation.__simulator.config:addNumberHandler(2, function() return loadingScreen.output._bools[11] and 1 or 0 end) -- once loadingScreen is done
-navigation.__simulator.config:addBoolHandler(3, function () return true end)
-navigation.onLBSimulatorShouldDraw = function (screenNumber) return screenNumber == 1 end
-
-
--- wait for loading screen to set output 11
---  and only connect to Monitor 1
-menuLayout.__simulator.config:addNumberHandler(29,function() return loadingScreen.output._bools[11] and 1 or 0 end)
-menuLayout.onLBSimulatorShouldDraw = function (screenNumber) return screenNumber == 1 end
+--navigation.__simulator.config:addNumberHandler(2, function() return loadingScreen.output._bools[11] and 1 or 0 end) -- once loadingScreen is done
+--navigation.__simulator.config:addBoolHandler(3, function () return true end)
+--navigation.onLBSimulatorShouldDraw = function (screenNumber) return screenNumber == 1 end
+--
+--
+---- wait for loading screen to set output 11
+----  and only connect to Monitor 1
+--menuLayout.__simulator.config:addNumberHandler(29,function() return loadingScreen.output._bools[11] and 1 or 0 end)
+--menuLayout.onLBSimulatorShouldDraw = function (screenNumber) return screenNumber == 1 end
 
 
 -----------RUN----------------------------------------------------------------------------------
 -- do not remove or edit this
 onTick = multiTick
 onDraw = multiDraw
+
 `;
