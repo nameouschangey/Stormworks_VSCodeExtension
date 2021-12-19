@@ -47,7 +47,7 @@ LBSimulatorInputHelpers = {
     ---@param screenNumber number 
     ---@return boolean
     touchScreenIsTouched = function (simulator, screenNumber)
-        screenNumber = 1
+        screenNumber = screenNumber or 1
         return function()
             return simulator._screens[screenNumber] and (simulator._screens[screenNumber].isTouchedL or simulator._screens[screenNumber].isTouchedR) or false
         end
@@ -58,7 +58,7 @@ LBSimulatorInputHelpers = {
     ---@param screenNumber number futureproofing, for now there's only 1 
     ---@return number
     touchScreenWidth = function (simulator, screenNumber)
-        screenNumber = 1
+        screenNumber = screenNumber or 1
         return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].width or 0 end
     end;
 
@@ -66,7 +66,7 @@ LBSimulatorInputHelpers = {
     ---@param screenNumber number futureproofing, for now there's only 1 
     ---@return number
     touchScreenHeight = function (simulator, screenNumber)
-        screenNumber = 1
+        screenNumber = screenNumber or 1
         return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].height or 0 end
     end;
 
@@ -74,7 +74,7 @@ LBSimulatorInputHelpers = {
     ---@param screenNumber number futureproofing, for now there's only 1 
     ---@return number
     touchScreenXPosition = function (simulator, screenNumber)
-        screenNumber = 1
+        screenNumber = screenNumber or 1
         return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].touchX or 0 end
     end;
 
@@ -82,7 +82,7 @@ LBSimulatorInputHelpers = {
     ---@param screenNumber number futureproofing, for now there's only 1 
     ---@return number
     touchScreenYPosition = function (simulator, screenNumber)
-        screenNumber = 1
+        screenNumber = screenNumber or 1
         return function() return simulator._screens[screenNumber] and simulator._screens[screenNumber].touchY or 0 end
     end;
 

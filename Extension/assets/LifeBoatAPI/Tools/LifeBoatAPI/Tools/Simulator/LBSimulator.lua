@@ -111,8 +111,7 @@ LBSimulator = {
 
         -- enable touchscreen by default
         local helpers = LBSimulatorInputHelpers
-        this.config:addBoolHandler(1, helpers.touchScreenIsETouched(this,1))
-        this.config:addBoolHandler(2, helpers.touchScreenIsQTouched(this,1))
+        this.config:addBoolHandler(1, helpers.touchScreenIsTouched(this,1))
 
         this.config:addNumberHandler(1, helpers.touchScreenWidth(this,1))
         this.config:addNumberHandler(2, helpers.touchScreenHeight(this,1))
