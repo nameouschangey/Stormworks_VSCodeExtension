@@ -1,4 +1,5 @@
 # Change Log
+Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
 ### [0.0.7] - 19th December 2021
 **major**
