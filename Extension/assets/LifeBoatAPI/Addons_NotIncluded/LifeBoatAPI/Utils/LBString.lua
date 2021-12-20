@@ -3,6 +3,26 @@
 
 require("LifeBoatAPI.Missions.Utils.LBStringMatch")
 
+require("LifeBoatAPI.Missions.Utils.LBBase")
+require("LifeBoatAPI.Missions.Utils.LBTable")
+
+--- struct representing a variable found in the code
+---@class LBStringMatch : LBBaseClass
+---@field startIndex number position it was found in the text
+---@field endIndex number end position this variable was found at
+---@field captures table variable text that was found
+LBStringMatch = {
+    ---@return LBStringMatch
+    new = function(cls, ...)
+        local this, args = LBBaseClass.new(cls),{...}
+        this.startIndex = args[1]
+        this.endIndex = args[2]
+        this.captures = LBTable_islice(args,3)
+        return this
+    end;
+}
+LBClass(LBStringMatch)--- struct representing a variable found in the code
+
 --- runs gsub repeatedly until all instances, and instances created by the substitutions, are replaced
 ---  running gsub once, on some strings, may cause a pattern to be formed that itself can be replaced
 ---  for example, replacing 2 spaces with 1 space; needs run multiple times if there were, e.g. 3 spaces in a row.
