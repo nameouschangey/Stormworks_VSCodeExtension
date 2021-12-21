@@ -2,8 +2,8 @@
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
 require("LifeBoatAPI.Tools.Utils.Base")
-require("LifeBoatAPI.Tools.Utils.Table")
-require("LifeBoatAPI.Tools.Utils.String")
+require("LifeBoatAPI.Tools.Utils.TableUtils")
+require("LifeBoatAPI.Tools.Utils.StringUtils")
 require("LifeBoatAPI.Tools.Utils.StringBuilder")
 require("LifeBoatAPI.Tools.Build.VariableRenamer")
 require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")

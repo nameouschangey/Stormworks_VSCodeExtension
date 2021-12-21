@@ -3,7 +3,7 @@
 // When time permits, replace this with copying files from the Extension into the Project folder
 //  as this is ever so slightly...idiotic
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.simulateMultipleExample = exports.lbMultiSimulatorExtension = exports.postBuildActionsDefault = exports.preBuildActionsDefault = exports.addonDefaultScript = exports.microControllerDefaultSimulatorConfig = exports.microControllerDefaultScript = void 0;
+exports.simulateMultipleExample = exports.postBuildActionsDefault = exports.preBuildActionsDefault = exports.addonDefaultScript = exports.microControllerDefaultSimulatorConfig = exports.microControllerDefaultScript = void 0;
 exports.microControllerDefaultScript = `--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
 --- 	Please try to describe the issue clearly, and send a copy of the /_build/_debug_simulator_log.txt file, with any screenshots (thank you!)
 
@@ -13,6 +13,7 @@ exports.microControllerDefaultScript = `--- If you have any issues, please repor
 ---     The below, includes the content from _simulator_config.lua in the generated /_build/ folder
 --- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
 require("_build._simulator_config")
+require("LifeBoatAPI")
 
 --- default onTick function; called once per in-game tick (60 per second)
 ticks = 0
@@ -54,9 +55,9 @@ exports.microControllerDefaultSimulatorConfig = `
 
 -- When running the simulator, the global variable __simulator is created
 -- Make sure to do any configuration before the the start of your main file
----@param simulator LBSimulator
----@param config LBSimulatorConfig
----@param helpers LBSimulatorInputHelpers
+---@param simulator Simulator
+---@param config SimulatorConfig
+---@param helpers SimulatorInputHelpers
 __simulator.config:configureScreen(1, "3x2", true, false)
 __simulator.config:setProperty("ExampleProperty", 50)
 
@@ -72,7 +73,7 @@ __simulator.config:addNumberHandler(10, LBSimulatorInputHelpers.constantNumber(5
 --- runs every tick, prior to onTick and onDraw
 --- Usually not needed, can allow you to do some custom manipulation
 --- Or set breakpoints based on simulator state
----@param simulator LBSimulator
+---@param simulator Simulator
 function onLBSimulatorTick(simulator)end
 
 --- For easier debugging, called when an output value is changed
@@ -107,179 +108,7 @@ exports.postBuildActionsDefault = `
 -- default is no actions
 print("Build Success - No additional actions in _build/_post_buildactions.lua file")
 `;
-exports.lbMultiSimulatorExtension = `
--- Author: <Authorname> (Please change this in user settings, Ctrl+Comma)
--- GitHub: <GithubLink>
--- Workshop: <WorkshopLink>
---
--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
---      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)
-
--- Author: Nameous Changey
--- Please do not remove this notice
--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
---      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)
-
--- Note: This is entirely experimental
--- It affects _ENV, and there's a lot of chance of unpredictable results from data being shared between different environments
--- I will not be providing support for this Multi-MC Simulate, beyond providing this file
-
---- @diagnostic disable: undefined-global
-
-_mcs = {}
-_originalSim = __simulator
-_originalSim._isInputOutputChanged = true
-_originalInput = input -- for displaying to screen
-_originalOutput = output -- for displaying to screen
-
-function CopyTable(from, into, onlyExists)
-    into = into or {}
-
-    for k,v in pairs(from) do
-        if(into[k] or not onlyExists) then
-            into[k] = v
-        end
-    end
-    return into
-end
-
-function CopyENV(name, env)
-    local _env = CopyTable(env)
-
-    env._globalTicks = 0
-    
-    ---@type LBSimulator_PropertiesAPI
-    _env.property = CopyTable(_env.property)
-    _env.property.name = name
-    _env.property._numbers = CopyTable(_env.property._numbers)
-    _env.property._bools = CopyTable(_env.property._bools)
-    _env.property._texts = CopyTable(_env.property._texts)
-
-    ---@type LBSimulator_InputAPI
-    _env.input = CopyTable(_env.input)
-    _env.input.name = name
-    _env.input._numbers = CopyTable(_env.input._numbers)
-    _env.input._bools = CopyTable(_env.input._bools)
-
-    ---@type LBSimulator_OutputAPI
-    _env.output = CopyTable(_env.output)
-    _env.output.name = name
-    _env.output._numbers = CopyTable(_env.output._numbers)
-    _env.output._bools = CopyTable(_env.output._bools)
-
-    ---@type LBSimulator
-    _env.__simulator = CopyTable(_env.__simulator)
-    _env.__simulator.name = name
-    _env.__simulator.config = CopyTable(_env.__simulator.config)
-    _env.__simulator.config.simulator = _env.__simulator
-    _env.__simulator.config.name = name
-    _env.__simulator.config.boolHandlers = CopyTable(_env.__simulator.config.boolHandlers)
-    _env.__simulator.config.numberHandlers = CopyTable(_env.__simulator.config.numberHandlers)
-    return _env
-end
-
-function LoadMC(name)
-    local originalEnv = _ENV
-    _ENV = CopyENV("MAIN", _ENV)
-
-    require(name)
-
-    local mcENV = CopyENV(name, _ENV._G)
-    table.insert(_mcs, mcENV)
-
-    _ENV = originalEnv
-    _ENV.__simulator.config = LBSimulatorConfig:new(__simulator)
-
-    onLBSimulatorTick = Empty
-    onTick = Empty
-    onDraw = Empty
-
-    return mcENV
-end
-
-
-function multiTick()
-    -- do not edit unless you know what you're doing
-    for i, _env in ipairs(_mcs) do
-        local originalENV = _ENV
-        input = _env.input
-        output = _env.output
-        property = _env.property
-
-        _ENV = _env
-
-        __simulator.config:onSimulate()
-        onSimulate = onLBSimulatorTick or Empty
-        onSimulate(__simulator)
-
-        if onTick then
-            onTick()
-        end
-
-        _globalTicks = _globalTicks + 1
-
-        _ENV = originalENV
-        input = originalENV.input
-        output = originalENV.output
-        property = originalENV.property
-    end
-
-    hasChanged = false
-    if _displayableMC then
-        for i=1, 32 do
-
-            hasChanged = hasChanged or
-                (_originalInput._bools[i] ~= _displayableMC.input._bools[i] or
-                _originalInput._numbers[i] ~= _displayableMC.input._numbers[i] or
-                _originalOutput._bools[i] ~= _displayableMC.output._bools[i] or
-                _originalOutput._numbers[i] ~= _displayableMC.output._numbers[i])
-
-            _originalInput._bools[i] = _displayableMC.input._bools[i]
-            _originalInput._numbers[i] = _displayableMC.input._numbers[i]
-
-            _originalOutput._bools[i] = _displayableMC.output._bools[i]
-            _originalOutput._numbers[i] = _displayableMC.output._numbers[i]
-
-        end
-    end
-
-    if hasChanged then
-        _originalSim._isInputOutputChanged = true
-    end
-end
-
-function multiDraw()
-    -- do not edit unless you know what you're doing
-    for i, _env in ipairs(_mcs) do
-        local originalENV = _ENV
-        _ENV = _env
-
-
-        if(onDraw) then
-            if onLBSimulatorShouldDraw == nil or onLBSimulatorShouldDraw(screen._simulator._currentScreen.screenNumber) then
-                onDraw()
-            end
-        end
-
-        _ENV = originalENV
-    end
-end
-
-function displayMCInOut(mc)
-    _displayableMC = mc
-end
-
---- @diagnostic enable: undefined-global
-
-`;
 exports.simulateMultipleExample = `
--- Author: <Authorname> (Please change this in user settings, Ctrl+Comma)
--- GitHub: <GithubLink>
--- Workshop: <WorkshopLink>
---
--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
---      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)
-
 -- Please note, this is an example setup, but as you do not have the MCs it expects - it will NOT "just run"
 -- If you are not confident with Lua, it is advised you DO NOT use this feature
 -- Simulating multiple MCs has a lot of quirks and you may be making your life harder.
@@ -288,24 +117,25 @@ exports.simulateMultipleExample = `
 -- After configuring this, you would run it with F6, and it should simulate multiple MCs for you.
 -- That said, it is fully supported; hence the lua for the extension is provided for you to edit if needed
 
-require("_build._multi.LBMultiSimulatorExtension")
+require("LifeBoatAPI.Simulator.MultiSimulatorExtension")
+local __multiSim = LifeBoatAPI.Tools.MultiSimulator:new()
 
 -----------LOAD MCS-------------------------------------------------------------------------------
 -- set your MCs here
 -- LoadMC takes the same parameter as require(...)
 -- Order matters, they will draw to screen in this order (last over the top)
 
-local loadingScreen = LoadMC("MyMicrocontroller") -- replace each of these with one of your MC files you'd be chaining
---local navigation    = LoadMC("Navigation_at_top_of_page")
---local menuLayout    = LoadMC("Menu_Layout")
+local loadingScreen = __multiSim:loadMC("MyMicrocontroller") -- replace each of these with one of your MC files you'd be chaining
+--local navigation    = __multiSim:loadMC("Navigation_at_top_of_page")
+--local menuLayout    = __multiSim:loadMC("Menu_Layout")
 
 -----------CONFIG----------------------------------------------------------------------------------
 -- set which MC should show it's inputs and outputs
-displayMCInOut(loadingScreen)
+__multiSim:setDisplayMC(loadingScreen)
 
 -- configure how many screens to use
-__simulator.config:configureScreen(1, "2x2", true, false)
-__simulator.config:configureScreen(2, "2x2", true, false)
+__multiSim._originalSim.config:configureScreen(1, "2x2", true, false)
+__multiSim._originalSim.config:configureScreen(2, "2x2", true, false)
 
 -- connect the MCs to each other
 
@@ -329,8 +159,9 @@ loadingScreen.__simulator.config:addBoolHandler(11, function() return loadingScr
 
 -----------RUN----------------------------------------------------------------------------------
 -- do not remove or edit this
-onTick = multiTick
-onDraw = multiDraw
+onTick = __multiSim:generateOnTick()
+onDraw = __multiSim:generateOnDraw()
+
 
 `;
 //# sourceMappingURL=fileContentsConstants.js.map

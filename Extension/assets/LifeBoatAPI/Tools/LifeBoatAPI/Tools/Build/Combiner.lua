@@ -50,9 +50,9 @@ LifeBoatAPI.Tools.Combiner = {
         local keepSearching = true
         while keepSearching do
             keepSearching = false
-            local requires = data:gmatch("%s-require%(\"(..-)\"%)")
+            local requires = data:gmatch("\n%s-require%(\"(..-)\"%)")
             for require in requires do
-                local fullstring = "%s-require%(\""..require.."\"%)%s-"
+                local fullstring = "\n%s-require%(\""..require.."\"%)%s-"
                 if(requiresSeen[require]) then
                     -- already seen this, so we just cut it from the file
                     data = data:gsub(fullstring, "")
@@ -92,6 +92,6 @@ LifeBoatAPI.Tools.Combiner = {
         return requiresToFilecontents
     end;
 }
-LifeBoatAPI.Tools.LBClass(LifeBoatAPI.Tools.Combiner)
+LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Combiner)
 
 

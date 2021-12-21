@@ -67,6 +67,9 @@ function beginUpdateWorkspaceSettings(context) {
     if (!lifeboatIgnorePaths.includes("/out/")) {
         lifeboatIgnorePaths.push("/out/");
     }
+    if (!lifeboatIgnorePaths.includes("/_build/")) {
+        lifeboatIgnorePaths.push("/_build/");
+    }
     let luaDiagnosticsConfig = vscode.workspace.getConfiguration("Lua.diagnostics");
     let luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
     let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");

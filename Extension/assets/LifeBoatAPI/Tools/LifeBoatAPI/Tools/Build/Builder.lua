@@ -2,9 +2,9 @@
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
 require("LifeBoatAPI.Tools.Utils.Base")
-require("LifeBoatAPI.Tools.Build.Combiner.Combiner")
-require("LifeBoatAPI.Tools.Build.Minimizer.Minimizer")
-require("LifeBoatAPI.Tools.Build.Minimizer.ParsingConstantsLoader")
+require("LifeBoatAPI.Tools.Build.Combiner")
+require("LifeBoatAPI.Tools.Build.Minimizer")
+require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 
 -- A simpler setup for the Minimizer and Combiner, to make them more user friendly
 ---@class Builder
@@ -23,7 +23,7 @@ LifeBoatAPI.Tools.Builder = {
         this.vehicle_constants = this:_setupVehicleConstants(microcontrollerDoc)
         this.mission_constants = this:_setupMissionConstants(addonDoc)
 
-        this.combiner = LifeBoatAPI.Tools.LBCombiner:new()
+        this.combiner = LifeBoatAPI.Tools.Combiner:new()
         for _,dir in ipairs(rootDirs) do
             this.combiner:addRootFolder(dir)
         end
@@ -36,7 +36,7 @@ LifeBoatAPI.Tools.Builder = {
     buildMicrocontroller = function(this, name, entrypoint, params)
         print("Building micrcontroller: " .. name)
         params = params or {}
-
+        
         local cmbFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
         local outFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/release/]] .. name, true)
 

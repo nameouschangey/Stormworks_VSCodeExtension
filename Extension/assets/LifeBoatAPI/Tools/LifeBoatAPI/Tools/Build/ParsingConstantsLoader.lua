@@ -104,4 +104,4 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
     end;
     
 };
-LifeBoatAPI.Tools.LBClass(LifeBoatAPI.Tools.ParsingConstantsLoader)
+LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.ParsingConstantsLoader)

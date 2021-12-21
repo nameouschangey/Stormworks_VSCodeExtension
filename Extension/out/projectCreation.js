@@ -158,12 +158,6 @@ function setupMicrocontrollerFiles(params) {
             return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.simulateMultipleExample)))
                 .then(() => params);
         });
-    }).then(() => {
-        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_multi/LBMultiSimulatorExtension.lua");
-        return utils.doesFileExist(buildActionsFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.lbMultiSimulatorExtension)))
-                .then(() => params);
-        });
     });
 }
 function setupAddonFiles(params) {

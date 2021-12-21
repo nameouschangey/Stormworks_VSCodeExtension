@@ -19,7 +19,7 @@ LifeBoatAPI.Tools.StringMatch = {
         return this
     end;
 }
-LifeBoatAPI.Tools.LBClass(LifeBoatAPI.Tools.StringMatch)--- struct representing a variable found in the code
+LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.StringMatch)--- struct representing a variable found in the code
 
 
 ---@class StringUtils
