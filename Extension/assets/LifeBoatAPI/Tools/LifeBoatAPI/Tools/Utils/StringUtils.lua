@@ -81,11 +81,11 @@ LifeBoatAPI.Tools.StringUtils = {
 
     ---Improved matching, vs. gmatch, as we get the indices things were found at
     ---Particularly useful for "cheap and dirty" parsing of text files
-    ---@overload fun(data: string, pattern:string): LBStringMatch[]
+    ---@overload fun(data: string, pattern:string): StringMatch[]
     ---@param text string text to parse for variables
     ---@param pattern string pattern to search for
     ---@param startIndex number index to start from, default is 1
-    ---@return LBStringMatch[] list of matches with their captures
+    ---@return StringMatch[] list of matches with their captures
     find = function(text, pattern, startIndex)
         local found = {}
         local index = startIndex or 1 -- reminder; str:sub(1,1) gets the first character of the string

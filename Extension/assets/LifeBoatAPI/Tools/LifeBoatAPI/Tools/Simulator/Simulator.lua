@@ -1,12 +1,12 @@
 require("LifeBoatAPI.Tools.Utils.Filepath")
 require("LifeBoatAPI.Tools.Utils.FileSystemUtils")
 require("LifeBoatAPI.Tools.Utils.StringUtils")
-require("LifeBoatAPI.Tools.Build.Simulator_InputOutputAPI")
-require("LifeBoatAPI.Tools.Build.Simulator_ScreenAPI")
-require("LifeBoatAPI.Tools.Build.SimulatorConnection")
-require("LifeBoatAPI.Tools.Build.SimulatorScreen")
-require("LifeBoatAPI.Tools.Build.SimulatorConfig")
-require("LifeBoatAPI.Tools.Build.SimulatorInputHelpers")
+require("LifeBoatAPI.Tools.Simulator.Globals.Simulator_InputOutputAPI")
+require("LifeBoatAPI.Tools.Simulator.Globals.Simulator_ScreenAPI")
+require("LifeBoatAPI.Tools.Simulator.SimulatorConnection")
+require("LifeBoatAPI.Tools.Simulator.SimulatorScreen")
+require("LifeBoatAPI.Tools.Simulator.SimulatorConfig")
+require("LifeBoatAPI.Tools.Simulator.SimulatorInputHelpers")
 
 ---@diagnostic disable: lowercase-global
 

@@ -26,9 +26,12 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     let contents = `
 --- @diagnostic disable: undefined-global
 
-require("LifeBoatAPI.Tools.Simulator.LBSimulator");
-__simulator = LBSimulator:new() 
+require("LifeBoatAPI.Tools.Simulator.Simulator");
+__simulator = LifeBoatAPI.Tools.Simulator:new() 
 __simulator:beginSimulation(false, arg[1], arg[2])
+
+-- company with 0.0.7 projects
+LBSimulatorInputHelpers = LifeBoatAPI.Tools.SimulatorInputHelpers
 
 require("${relativePath}");
 

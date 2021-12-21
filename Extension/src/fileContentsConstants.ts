@@ -13,6 +13,7 @@ export const microControllerDefaultScript =
 ---     The below, includes the content from _simulator_config.lua in the generated /_build/ folder
 --- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
 require("_build._simulator_config")
+require("LifeBoatAPI")
 
 --- default onTick function; called once per in-game tick (60 per second)
 ticks = 0
@@ -56,9 +57,9 @@ export const microControllerDefaultSimulatorConfig =
 
 -- When running the simulator, the global variable __simulator is created
 -- Make sure to do any configuration before the the start of your main file
----@param simulator LBSimulator
----@param config LBSimulatorConfig
----@param helpers LBSimulatorInputHelpers
+---@param simulator Simulator
+---@param config SimulatorConfig
+---@param helpers SimulatorInputHelpers
 __simulator.config:configureScreen(1, "3x2", true, false)
 __simulator.config:setProperty("ExampleProperty", 50)
 
@@ -74,7 +75,7 @@ __simulator.config:addNumberHandler(10, LBSimulatorInputHelpers.constantNumber(5
 --- runs every tick, prior to onTick and onDraw
 --- Usually not needed, can allow you to do some custom manipulation
 --- Or set breakpoints based on simulator state
----@param simulator LBSimulator
+---@param simulator Simulator
 function onLBSimulatorTick(simulator)end
 
 --- For easier debugging, called when an output value is changed
@@ -118,12 +119,6 @@ print("Build Success - No additional actions in _build/_post_buildactions.lua fi
 `;
 
 
-export const lbMultiSimulatorExtension =
-`
-
-
-`;
-
 export const simulateMultipleExample =
 `
 -- Please note, this is an example setup, but as you do not have the MCs it expects - it will NOT "just run"
@@ -134,24 +129,25 @@ export const simulateMultipleExample =
 -- After configuring this, you would run it with F6, and it should simulate multiple MCs for you.
 -- That said, it is fully supported; hence the lua for the extension is provided for you to edit if needed
 
-require("_build._multi.LBMultiSimulatorExtension")
+require("LifeBoatAPI.Simulator.MultiSimulatorExtension")
+local __multiSim = LifeBoatAPI.Tools.MultiSimulator:new()
 
 -----------LOAD MCS-------------------------------------------------------------------------------
 -- set your MCs here
 -- LoadMC takes the same parameter as require(...)
 -- Order matters, they will draw to screen in this order (last over the top)
 
-local loadingScreen = LoadMC("MyMicrocontroller") -- replace each of these with one of your MC files you'd be chaining
---local navigation    = LoadMC("Navigation_at_top_of_page")
---local menuLayout    = LoadMC("Menu_Layout")
+local loadingScreen = __multiSim:loadMC("MyMicrocontroller") -- replace each of these with one of your MC files you'd be chaining
+--local navigation    = __multiSim:loadMC("Navigation_at_top_of_page")
+--local menuLayout    = __multiSim:loadMC("Menu_Layout")
 
 -----------CONFIG----------------------------------------------------------------------------------
 -- set which MC should show it's inputs and outputs
-displayMCInOut(loadingScreen)
+__multiSim:setDisplayMC(loadingScreen)
 
 -- configure how many screens to use
-__simulator.config:configureScreen(1, "2x2", true, false)
-__simulator.config:configureScreen(2, "2x2", true, false)
+__multiSim._originalSim.config:configureScreen(1, "2x2", true, false)
+__multiSim._originalSim.config:configureScreen(2, "2x2", true, false)
 
 -- connect the MCs to each other
 
@@ -175,7 +171,8 @@ loadingScreen.__simulator.config:addBoolHandler(11, function() return loadingScr
 
 -----------RUN----------------------------------------------------------------------------------
 -- do not remove or edit this
-onTick = multiTick
-onDraw = multiDraw
+onTick = __multiSim:generateOnTick()
+onDraw = __multiSim:generateOnDraw()
+
 
 `;

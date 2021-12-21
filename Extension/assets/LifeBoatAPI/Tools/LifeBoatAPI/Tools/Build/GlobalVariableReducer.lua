@@ -12,7 +12,7 @@ require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 ---@class GlobalVariableReducer : BaseClass
 ---@field constants ParsingConstantsLoader
 ---@field renamer VariableRenamer shared instance of the renamer, to ensure variables are renamed safely
-LifeBoatAPI.Tools.LBGlobalVariableReducer = {
+LifeBoatAPI.Tools.GlobalVariableReducer = {
 
     ---@param renamer VariableRenamer must be the same one as used before
     ---@param constants ParsingConstantsLoader

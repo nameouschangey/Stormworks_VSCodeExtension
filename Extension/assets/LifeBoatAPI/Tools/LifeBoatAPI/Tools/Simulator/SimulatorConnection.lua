@@ -1,7 +1,5 @@
 local _socket = require("socket")
 
-LifeBoatAPI = LifeBoatAPI or {}
-LifeBoatAPI.Tools = LifeBoatAPI.Tools or {}
 
 ---@class SimulatorConnection : BaseClass
 ---@field isAlive boolean whether the connection is current live

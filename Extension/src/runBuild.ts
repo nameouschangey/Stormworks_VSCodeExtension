@@ -12,19 +12,19 @@ function generateBuildLua(workspace: vscode.Uri, isMC : boolean, context:vscode.
     let content =  `
 --- @diagnostic disable: undefined-global
 
-require("LifeBoatAPI.Tools.Builder.LBBuilder")
+require("LifeBoatAPI.Tools.Build.Builder")
 
-local luaDocsAddonPath = LBFilepath:new(arg[1]);
-local luaDocsMCPath = LBFilepath:new(arg[2]);
-local outputDir = LBFilepath:new(arg[3]);
-local params = {boilerPlate = arg[4]};
-local rootDirs = {};
+local luaDocsAddonPath  = LifeBoatAPI.Tools.Filepath:new(arg[1]);
+local luaDocsMCPath     = LifeBoatAPI.Tools.Filepath:new(arg[2]);
+local outputDir         = LifeBoatAPI.Tools.Filepath:new(arg[3]);
+local params            = {boilerPlate = arg[4]};
+local rootDirs          = {};
 
 for i=5, #arg do
-    table.insert(rootDirs, LBFilepath:new(arg[i]));
+    table.insert(rootDirs, LifeBoatAPI.Tools.Filepath:new(arg[i]));
 end
 
-local _builder = LBBuilder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)`;
+local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)`;
 
     return vscode.workspace.findFiles(new vscode.RelativePattern(workspace, "**/*.lua"), "**/{_build,out,.vscode}/**")
     .then(
@@ -40,8 +40,8 @@ local _builder = LBBuilder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonP
                     relativePath = relativePath.substr(1);
                 }
 
-                let buildLine = isMC ? `_builder:buildMicrocontroller([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`
-                                     : `_builder:buildAddonScript([[${relativePath}]], LBFilepath:new([[${file.fsPath}]]), params)`;
+                let buildLine = isMC ? `_builder:buildMicrocontroller([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`
+                                     : `_builder:buildAddonScript([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`;
                 content += "\n" + buildLine;
             }
             return content;

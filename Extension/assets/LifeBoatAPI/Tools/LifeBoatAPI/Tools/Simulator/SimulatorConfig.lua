@@ -1,4 +1,4 @@
-require("LifeBoatAPI.Tools.Build.SimulatorScreen")
+require("LifeBoatAPI.Tools.Simulator.SimulatorScreen")
 
 
 ---@class SimulatorConfig : BaseClass
