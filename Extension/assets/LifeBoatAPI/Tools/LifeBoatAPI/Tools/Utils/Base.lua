@@ -9,6 +9,21 @@ LifeBoatAPI.Tools = LifeBoatAPI.Tools or {}
 --- Empty function for simplifying  funcThatMightNotExist = theFunc or Empty
 LifeBoatAPI.Tools.Empty = function() end;
 
+--- Does a default check, but for booleans which can be a pain otherwise as false ruins it
+---@param variable boolean value to check
+---@param defaultIfNil boolean value to assign if the variable is nil; default is true
+---@return boolean variable
+LifeBoatAPI.Tools.DefaultBool = function (variable, defaultIfNil)
+    if defaultIfNil == nil then
+        defaultIfNil = true
+    end
+    
+    if variable == nil then
+        return defaultIfNil
+    end
+    return variable
+end
+
 --- Copies data from (from) to (to)
 --- underwrites values copied (leaves original if it exists)
 --- Can be used to instantiate classes, or inherit from classes

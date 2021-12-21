@@ -15,10 +15,20 @@ require("LifeBoatAPI.Tools.Build.Builder")
 local luaDocsAddonPath  = LifeBoatAPI.Tools.Filepath:new(arg[1]);
 local luaDocsMCPath     = LifeBoatAPI.Tools.Filepath:new(arg[2]);
 local outputDir         = LifeBoatAPI.Tools.Filepath:new(arg[3]);
-local params            = {boilerPlate = arg[4]};
+local params            = {
+    boilerPlate         = arg[4],
+    reduceAllWhitespace = arg[5] == "true",
+    reduceNewlines      = arg[6] == "true",
+    removeRedundancies  = arg[7] == "true",
+    shortenVariables    = arg[8] == "true",
+    shortenGlobals      = arg[9] == "true",
+    shortenNumbers      = arg[10]== "true",
+    forceNCBoilerplate  = arg[11]== "true",
+    forceBoilerplate    = arg[12]== "true"
+};
 local rootDirs          = {};
 
-for i=5, #arg do
+for i=13, #arg do
     table.insert(rootDirs, LifeBoatAPI.Tools.Filepath:new(arg[i]));
 end
 
@@ -62,6 +72,7 @@ function beginBuild(context) {
         path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
         return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(), context)
             .then((buildLua) => vscode.workspace.fs.writeFile(buildLuaFile, new util_1.TextEncoder().encode(buildLua))).then(() => {
+            let minimizerConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.minimizer", utils.getCurrentWorkspaceFile());
             let config = {
                 name: "Build Workspace",
                 type: "lua",
@@ -75,7 +86,15 @@ function beginBuild(context) {
                     neloAddonDoc,
                     neloMCDoc,
                     outputDir,
-                    projectCreation.addUserBoilerplate("")
+                    projectCreation.addUserBoilerplate(""),
+                    `${minimizerConfig.get("reduceAllWhitespace", true)}`,
+                    `${minimizerConfig.get("reduceNewlines", true)}`,
+                    `${minimizerConfig.get("removeRedundancies", true)}`,
+                    `${minimizerConfig.get("shortenVariables", true)}`,
+                    `${minimizerConfig.get("shortenGlobals", true)}`,
+                    `${minimizerConfig.get("shortenNumbers", true)}`,
+                    `${minimizerConfig.get("forceNCBoilerplate", false)}`,
+                    `${minimizerConfig.get("forceBoilerplate", false)}`
                 ]
             };
             // all remaining args are root paths to load scripts from

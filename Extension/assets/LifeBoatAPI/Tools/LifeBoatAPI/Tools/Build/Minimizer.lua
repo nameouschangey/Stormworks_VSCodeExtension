@@ -11,17 +11,39 @@ require("LifeBoatAPI.Tools.Build.GlobalVariableReducer")
 require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 require("LifeBoatAPI.Tools.Build.NumberLiteralReducer")
 
+---@class MinimizerParams
+---@field reduceAllWhitespace   boolean
+---@field reduceNewlines        boolean
+---@field removeRedundancies    boolean
+---@field shortenVariables      boolean
+---@field shortenGlobals        boolean
+---@field shortenNumbers        boolean
+---@field forceNCBoilerplate    boolean
+---@field forceBoilerplate      boolean
+
+
 ---@class Minimizer : BaseClass
 ---@field constants ParsingConstantsLoader list of external, global keywords
----@field params table table of params for turning on/off functionality
+---@field params MinimizerParams table of params for turning on/off functionality
 LifeBoatAPI.Tools.Minimizer = {
     ---@param cls Minimizer
     ---@param constants ParsingConstantsLoader
+    ---@param params MinimizerParams
     ---@return Minimizer
     new = function(cls, constants, params)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
         this.constants = constants
+
         this.params = params or {}
+        this.params.reduceAllWhitespace         = LifeBoatAPI.Tools.DefaultBool(this.params.reduceAllWhitespace) 
+        this.params.reduceNewlines              = LifeBoatAPI.Tools.DefaultBool(this.params.reduceNewlines)
+        this.params.removeRedundancies          = LifeBoatAPI.Tools.DefaultBool(this.params.removeRedundancies)
+        this.params.shortenVariables            = LifeBoatAPI.Tools.DefaultBool(this.params.shortenVariables)
+        this.params.shortenGlobals              = LifeBoatAPI.Tools.DefaultBool(this.params.shortenGlobals)
+        this.params.shortenNumbers              = LifeBoatAPI.Tools.DefaultBool(this.params.shortenNumbers)
+        this.params.forceNCBoilerplate          = LifeBoatAPI.Tools.DefaultBool(this.params.forceNCBoilerplate, false)
+        this.params.forceBoilerplate            = LifeBoatAPI.Tools.DefaultBool(this.params.forceBoilerplate, false)   
+
         return this
     end;
 
@@ -33,10 +55,10 @@ LifeBoatAPI.Tools.Minimizer = {
     minimizeFile = function(this, filepath, outPath, boilerplate)
         outPath = outPath or filepath
         local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filepath)
-        local minimized = this:minimize(text, boilerplate)
+        local minimized, originalLength, newLength = this:minimize(text, boilerplate)
         LifeBoatAPI.Tools.FileSystemUtils.writeAllText(outPath, minimized)
 
-        return minimized;
+        return minimized, originalLength, newLength
     end;
 
     ---@param text string text to be minimized
@@ -60,7 +82,7 @@ LifeBoatAPI.Tools.Minimizer = {
                                                 end)
 
         -- remove all redudant code sections (will become exponentially slower as the codebase gets bigger)
-        if(not this.params.disableRedundancyRemover) then
+        if(this.params.removeRedundancies) then
             local remover = LifeBoatAPI.Tools.RedundancyRemover:new()
             text = remover:removeRedundantCode(text)
         end
@@ -69,29 +91,29 @@ LifeBoatAPI.Tools.Minimizer = {
         text = parser:removeStringsAndComments(text)
 
         -- rename variables as short as we can get
-        if(not this.params.disableShortenVariables) then
+        if(this.params.shortenVariables) then
             local shortener = LifeBoatAPI.Tools.VariableShortener:new(variableRenamer, this.constants)
             text = shortener:shortenVariables(text)
         end
 
         -- final step still todo, replace all external globals if they're used more than once
-        if(not this.params.disableShortenGlobals) then
+        if(this.params.shortenGlobals) then
             local globalShortener = LifeBoatAPI.Tools.GlobalVariableReducer:new(variableRenamer, this.constants)
             text = globalShortener:shortenGlobals(text)
         end
 
         -- reduce numbers
-        if(not this.params.disableNumberShortening) then
+        if(this.params.shortenNumbers) then
             local numberShortener = LifeBoatAPI.Tools.NumberLiteralReducer:new(variableRenamer)
             text = numberShortener:shortenNumbers(text)
         end
 
         -- remove all unnecessary whitespace, etc. (a real minifier will do a better job, but this gets close enough for us)
-        if(not this.params.disableReduceNewlines) then
+        if(this.params.reduceNewlines) then
             text = LifeBoatAPI.Tools.StringUtils.subAll(text, "\n\n", "\n") -- remove duplicate newlines
         end
 
-        if(not this.params.disableRemoveWhitespace) then
+        if(this.params.reduceAllWhitespace) then
             text = this:_reduceWhitespace(text)
         end
 
@@ -115,7 +137,7 @@ LifeBoatAPI.Tools.Minimizer = {
             text = boilerplate .. "\n" .. text
         end
 
-        return text
+        return text, originalLength, newLength
     end;
 
     ---@param this Minimizer

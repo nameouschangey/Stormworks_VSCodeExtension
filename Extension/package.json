@@ -130,6 +130,55 @@
 						"default": true,
 						"scope": "application",
 						"description": "If enabled, when using Open Folder - presents the option to open any .code-workspace files found in sub folders; in separate windows. Apologies to any developer this annoys - but it should make VSCode more palatable for newcomers."
+					},
+
+					"lifeboatapi.stormworks.minimizer.reduceAllWhitespace" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will remove all unnecessary spacing and punctuation"
+					},
+					"lifeboatapi.stormworks.minimizer.reduceNewlines" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended if not Reduce All Whitespace) Minimizer will remove double-newlines, but leave the file readable"
+					},
+					"lifeboatapi.stormworks.minimizer.removeRedundancies" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will remove ---@section code redundancies"
+					},
+					"lifeboatapi.stormworks.minimizer.shortenVariables" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will shorten variables where possible"
+					},
+					"lifeboatapi.stormworks.minimizer.shortenGlobals" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will shorten globals where possible, e.g. math, screen.drawRect etc."
+					},
+					"lifeboatapi.stormworks.minimizer.shortenNumbers" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will shorten numbers where possible"
+					},
+					"lifeboatapi.stormworks.minimizer.forceNCBoilerplate" : {
+						"type":"boolean",
+						"default": false,
+						"scope": "resource",
+						"description": "(Off by default) Minimizer is forced to output the Nameous Changey boilerplate - even if the file goes over 4000 characters."
+					},
+					"lifeboatapi.stormworks.minimizer.forceBoilerplate" : {
+						"type":"boolean",
+						"default": false,
+						"scope": "resource",
+						"description": "(Off by default) Minimizer is forced to output the authors custom boilerplate - even if the file goes over 4000 characters."
 					}
 				}
 			}

@@ -34,7 +34,7 @@ LifeBoatAPI.Tools.Builder = {
     ---@param name string
     ---@param entrypoint Filepath
     buildMicrocontroller = function(this, name, entrypoint, params)
-        print("Building micrcontroller: " .. name)
+        --print("Building: " .. name)
         params = params or {}
         
         local cmbFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
@@ -43,15 +43,15 @@ LifeBoatAPI.Tools.Builder = {
         this.combiner:combineFile(entrypoint, cmbFile)
 
         local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.vehicle_constants, params)
-        minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
-        print("Complete") 
+        local finalText, originalLength, newLength = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
+        print(name .. " " .. tostring(originalLength) .. " -> " .. tostring(newLength) .. " chars") 
     end;
 
     ---@param this Builder
     ---@param name string
     ---@param entrypoint Filepath
     buildAddonScript = function (this, name, entrypoint, params)    
-        print("Building addon: " .. name)
+        --print("Building: " .. name)
         params = params or {}
 
         local cmbFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
@@ -60,8 +60,8 @@ LifeBoatAPI.Tools.Builder = {
         this.combiner:combineFile(entrypoint, cmbFile)
 
         local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.mission_constants, params or {})
-        minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
-        print("Complete") 
+        local finalText, originalLength, newLength = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
+        print(name .. " " .. tostring(originalLength) .. " -> " .. tostring(newLength) .. " chars") 
     end;
 
 
