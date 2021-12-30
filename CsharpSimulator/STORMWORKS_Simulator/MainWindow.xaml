@@ -62,6 +62,11 @@
             
             <!-- Top Bar-->
             <DockPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <CheckBox Margin="10,0"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding AutoReset}"
+                          Content="AutoReset" />
+                
                 <Button DockPanel.Dock="Left"
                         Margin="10,0"
                         Content="Reset"

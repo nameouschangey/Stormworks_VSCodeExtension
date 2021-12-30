@@ -9,6 +9,7 @@
 //  Namespace and "using" directives are altered for this project
 //  In separate NameousChangey section
 
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,9 @@ namespace STORMWORKS_Simulator
 {
     public class ZoomBorder : Border
     {
+        public event EventHandler<TranslateTransform> OnPanChanged;
+        public event EventHandler<ScaleTransform> OnZoomChanged;
+
         private UIElement child = null;
         private Point origin;
         private Point start;
@@ -67,17 +71,22 @@ namespace STORMWORKS_Simulator
 
         public void Reset()
         {
+            SetPanAndZoom(0.0, 0.0, 1.0, 1.0);
+        }
+
+        public void SetPanAndZoom(double x, double y, double zoomX, double zoomY)
+        {
             if (child != null)
             {
                 // reset zoom
                 var st = GetScaleTransform(child);
-                st.ScaleX = 1.0;
-                st.ScaleY = 1.0;
+                st.ScaleX = zoomX;
+                st.ScaleY = zoomY;
 
                 // reset pan
                 var tt = GetTranslateTransform(child);
-                tt.X = 0.0;
-                tt.Y = 0.0;
+                tt.X = x;
+                tt.Y = y;
             }
         }
 
@@ -106,6 +115,9 @@ namespace STORMWORKS_Simulator
 
                 tt.X = absoluteX - relative.X * st.ScaleX;
                 tt.Y = absoluteY - relative.Y * st.ScaleY;
+
+                OnPanChanged(this, tt);
+                OnZoomChanged(this, st);
             }
         }
 
@@ -130,6 +142,8 @@ namespace STORMWORKS_Simulator
                 //child.ReleaseMouseCapture();
                 IsDown = false;
                 this.Cursor = Cursors.Arrow;
+
+
             }
         }
 
@@ -143,6 +157,8 @@ namespace STORMWORKS_Simulator
                     Vector v = start - e.GetPosition(this);
                     tt.X = origin.X - v.X;
                     tt.Y = origin.Y - v.Y;
+
+                    OnPanChanged(this, tt);
                 }
             }
         }

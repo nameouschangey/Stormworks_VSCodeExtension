@@ -118,9 +118,23 @@ namespace STORMWORKS_Simulator
         }
         private bool _EnablePan = true;
 
+        public bool AutoReset
+        {
+            get { return _AutoReset;}
+            set
+            {
+                _AutoReset = value;
+                Properties.Settings.Default.ResetZoomAutomatically = value;
+                Properties.Settings.Default.Save();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+            }
+        }
+        private bool _AutoReset = true;
 
         public MainVM()
         {
+            _AutoReset = Properties.Settings.Default.ResetZoomAutomatically;
+
             Color = new SKColor(255,255,255,255);
             SetupMapColours();
 

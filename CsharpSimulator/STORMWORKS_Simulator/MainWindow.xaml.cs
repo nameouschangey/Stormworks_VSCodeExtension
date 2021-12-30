@@ -49,19 +49,45 @@ namespace STORMWORKS_Simulator
             VSConnection.OnLineRead += TickHandler.OnLineRead;
 
 
-            ViewModel.OnScreenResolutionChanged += (s, vm) => CanvasZoom.Reset();
+            ViewModel.OnScreenResolutionChanged += (s, vm) =>
+            {
+                if(Properties.Settings.Default.ResetZoomAutomatically)
+                {
+                    CanvasZoom.Reset();
+                }
+            };
             ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
             ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
             ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
             ViewModel.OnTickrateChanged += (s, vm) => VSConnection.SendMessage("TICKRATE", $"{vm.TickRate}|{vm.FrameSkip}");
+
+            CanvasZoom.OnPanChanged += (s, transform) => {
+                Properties.Settings.Default.LastPanX = transform.X;
+                Properties.Settings.Default.LastPanY = transform.Y;
+            };
+            CanvasZoom.OnZoomChanged += (s, transform) => {
+                Properties.Settings.Default.LastZoomX = transform.ScaleX;
+                Properties.Settings.Default.LastZoomY = transform.ScaleY;
+            };
 
             DataContext = ViewModel;
 
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             
             var screen = ViewModel.GetOrAddScreen(1);
-            //screen.ScreenResolutionDescription = "3x3";
-            //TickHandler.OnLineRead(this, "CIRCLE|1|1|16|16|16");
+
+            if (!Properties.Settings.Default.ResetZoomAutomatically)
+            {
+                CanvasZoom.SetPanAndZoom(
+                    Properties.Settings.Default.LastPanX,
+                    Properties.Settings.Default.LastPanY,
+                    Properties.Settings.Default.LastZoomX,
+                    Properties.Settings.Default.LastZoomY);
+            }
+
+            Closing += (s,e) => {
+                Properties.Settings.Default.Save();
+            };
 
             Logger.Log("MainWindow Initialized and running");
         }
