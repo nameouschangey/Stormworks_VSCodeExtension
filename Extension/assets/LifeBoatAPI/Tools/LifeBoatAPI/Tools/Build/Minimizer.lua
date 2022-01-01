@@ -78,7 +78,7 @@ LifeBoatAPI.Tools.Minimizer = {
         text = parser:removeStringsAndComments(text,
                                                 function(i,text)
                                                     return text:sub(i, i+10) == "---@section" or
-                                                        text:sub(i, i+13) == "---@endsection"
+                                                           text:sub(i, i+13) == "---@endsection"
                                                 end)
 
         -- remove all redudant code sections (will become exponentially slower as the codebase gets bigger)

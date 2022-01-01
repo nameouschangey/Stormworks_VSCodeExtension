@@ -30,7 +30,14 @@ LifeBoatAPI.Tools.SimulatorConnection = {
     ---@param commandName string name of the command
     ---@vararg ... additional string params to send to the simulator
     sendCommand = function (this, commandName, ...)
-        local command = commandName .. "|" .. table.concat({...}, "|")
+
+        -- ensure all params are strings
+        local params = {...}
+        for k,v in pairs(params) do
+            params[k] = tostring(v)
+        end
+
+        local command = commandName .. "|" .. table.concat(params, "|")
 
         -- using first 4 characters for length
         local lengthString = string.format("%04d", #command)

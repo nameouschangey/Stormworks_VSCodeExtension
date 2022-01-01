@@ -12,12 +12,12 @@ require("LifeBoatAPI.Tools.Utils.TableUtils")
 LifeBoatAPI.Tools.ParsingConstantsLoader = {
     _default_restrictedKeywords = { -- restricted keywords will rarely be changed
         "and"        ,"break"     ,"do"        ,"else"      ,"elseif"
-        ,"end"       ,"for"       ,"function"  ,"if"
-        ,"in"        ,"local"     ,"not"       ,"or"
+        ,"end"       ,"for"       ,"function"  ,"goto"      ,"if"
+        ,"in"        ,"local"     ,"nil"       ,"not"       ,"or"
         ,"repeat"    ,"return"    ,"then"      ,"until"
-        ,"while"     ,"self" -- self and arg art technically not a restricted keyword, but it has special language meaning
+        ,"while"     ,"self"      -- self and arg art technically not a restricted keyword, but it has special language meaning
     };
-    _default_baseNames = {"nil", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
+    _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
     _mission_restricted_callbacks = {"onTick", "onCreate", "onDestroy", "onCustomCommand", "onChatMessage",
                                      "onPlayerJoin", "onPlayerSit", "onCharacterSit", "onPlayerRespawn",
