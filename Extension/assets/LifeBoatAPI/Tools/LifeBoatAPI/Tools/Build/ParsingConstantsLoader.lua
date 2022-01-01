@@ -13,15 +13,15 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
     _default_restrictedKeywords = { -- restricted keywords will rarely be changed
         "and"        ,"break"     ,"do"        ,"else"      ,"elseif"
         ,"end"       ,"for"       ,"function"  ,"goto"      ,"if"
-        ,"in"        ,"local"     ,"nil"       ,"not"       ,"or"
+        ,"in"        ,"local"     ,"not"       ,"or"
         ,"repeat"    ,"return"    ,"then"      ,"until"
-        ,"while"     ,"self"      -- self and arg art technically not a restricted keyword, but it has special language meaning
+        ,"while"     ,"self"      -- self is technically not a restricted keyword, but it has special language meaning
     };
     _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
     _mission_restricted_callbacks = {"onTick", "onCreate", "onDestroy", "onCustomCommand", "onChatMessage",
                                      "onPlayerJoin", "onPlayerSit", "onCharacterSit", "onPlayerRespawn",
-                                     "onPlayerLeave","onToggleMap", "onPlayerDie", "onVehicleSpawn", "onVehicleLoad", "onVehicleTeleport",
+                                     "onPlayerLeave", "onToggleMap", "onPlayerDie", "onVehicleSpawn", "onVehicleLoad", "onVehicleTeleport",
                                      "onVehicleDespawn", "onSpawnAddonComponent", "onVehicleDamaged", "httpReply",
                                      "onFireExtinguished","onVehicleUnload", "onForestFireSpawned", "onForestFireExtinguised"};
     

@@ -3,7 +3,7 @@
 
 ---@diagnostic disable: undefined-doc-name
 
----@section LifeBoatAPI LIFEBOATAPICLASS
+---@section LifeBoatAPI 1 LIFEBOATAPICLASS
 LifeBoatAPI = {
     --- Copies data from (from) to (to)
     --- underwrites values copied (leaves original if it exists)
@@ -30,4 +30,4 @@ LifeBoatAPI = {
     lb_doNothing = function()end;
     ---@endsection
 }
----@endsection LifeBoatAPI LIFEBOATAPICLASS
+---@endsection LIFEBOATAPICLASS

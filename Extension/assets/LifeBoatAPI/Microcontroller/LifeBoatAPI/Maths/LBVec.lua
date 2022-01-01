@@ -7,7 +7,7 @@ require("LifeBoatAPILocal.Utils.LBCopy")
 ---@field x number for viewspace coordinates: (0 => leftmost, 1=>rightmost) x position to convert
 ---@field y number for viewspace coordinates: (0 => topmost, 1=> bottommost) y position to convert
 ---@field z number only used in 3D calculations
----@section LBVec LBVECCLASS
+---@section LBVec 1 LBVECCLASS
 LifeBoatAPI.LBVec = {
     ---@param cls LBVec
     ---@param x number x component
@@ -15,7 +15,7 @@ LifeBoatAPI.LBVec = {
     ---@param z number z component; conventially represents the altitude
     ---@overload fun(cls:LBVec, x:number, y:number):LBVec creates a vector2 (z-component is 0)
     ---@overload fun(cls:LBVec):LBVec creates a new zero-initialized vector3
-    ---@return LBVec3
+    ---@return LBVec
     new = function(cls,x,y,z)
         return LifeBoatAPI.lb_copy(cls, {x=x or 0,y=y or 0,z=z or 0})
     end;
@@ -24,7 +24,7 @@ LifeBoatAPI.LBVec = {
     --- x=Rcos(el)cos(az)
     --- y=Rcos(el)sin(az)
     --- z=Rsin(el)
-    ---@return LBVec3
+    ---@return LBVec
     ---@section newFromAzimuthElevation
     newFromAzimuthElevation = function(cls, azimuth, elevation, distance)
         return cls:new(
@@ -209,7 +209,7 @@ LifeBoatAPI.LBVec = {
     ---Rotates clockwise around the given point, by the given number of radians
     ---@param this LBVec
     ---@param radians number radians to rotate, clockwise around
-    ---@param point LBVec2 point to rotate around
+    ---@param point LBVec point to rotate around
     ---@return LBVec rotated
     ---@section lbvec_rotateAround2D
     lbvec_rotateAround2D = function(this, radians, point)

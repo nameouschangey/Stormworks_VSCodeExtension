@@ -3,6 +3,8 @@
 
 require("LifeBoatAPI.Utils.LBCopy")
 
+---@class LBTable
+---@section LBTable 1 LBTABLECLASS
 LifeBoatAPI.LBTable = {
 
     --- Returns whether this collection contains the given value or not
@@ -281,3 +283,4 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 }
+---@endsection LBTABLECLASS
