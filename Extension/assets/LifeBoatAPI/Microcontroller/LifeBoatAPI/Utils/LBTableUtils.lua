@@ -3,9 +3,9 @@
 
 require("LifeBoatAPI.Utils.LBCopy")
 
----@class LBTable
----@section LBTable 1 LBTABLECLASS
-LifeBoatAPI.LBTable = {
+---@class LBTableUtils
+---@section LBTableUtils 1 LBTABLECLASS
+LifeBoatAPI.LBTableUtils = {
 
     --- Returns whether this collection contains the given value or not
     ---@param tbl table
@@ -33,7 +33,6 @@ LifeBoatAPI.LBTable = {
         return i
     end;
     ---@endsection
-
 
     --- safely removes the specified index from the table, ensuring that if it's a numerical key - we keep the values contiguous
     --- just using this.lb_data[key] = nil, for all keys, would mean we end up with arrays like {a,b,c,nil,nil,f,g,h} which ipairs and #length will only read up to c
@@ -70,7 +69,6 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 
-
     --- Flattens a key:value pair table into a list of values
     --- @generic K,V
     --- @param tbl table<K,V> table to act on
@@ -85,7 +83,6 @@ LifeBoatAPI.LBTable = {
         return _keys, _values
     end;
     ---@endsection
-
 
     --- Fills a holey array into an array starting at 1, contiguous upto #length
     --- Preserves non-numerical keys
@@ -106,7 +103,6 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 
-
     --- Slices the given list, returning the sub-list tbl[startIndex ... endIndex]
     --- Indices can be negative to count from the end of the table, e.g. -1 is the last element, and -2 is the second last element
     --- @generic T
@@ -126,7 +122,6 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 
-
     --- Filters out values by the callable function
     --- @generic T
     --- @param tbl T table to act on
@@ -142,7 +137,6 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 
-
     --- Filters out values by the callable function
     --- @generic T
     --- @param tbl T table to act on
@@ -157,7 +151,6 @@ LifeBoatAPI.LBTable = {
         return result
     end;
     ---@endsection
-
 
     --- Transforms values from one format to another
     --- Note, returned value from callable is VALUE, KEY
@@ -179,7 +172,6 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 
-
     --- Transforms values from one format to another
     --- Note, returned value from callable is VALUE
     --- Select and Where functionality can be combined by returning nil as the value
@@ -196,7 +188,6 @@ LifeBoatAPI.LBTable = {
         return result
     end;
     ---@endsection
-
 
     --- Groups values by a common key, selected by the callable, into a dictionary of lists
     --- @generic T,G
@@ -215,7 +206,6 @@ LifeBoatAPI.LBTable = {
     end;
     ---@endsection
 
-
     --- Groups values by a common function, into a list of lists
     --- @generic T,G
     --- @param tbl T table to act on
@@ -232,7 +222,6 @@ LifeBoatAPI.LBTable = {
         return result
     end;
     ---@endsection
-
 
     --- Orders the table using the given comparison into a new table
     --- Assumes numerical keys, otherwise it does nothing useful
