@@ -37,9 +37,9 @@ LifeBoatAPI.Tools.StringReplacer = {
     ---@param this StringReplacer
     ---@param text string text that was previously stripped of strings
     ---@return string text with original strings repopulated
-    repopuplateStrings = function(this, text)
+    repopuplateStrings = function(this, text, shortenStringDuplicates)
         for k,v in pairs(this.stringsReplaced) do
-            if v.count > 1 then
+            if shortenStringDuplicates and v.count > 1 then
                 -- if there's multiples of this string constant, we're almost always better to create a new variable for it
                 local newName = this.renamer:getShortName()
                 text = newName .. "=" .. k .. "\n" .. text:gsub(v.value, LifeBoatAPI.Tools.StringUtils.escapeSub(newName))

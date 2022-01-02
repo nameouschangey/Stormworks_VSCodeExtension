@@ -20,6 +20,8 @@ require("LifeBoatAPI.Tools.Build.NumberLiteralReducer")
 ---@field shortenNumbers        boolean
 ---@field forceNCBoilerplate    boolean
 ---@field forceBoilerplate      boolean
+---@field removeComments        boolean
+---@field shortenStringDuplicates boolean if true, shorten the string duplicates into singles
 
 
 ---@class Minimizer : BaseClass
@@ -35,14 +37,16 @@ LifeBoatAPI.Tools.Minimizer = {
         this.constants = constants
 
         this.params = params or {}
-        this.params.reduceAllWhitespace         = LifeBoatAPI.Tools.DefaultBool(this.params.reduceAllWhitespace) 
-        this.params.reduceNewlines              = LifeBoatAPI.Tools.DefaultBool(this.params.reduceNewlines)
-        this.params.removeRedundancies          = LifeBoatAPI.Tools.DefaultBool(this.params.removeRedundancies)
-        this.params.shortenVariables            = LifeBoatAPI.Tools.DefaultBool(this.params.shortenVariables)
-        this.params.shortenGlobals              = LifeBoatAPI.Tools.DefaultBool(this.params.shortenGlobals)
-        this.params.shortenNumbers              = LifeBoatAPI.Tools.DefaultBool(this.params.shortenNumbers)
-        this.params.forceNCBoilerplate          = LifeBoatAPI.Tools.DefaultBool(this.params.forceNCBoilerplate, false)
-        this.params.forceBoilerplate            = LifeBoatAPI.Tools.DefaultBool(this.params.forceBoilerplate, false)   
+        this.params.removeComments              = LifeBoatAPI.Tools.DefaultBool(this.params.removeComments,         true)
+        this.params.reduceAllWhitespace         = LifeBoatAPI.Tools.DefaultBool(this.params.reduceAllWhitespace,    true)
+        this.params.reduceNewlines              = LifeBoatAPI.Tools.DefaultBool(this.params.reduceNewlines,         true)
+        this.params.removeRedundancies          = LifeBoatAPI.Tools.DefaultBool(this.params.removeRedundancies,     true)
+        this.params.shortenVariables            = LifeBoatAPI.Tools.DefaultBool(this.params.shortenVariables,       true)
+        this.params.shortenGlobals              = LifeBoatAPI.Tools.DefaultBool(this.params.shortenGlobals,         true)
+        this.params.shortenNumbers              = LifeBoatAPI.Tools.DefaultBool(this.params.shortenNumbers,         true)
+        this.params.shortenStringDuplicates     = LifeBoatAPI.Tools.DefaultBool(this.params.shortenStringDuplicates,true)
+        this.params.forceNCBoilerplate          = LifeBoatAPI.Tools.DefaultBool(this.params.forceNCBoilerplate,     false)
+        this.params.forceBoilerplate            = LifeBoatAPI.Tools.DefaultBool(this.params.forceBoilerplate,       false)   
 
         return this
     end;
@@ -70,11 +74,10 @@ LifeBoatAPI.Tools.Minimizer = {
         -- insert space at the start prevents issues where the very first character in the file, is part of a variable name
         text = " " .. text .. "\n\n"
 
-        
         local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
 
         -- remove all redundant strings and comments, avoid these confusing the parse
-        local parser = LifeBoatAPI.Tools.StringCommentsParser:new(LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
+        local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
         text = parser:removeStringsAndComments(text,
                                                 function(i,text)
                                                     return text:sub(i, i+10) == "---@section" or
@@ -118,7 +121,7 @@ LifeBoatAPI.Tools.Minimizer = {
         end
 
         -- repopulate the original string data now it's safe
-        text = parser:repopulateStrings(text)
+        text = parser:repopulateStrings(text, this.params.shortenStringDuplicates)
 
         -- add boilerplate if the file is small enough
         -- please do not remove this, the user's boilerplate has precedence over the nameous changey one
