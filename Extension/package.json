@@ -131,7 +131,13 @@
 						"scope": "application",
 						"description": "If enabled, when using Open Folder - presents the option to open any .code-workspace files found in sub folders; in separate windows. Apologies to any developer this annoys - but it should make VSCode more palatable for newcomers."
 					},
-
+					
+					"lifeboatapi.stormworks.minimizer.removeComments" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will strip out all comments"
+					},
 					"lifeboatapi.stormworks.minimizer.reduceAllWhitespace" : {
 						"type":"boolean",
 						"default": true,
@@ -167,6 +173,12 @@
 						"default": true,
 						"scope": "resource",
 						"description": "(Recommended) Minimizer will shorten numbers where possible"
+					},
+					"lifeboatapi.stormworks.minimizer.shortenStringDuplicates" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "(Recommended) Minimizer will remove all duplicate strings and turn them into shared globals"
 					},
 					"lifeboatapi.stormworks.minimizer.forceNCBoilerplate" : {
 						"type":"boolean",

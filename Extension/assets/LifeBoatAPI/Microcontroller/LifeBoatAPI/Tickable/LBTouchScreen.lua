@@ -41,8 +41,8 @@ LifeBoatAPI.LBTouchScreen = {
         ---@field y number topLeft y position of the button
         ---@field width number width of the button rect
         ---@field height number height of the button rect
-        _lbtouchscreen_button = {
-            touchscreenRef = this,
+        local button = {
+            touchScreenRef = this,
             x = x,
             y = y,
             width = width,
@@ -87,7 +87,7 @@ LifeBoatAPI.LBTouchScreen = {
             end;
             ---@endsection
         }
-        return _lbtouchscreen_button
+        return button
     end;
     ---@endsection LBTOUCHSCREEN_NEWBASICBUTTON
 
@@ -104,8 +104,8 @@ LifeBoatAPI.LBTouchScreen = {
         ---@field touchScreenRef LBTouchScreen reference to the touchscreen, needed for tracking click state
         ---@field position LBVec
         ---@field size LBVec
-        _lbtouchscreen_button = {
-            touchscreenRef = this,
+        local button = {
+            touchScreenRef = this,
             position = position,
             size = size,
 
@@ -148,7 +148,7 @@ LifeBoatAPI.LBTouchScreen = {
             end;
             ---@endsection
         }
-        return _lbtouchscreen_button
+        return button
     end;
     ---@endsection LBTOUCHSCREEN_NEWVECTORBUTTON
 }

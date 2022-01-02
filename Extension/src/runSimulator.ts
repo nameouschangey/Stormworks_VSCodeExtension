@@ -30,7 +30,7 @@ require("LifeBoatAPI.Tools.Simulator.Simulator");
 __simulator = LifeBoatAPI.Tools.Simulator:new() 
 __simulator:beginSimulation(false, arg[1], arg[2])
 
--- company with 0.0.7 projects
+-- compatibility with 0.0.7 projects
 LBSimulatorInputHelpers = LifeBoatAPI.Tools.SimulatorInputHelpers
 
 require("${relativePath}");

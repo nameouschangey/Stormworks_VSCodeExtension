@@ -4,23 +4,28 @@
 //  as this is ever so slightly...idiotic
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.simulateMultipleExample = exports.postBuildActionsDefault = exports.preBuildActionsDefault = exports.addonDefaultScript = exports.microControllerDefaultSimulatorConfig = exports.microControllerDefaultScript = void 0;
-exports.microControllerDefaultScript = `--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues
---- 	Please try to describe the issue clearly, and send a copy of the /_build/_debug_simulator_log.txt file, with any screenshots (thank you!)
+exports.microControllerDefaultScript = `--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+
+require("_build._simulator_config") -- LifeBoatAPI allows you to use lua's "require" keyword. see the /build/_simulator_config.lua file for how to configure the simulator
+require("LifeBoatAPI") -- Type 'LifeBoatAPI.' and use intellisense to checkout the new LifeBoatAPI library functions; such as the LBVec vector maths library
 
 
---- With LifeBoatAPI; you can use the "require(...)" keyword to use code from other files!
----     This lets you share code between projects, and organise your work better.
----     The below, includes the content from _simulator_config.lua in the generated /_build/ folder
---- (If you want to include code from other projects, press CTRL+COMMA, and add to the LifeBoatAPI library paths)
-require("_build._simulator_config")
-require("LifeBoatAPI")
-
---- default onTick function; called once per in-game tick (60 per second)
+myButton = LifeBoatAPI.LBTouchScreen:lbtouchscreen_newButton(0, 1, 31, 9) -- using the TouchScreen functionality from LifeBoatAPI - make a simple button
+isRedToggle = false -- toggle to keep track of whether to draw in red or green
 ticks = 0
-function onTick()
-    ticks = ticks + 1
-    local myRandomValue = math.random()
 
+function onTick()
+    LifeBoatAPI.LBTouchScreen:lbtouchscreen_onTick() -- touchscreen handler provided by LifeBoatAPI. Handles checking for clicks/releases etc.
+    ticks = ticks + 1
+
+    -- example: touchscreen buttons
+    if myButton:lbbutton_isClicked() then
+        isRedToggle = not isRedToggle    
+    end
+
+    -- example debugging random values, and checking things per tick
+    local myRandomValue = math.random()    
     if(ticks%100 == 0) then
         -- Debugging Tip (F6 to run Simulator):
         --  By clicking just left of the line number (left column), you can set a little red dot; called a "breakpoint"
@@ -31,16 +36,24 @@ function onTick()
     end
 end
 
---- default onDraw function; called once for each monitor connected each tick, order is not guaranteed
+
 function onDraw()
 	-- when you simulate, you should see a slightly pink circle growing over 10 seconds and repeating.
-	screen.setColor(255, 125, 125)
+    -- Clicking the button, will change between red and green
+    if isRedToggle then
+        screen.setColor(255, 125, 125)
+    else
+        screen.setColor(125, 255, 125)
+    end
+	
 	screen.drawCircleF(16, 16, (ticks%600)/60)
-end
 
+    myButton:lbbutton_drawRect("Toggle") -- basic button drawing, you can of course use the .x,y,width,height property from the button to draw something more custom instead
+end
 
 --- Ready to put this in the game?
 --- Just hit F7 and then copy the (now tiny) file from the /out/ folder
+
 
 `;
 exports.microControllerDefaultSimulatorConfig = `
@@ -85,6 +98,8 @@ function onLBSimulatorOutputNumberChanged(index, oldValue, newValue)end
 
 `;
 exports.addonDefaultScript = `
+--- Note, minimizer functionality can be disabled in your project settings. (right click -> Folder Settings)
+--- A large scale update for supporting Addon work is in the works, so keep an eye on the extension!
 
 function onTick(game_ticks)
 end
@@ -93,7 +108,7 @@ end
 exports.preBuildActionsDefault = `
 -- This file is called just prior to the build process starting
 -- Can add any pre-build actions; such as any code generation processes you wish, or other tool chains
--- Regular lua - you have access to the filesystem etc. via LBFilesystem
+-- Regular lua - you have access to the filesystem etc. via LifeBoatAPI.Tools.LBFilesystem
 -- Recommend using LBFilepath for paths, to keep things easy
 
 -- default is no actions
@@ -102,7 +117,7 @@ print("Build Started - No additional actions taken in _build/_pre_buildactions.l
 exports.postBuildActionsDefault = `
 -- This file is called after the build process finished
 -- Can be used to copy data into the game, trigger deployments, etc.
--- Regular lua - you have access to the filesystem etc. via LBFilesystem
+-- Regular lua - you have access to the filesystem etc. via LifeBoatAPI.Tools.LBFilesystem
 -- Recommend using LBFilepath for paths, to keep things easy
 
 -- default is no actions
@@ -117,7 +132,7 @@ exports.simulateMultipleExample = `
 -- After configuring this, you would run it with F6, and it should simulate multiple MCs for you.
 -- That said, it is fully supported; hence the lua for the extension is provided for you to edit if needed
 
-require("LifeBoatAPI.Simulator.MultiSimulatorExtension")
+require("LifeBoatAPI.Tools.Simulator.MultiSimulatorExtension")
 local __multiSim = LifeBoatAPI.Tools.MultiSimulator:new()
 
 -----------LOAD MCS-------------------------------------------------------------------------------
@@ -161,7 +176,6 @@ loadingScreen.__simulator.config:addBoolHandler(11, function() return loadingScr
 -- do not remove or edit this
 onTick = __multiSim:generateOnTick()
 onDraw = __multiSim:generateOnDraw()
-
 
 `;
 //# sourceMappingURL=fileContentsConstants.js.map
