@@ -1,8 +1,7 @@
 -- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
 -- please see: https://github.com/nameouschangey/STORMWORKS for updates
 
-------------------------------------------------------------------------------------------------------------------------
--- multiplicative shorthands; e.g. a = 360 * degrees2rads
+require("LifeBoatAPI.Utils.LBCopy")
 
 ---@class LBMaths
 ---@section LBMaths 1 LBMATHSCLASS
@@ -26,6 +25,14 @@ LifeBoatAPI.LBMaths = {
 
     ---@section lbmaths_radsToTurns
     lbmaths_radsToTurns = 1 / math.pi * 2;
+    ---@endsection
+
+    ---@section lbmaths_ticksToSeconds
+    lbmaths_ticksToSeconds = 1 / 60;
+    ---@endsection
+
+    ---@section lbmaths_secondsToTicks
+    lbmaths_secondsToTicks = 60;
     ---@endsection
 
     --- Finds the difference between two angles, wrapped across the boundary
@@ -83,6 +90,22 @@ LifeBoatAPI.LBMaths = {
     ---@section lbmaths_isPointInRectangle
     lbmaths_lerp = function(startValue, endValue, t)
         return (1-t) * startValue + t * endValue
+    end;
+    ---@endsection
+
+    ---Updated an existing average
+    ---See LBRollingAverage for a "last x values" average
+    ---Can be useful when you do not know the number of values you are averaging
+    ---Example: myAverage, numValuesAveraged = LBMaths.lbmaths_updateAverage(123, myAverage, numValuesAveraged)
+    ---@param currentAverage number last calculated average value
+    ---@param newValue number value to add into the average
+    ---@param numberOfValues number number of times this average has been run up till now. First run should be 0
+    ---@return number,number newAverage newAverage, numberOfValues updated average and next numberOfValues to pass in 
+    ---@section lbmaths_updateAverage
+    lbmaths_updateAverage = function (newValue, currentAverage, numberOfValues)
+        currentAverage = currentAverage or 0
+        numberOfValues = numberOfValues or 0
+        return (currentAverage * numberOfValues + newValue) / (numberOfValues + 1), numberOfValues + 1
     end;
     ---@endsection
 }

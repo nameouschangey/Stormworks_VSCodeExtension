@@ -1,4 +1,6 @@
 
+require("LifeBoatAPI.Utils.LBCopy")
+
 ---@class LBTouchScreen
 ---@field screenWidth number
 ---@field screenHeight number
