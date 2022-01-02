@@ -37,14 +37,12 @@ LifeBoatAPI.LBTouchScreen = {
     lbtouchscreen_newButton = function (this, x, y, width, height)
         ---@class LBTouchScreenButton
         ---@field touchScreenRef LBTouchScreen reference to the touchscreen, needed for tracking click state
-        ---@field enabled boolean true for active, false disables all click functionality for this button
         ---@field x number topLeft x position of the button
         ---@field y number topLeft y position of the button
         ---@field width number width of the button rect
         ---@field height number height of the button rect
         _lbtouchscreen_button = {
             touchscreenRef = this,
-            enabled = true,
             x = x,
             y = y,
             width = width,
@@ -78,6 +76,16 @@ LifeBoatAPI.LBTouchScreen = {
                         and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
             end;
             ---@endsection
+
+            --- Simple drawing function, can make life easier while prototyping things
+            ---@param this LBTouchScreenVecButton
+            ---@param text string button name
+            ---@section lbbutton_drawRect
+            lbbutton_drawRect = function(this, text)
+                screen.drawRect(this.x, this.y, this.width, this.height)
+                screen.drawTextBox(this.x, this.y, this.width, this.height, text, 0, 0)
+            end;
+            ---@endsection
         }
         return _lbtouchscreen_button
     end;
@@ -94,12 +102,10 @@ LifeBoatAPI.LBTouchScreen = {
     lbtouchscreen_newVectorButton = function (this, position, size)
         ---@class LBTouchScreenVecButton
         ---@field touchScreenRef LBTouchScreen reference to the touchscreen, needed for tracking click state
-        ---@field enabled boolean true for active, false disables all click functionality for this button
         ---@field position LBVec
         ---@field size LBVec
         _lbtouchscreen_button = {
             touchscreenRef = this,
-            enabled = true,
             position = position,
             size = size,
 
@@ -129,6 +135,16 @@ LifeBoatAPI.LBTouchScreen = {
                 return not this.touchScreenRef.isPressed
                         and this.touchScreenRef.wasPressed 
                         and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.position.x, this.position.y, this.size.x, this.size.y)
+            end;
+            ---@endsection
+
+            --- Simple drawing function, can make life easier while prototyping things
+            ---@param this LBTouchScreenVecButton
+            ---@param text string button name
+            ---@section lbvecbutton_drawRect
+            lbvecbutton_drawRect = function(this, text)
+                screen.drawRect(this.position.x, this.position.y, this.size.x, this.size.y)
+                screen.drawTextBox(this.position.x, this.position.y, this.size.x, this.size.y, text, 0, 0)
             end;
             ---@endsection
         }
