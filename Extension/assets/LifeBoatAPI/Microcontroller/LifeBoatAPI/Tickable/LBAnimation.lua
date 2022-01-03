@@ -1,6 +1,14 @@
+---@section LBANIMATIONBOILERPLATE
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+---@endsection
 
 require("LifeBoatAPI.Utils.LBCopy")
 
+---@section LBAnimation 1 LBANIMATIONCLASS
 ---Table format for each of the animation steps
 ---@class LBAnimationStep
 ---@field length number length of the step in ticks
@@ -12,7 +20,6 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@field index number index of the current playing animation step
 ---@field currentStep LBAnimationStep currently playing animation step
 ---@field lastStep LBAnimationStep last animation step to have played
----@section LBAnimation 1 LBANIMATIONCLASS
 LifeBoatAPI.LBAnimation = {
 
     ---@param this LBAnimation
@@ -26,27 +33,27 @@ LifeBoatAPI.LBAnimation = {
         })
     end;
 
+    ---@section lbanimation_playFromStart
     ---Begin playing this animation from the start (restarts if currently playing)
     ---@param this LBAnimation
-    ---@section lbanimation_playFromStart
     lbanimation_playFromStart = function (this)
         this.lastStep = nil
         this.index = 1
     end;
     ---@endsection
 
+    ---@section lbanimation_stop
     ---Stop playing the current animation#
     ---Once called, can only be restarted using playFromStart
     ---@param this LBAnimation
-    ---@section lbanimation_stop
     lbanimation_stop = function (this)
         this.index = 0
     end;
     ---@endsection
 
+    ---@section lbanimation_onTick
     ---Call during the onTick function for this animation to play
     ---@param this LBAnimation
-    ---@section lbanimation_onTick
     lbanimation_onTick = function (this)
         this.lastStep = this.currentStep
         this.currentStep = this.steps[this.index]
@@ -58,11 +65,11 @@ LifeBoatAPI.LBAnimation = {
     end;
     ---@endsection
 
+    ---@section lbanimation_addStep
     ---Add a step to this animation
     ---@param this LBAnimation
     ---@param length number number of ticks this will play for
     ---@param callback fun(t:number, ticks:number) animation function that takes a parameter t between 0->1, and a parameter ticks for the raw tick count
-    ---@section lbanimation_addStep
     lbanimation_addStep = function (this, length, callback)
         this.steps[#this.steps + 1] = {
             length = length,
@@ -71,4 +78,4 @@ LifeBoatAPI.LBAnimation = {
     end;
     ---@endsection
 }
----@endsection LNANIMATIONCLASS
+---@endsection LBANIMATIONCLASS

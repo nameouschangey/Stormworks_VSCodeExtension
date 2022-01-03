@@ -1,5 +1,8 @@
--- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
--- please see: https://github.com/nameouschangey/STORMWORKS for updates
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 require("LifeBoatAPI.Tools.Utils.Base")
 require("LifeBoatAPI.Tools.Utils.TableUtils")
@@ -52,10 +55,10 @@ LifeBoatAPI.Tools.GlobalVariableReducer = {
                 count[v.captures[1]] = count[v.captures[1]] + 1
             end
         end
-        
+
         -- filter out variables not seen enough times
         variables = LifeBoatAPI.Tools.TableUtils.iwhere(variables, function(v) return count[v.captures[1]] >= 2 end)
-        
+
         -- due to the pattern, we need to alter each variable, so it's start and end position exclude the non-variable character
         variables = LifeBoatAPI.Tools.TableUtils.iselect(variables, function(v) v.startIndex = v.startIndex + 1; v.endIndex = v.endIndex - 1; return v end)
         return this:_replaceVariables(text, variables)
@@ -73,7 +76,7 @@ LifeBoatAPI.Tools.GlobalVariableReducer = {
 
         -- sub each variable with the shortened name
         for i,variable in ipairs(variables) do
-           
+
             local name = variablesSeenBefore[variable.captures[1]] or this.renamer:getShortName()
 
             -- if this is the first instance, we also add the conversion to the top of the file
@@ -85,7 +88,7 @@ LifeBoatAPI.Tools.GlobalVariableReducer = {
             output:add(text:sub(lastEnd, variable.startIndex-1), name)
             lastEnd = variable.endIndex + 1
         end
-        
+
         -- add the final file chunk on
         output:add(text:sub(lastEnd, #text))
 

@@ -1,10 +1,13 @@
--- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
--- please see: https://github.com/nameouschangey/STORMWORKS for updates
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 require("LifeBoatAPI.Tools.Utils.Base")
 require("LifeBoatAPI.Tools.Utils.StringBuilder")
 require("LifeBoatAPI.Tools.Build.StringReplacer")
-
+require("LifeBoatAPI.Tools.Build.CommentReplacer")
 
 ---@class StringCommentsParser : BaseClass
 ---@field stringReplacer StringReplacer replacer to use for this parse
@@ -107,7 +110,7 @@ LifeBoatAPI.Tools.StringCommentsParser = {
     ---@return string
     repopulateStrings = function(this, text, shortenStringDuplicates)
         text = this.stringReplacer:repopuplateStrings(text, shortenStringDuplicates)
-        
+
         if this.retainComments then
             text = this.commentReplacer:repopuplateComments(text)
         end

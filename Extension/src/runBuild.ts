@@ -26,8 +26,8 @@ local params            = {
     shortenGlobals          = arg[9] == "true",
     shortenNumbers          = arg[10]== "true",
     forceNCBoilerplate      = arg[11]== "true",
-    forceBoilerplate        = arg[12]== "true"
-    shortenStringDuplicates = arg[13]== "true"
+    forceBoilerplate        = arg[12]== "true",
+    shortenStringDuplicates = arg[13]== "true",
     removeComments          = arg[14]== "true"      
 };
 local rootDirs          = {};

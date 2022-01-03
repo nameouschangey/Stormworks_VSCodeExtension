@@ -1,6 +1,14 @@
+---@section LBROLLINGAVERAGEBOILERPLATE
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+---@endsection
 
 require("LifeBoatAPI.Utils.LBCopy")
 
+---@section LBRollingAverage 1 LBROLLINGAVERAGECLASS
 ---A rolling average across a given number of values
 ---Useful for filtering noisey values
 ---@class LBRollingAverage
@@ -9,7 +17,6 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@field average number current average of the values that have been added
 ---@field count number number of values currently being averaged
 ---@field sum number total of the currently tracked values
----@section LBRollingAverage 1 LBROLLINGAVERAGECLASS
 LifeBoatAPI.LBRollingAverage = {
 
     ---@param this LBRollingAverage
@@ -24,11 +31,11 @@ LifeBoatAPI.LBRollingAverage = {
         })
     end;
 
+    ---@section lbrollingaverage_addValue 
     ---Add a value to the rolling average
     ---@param this LBRollingAverage
     ---@param value number value to add into the rolling average
     ---@return number average the current rolling average (also accessible via .average)
-    ---@section lbrollingaverage_addValue 
     lbrollingaverage_addValue = function (this, value)
         this.values[(this.index % this.maxValues) + 1] = value
         this.index = this.index + 1

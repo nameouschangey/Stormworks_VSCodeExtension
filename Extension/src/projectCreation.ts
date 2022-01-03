@@ -6,7 +6,6 @@ import { settings } from 'cluster';
 import * as utils from "./utils";
 import * as fileContents from "./fileContentsConstants";
 
-
 export function beginCreateNewProjectFolder(isMicrocontrollerProject: boolean)
 {
 	const fileDialog: vscode.OpenDialogOptions = {

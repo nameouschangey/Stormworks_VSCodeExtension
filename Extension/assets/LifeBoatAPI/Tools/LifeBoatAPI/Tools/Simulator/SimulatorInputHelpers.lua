@@ -1,9 +1,14 @@
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 require("LifeBoatAPI.Tools.Utils.Base")
 
 ---@class SimulatorInputHelpers
 LifeBoatAPI.Tools.SimulatorInputHelpers = {
-    
+
     ---Sets this input to a specific value constantly
     ---@param value boolean
     ---@return fun():boolean
@@ -17,7 +22,7 @@ LifeBoatAPI.Tools.SimulatorInputHelpers = {
     constantNumber = function(value)
         return function() return value end
     end;
-    
+
     ---Sets the input to a bool that toggles on and off every so many ticks
     ---@param togglePeriod number number of ticks between each toggle
     ---@return fun():boolean
@@ -54,7 +59,6 @@ LifeBoatAPI.Tools.SimulatorInputHelpers = {
             return simulator._screens[screenNumber] and (simulator._screens[screenNumber].isTouchedL or simulator._screens[screenNumber].isTouchedR) or false
         end
     end;
-    
 
     ---@param simulator Simulator
     ---@param screenNumber number futureproofing, for now there's only 1 

@@ -32,7 +32,7 @@ LBMap = {
     end;
 
     removeMapLine = function (this)
-        
+
     end;
 }
 

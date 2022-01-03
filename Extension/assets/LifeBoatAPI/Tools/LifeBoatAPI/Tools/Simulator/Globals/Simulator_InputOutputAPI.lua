@@ -1,4 +1,8 @@
--- Nameous Changey
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 -- Based on work by Rene-Sackers:
 --      Auto generated docs by René Sackers, StormworksLuaDocsGen (https://github.com/Rene-Sackers/StormworksLuaDocsGen)
@@ -139,7 +143,7 @@ property = {
 for i=1,32 do
     input._numbers[i] = 0
     input._bools[i] = false
-    
+
     output._numbers[i] = 0
     output._bools[i] = false
 end

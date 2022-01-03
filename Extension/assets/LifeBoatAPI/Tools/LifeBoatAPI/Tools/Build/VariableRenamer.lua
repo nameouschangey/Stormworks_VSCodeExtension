@@ -1,5 +1,8 @@
--- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
--- please see: https://github.com/nameouschangey/STORMWORKS for updates
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 require("LifeBoatAPI.Tools.Utils.Base")
 require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
@@ -10,14 +13,14 @@ require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 LifeBoatAPI.Tools.VariableRenamer = {
     _replacementCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"; -- no need for more than this with 4K chars
     variableNumber = 1;
-    
+
     ---@return VariableRenamer
     new = function(cls, constants)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
         this.constants = constants
         return this
     end;
-    
+
     --- Note, there is absolutely no reason to expect more than 2500 variables in a 4000 character file, hence 52*52 is fine
     ---@param this VariableRenamer
     getShortName = function(this)
@@ -27,11 +30,10 @@ LifeBoatAPI.Tools.VariableRenamer = {
         until(not this.constants.restrictedKeywords[name] and not this.constants.baseNames[name])
         return name
     end;
-    
-    
+
     _generateName = function(this)
         this.variableNumber = this.variableNumber + 1
-    
+
         if(this.variableNumber <= 52) then -- 52 most commonly variable names will become 1 letter each
             return this._replacementCharacters:sub(this.variableNumber, this.variableNumber) 
         elseif(this.variableNumber <= (52*52)) then
@@ -41,6 +43,5 @@ LifeBoatAPI.Tools.VariableRenamer = {
         end
         return "L" .. tostring(this.variableNumber)
     end;
-    
 };
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.VariableRenamer);

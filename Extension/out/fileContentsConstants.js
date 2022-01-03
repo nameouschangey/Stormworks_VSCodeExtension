@@ -4,9 +4,7 @@
 //  as this is ever so slightly...idiotic
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.simulateMultipleExample = exports.postBuildActionsDefault = exports.preBuildActionsDefault = exports.addonDefaultScript = exports.microControllerDefaultSimulatorConfig = exports.microControllerDefaultScript = void 0;
-exports.microControllerDefaultScript = `--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
---- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
-
+exports.microControllerDefaultScript = `
 require("_build._simulator_config") -- LifeBoatAPI allows you to use lua's "require" keyword. see the /build/_simulator_config.lua file for how to configure the simulator
 require("LifeBoatAPI") -- Type 'LifeBoatAPI.' and use intellisense to checkout the new LifeBoatAPI library functions; such as the LBVec vector maths library
 
@@ -122,6 +120,7 @@ exports.postBuildActionsDefault = `
 
 -- default is no actions
 print("Build Success - No additional actions in _build/_post_buildactions.lua file")
+print("See the /out/release/ folder for your minimized code")
 `;
 exports.simulateMultipleExample = `
 -- Please note, this is an example setup, but as you do not have the MCs it expects - it will NOT "just run"

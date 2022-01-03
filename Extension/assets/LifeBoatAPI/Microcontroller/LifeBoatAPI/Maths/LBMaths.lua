@@ -1,10 +1,15 @@
--- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
--- please see: https://github.com/nameouschangey/STORMWORKS for updates
+---@section LBMATHSBOILERPLATE
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+---@endsection
 
 require("LifeBoatAPI.Utils.LBCopy")
 
----@class LBMaths
 ---@section LBMaths 1 LBMATHSCLASS
+---@class LBMaths
 LifeBoatAPI.LBMaths = {
     ---@section lbmaths_2pi
     lbmaths_2pi = math.pi * 2;
@@ -35,6 +40,7 @@ LifeBoatAPI.LBMaths = {
     lbmaths_secondsToTicks = 60;
     ---@endsection
 
+    ---@section lbmaths_angularSubtract
     --- Finds the difference between two angles, wrapped across the boundary
     --- Defaults to [0 -> 2pi], but range can be specified
     ---@overload fun(a:number, b:number):number
@@ -43,7 +49,6 @@ LifeBoatAPI.LBMaths = {
     ---@param minRange number (optional) minimum range value or 0
     ---@param maxRange number (optional) maximum range value or 2pi
     ---@return number difference
-    ---@section lbmaths_angularSubtract
     lbmaths_angularSubtract = function(a, b, minRange, maxRange, _rangeDiff, _half)
         minRange = minRange or 0
         maxRange = maxRange or math.pi * 2
@@ -53,23 +58,24 @@ LifeBoatAPI.LBMaths = {
     end;
     ---@endsection
 
+    ---@section lbmaths_compassToAzimuth
     ---Converts a compass value into the range [0 North => 2pi radians, clockwise]
     ---@param compass number compass value from the sensor
-    ---@section lbmaths_compassToAzimuth
     lbmaths_compassToAzimuth = function(compass)
         return -compass % 1 * math.pi * 2
     end;
     ---@endsection
 
+    ---@section lbmaths_tiltSensorToElevation
     ---Converts a tilt sensor value into the range [-pi/2 radians vertically down => 0 horizontal => +pi/2 radians vertically up ]
     ---@param tiltSensor number tilt value from the tilt sensor
     ---@return number elevation tilt as an angle in radians
-    ---@section lbmaths_tiltSensorToElevation
     lbmaths_tiltSensorToElevation = function (tiltSensor)
         return tiltSensor * math.pi * 2
     end;
     ---@endsection
 
+    ---@section lbmaths_isPointInRectangle
     ---Tests whether a point is in the given rectangle or not
     ---@param x number x position to test
     ---@param y number y position to test
@@ -78,21 +84,21 @@ LifeBoatAPI.LBMaths = {
     ---@param rectWidth number width of the rectangle
     ---@param rectHeight number height of the rectangle
     ---@return boolean isInRectangle true if the point is within the given rectangle
-    ---@section lbmaths_isPointInRectangle
     lbmaths_isPointInRectangle = function(x, y, rectX, rectY, rectWidth, rectHeight)
         return x > rectX and x < rectX+rectWidth and y > rectY and y < rectY+rectHeight; 
     end;
     ---@endsection
 
+    ---@section lbmaths_isPointInRectangle
     ---@param startValue number number to lerp from
     ---@param endValue number number to lerp to
     ---@param t number lerp parameter, between 0->1
-    ---@section lbmaths_isPointInRectangle
     lbmaths_lerp = function(startValue, endValue, t)
         return (1-t) * startValue + t * endValue
     end;
     ---@endsection
 
+    ---@section lbmaths_updateAverage
     ---Updated an existing average
     ---See LBRollingAverage for a "last x values" average
     ---Can be useful when you do not know the number of values you are averaging
@@ -101,7 +107,6 @@ LifeBoatAPI.LBMaths = {
     ---@param newValue number value to add into the average
     ---@param numberOfValues number number of times this average has been run up till now. First run should be 0
     ---@return number,number newAverage newAverage, numberOfValues updated average and next numberOfValues to pass in 
-    ---@section lbmaths_updateAverage
     lbmaths_updateAverage = function (newValue, currentAverage, numberOfValues)
         currentAverage = currentAverage or 0
         numberOfValues = numberOfValues or 0

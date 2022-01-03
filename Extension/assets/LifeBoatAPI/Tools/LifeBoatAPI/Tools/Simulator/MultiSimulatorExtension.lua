@@ -1,7 +1,8 @@
 -- Author: Nameous Changey
--- Please do not remove this notice
--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
---      By Nameous Changey (Please retain this notice at the top of the file as a courtesy; a lot of effort went into the creation of these tools.)
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 -- Note: This is entirely experimental
 -- It affects _ENV, and there's a lot of chance of unpredictable results from data being shared between different environments
@@ -53,7 +54,7 @@ LifeBoatAPI.Tools.MultiSimulator = {
         local _env = this.copyTable(env)
 
         env._globalTicks = 0
-        
+
         ---@type Simulator_PropertiesAPI
         _env.property           = this.copyTable(_env.property)
         _env.property.name      = name

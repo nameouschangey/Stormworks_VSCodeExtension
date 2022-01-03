@@ -1,5 +1,8 @@
--- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
--- please see: https://github.com/nameouschangey/STORMWORKS for updates
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 require("LifeBoatAPI.Tools.Utils.Base")
 require("LifeBoatAPI.Tools.Utils.TableUtils")
@@ -39,7 +42,8 @@ LifeBoatAPI.Tools.StringReplacer = {
     ---@return string text with original strings repopulated
     repopuplateStrings = function(this, text, shortenStringDuplicates)
         for k,v in pairs(this.stringsReplaced) do
-            if shortenStringDuplicates and v.count > 1 then
+            local count = LifeBoatAPI.Tools.StringUtils.count(text, LifeBoatAPI.Tools.StringUtils.escape(v.value))
+            if shortenStringDuplicates and count > 1 then
                 -- if there's multiples of this string constant, we're almost always better to create a new variable for it
                 local newName = this.renamer:getShortName()
                 text = newName .. "=" .. k .. "\n" .. text:gsub(v.value, LifeBoatAPI.Tools.StringUtils.escapeSub(newName))
@@ -47,7 +51,6 @@ LifeBoatAPI.Tools.StringReplacer = {
                 -- direct sub if there's only 1 of the string
                 text  = text:gsub(v.value, LifeBoatAPI.Tools.StringUtils.escapeSub(k))
             end
-            
         end
         return text
     end;

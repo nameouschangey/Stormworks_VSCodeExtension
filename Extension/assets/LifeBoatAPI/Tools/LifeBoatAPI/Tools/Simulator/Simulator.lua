@@ -1,3 +1,9 @@
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+
 require("LifeBoatAPI.Tools.Utils.Filepath")
 require("LifeBoatAPI.Tools.Utils.FileSystemUtils")
 require("LifeBoatAPI.Tools.Utils.StringUtils")
@@ -104,7 +110,7 @@ LifeBoatAPI.Tools.Simulator = {
         end
 
         this._connection = LifeBoatAPI.Tools.SimulatorConnection:new()
-            
+
         -- set the global screen and output to be simulated
         -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
         screen._setSimulator(this)
@@ -142,7 +148,7 @@ LifeBoatAPI.Tools.Simulator = {
 
             if timeSinceFrame > this.timePerFrame then
                 timeSinceFrame = 0.0
-                
+
                 -- messages incoming from the server
                 this:readSimulatorMessages()
 
@@ -241,7 +247,7 @@ LifeBoatAPI.Tools.Simulator = {
             if message then
                 local commandParts = LifeBoatAPI.Tools.StringUtils.split(message, "|")
                 local commandName = table.remove(commandParts, 1) -- remove the commandName from the commandParts
-                
+
                 for handlerCommand, handler in pairs(this._handlers) do
                     if handlerCommand == commandName then
                         handler(this, table.unpack(commandParts))

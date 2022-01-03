@@ -1,5 +1,8 @@
--- developed by nameouschangey (Gordon Mckendrick) for use with LifeBoat Modding framework
--- please see: https://github.com/nameouschangey/STORMWORKS for updates
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 
 -- combines multiple scripts into one by following the require tree.
@@ -62,7 +65,7 @@ LifeBoatAPI.Tools.Combiner = {
                     requiresSeen[require] = true
 
                     if(this.filesByRequire[require]) then
-                        data = data:gsub(fullstring, LifeBoatAPI.Tools.StringUtils.escapeSub(this.filesByRequire[require]), 1) -- only first instance
+                        data = data:gsub(fullstring, LifeBoatAPI.Tools.StringUtils.escapeSub("\n" .. this.filesByRequire[require] .. "\n"), 1) -- only first instance
 
                     elseif (LifeBoatAPI.Tools.TableUtils.containsValue(this.systemRequires, require)) then
                         data = data:gsub(fullstring, "") -- remove system requires, without error, as long as they are allowed in the game

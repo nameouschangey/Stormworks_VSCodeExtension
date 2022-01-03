@@ -1,6 +1,14 @@
+---@section LBSTATEMACHINEBOILERPLATE
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+---@endsection
 
 require("LifeBoatAPI.Utils.LBCopy")
 
+---@section LBStateMachine 1 LBSTATEMACHINECLASS
 ---Basic state machine
 ---Each state is a function that returns the name of the state to transition into, or nil to stay in the current state
 ---Can make life easier for handling basic mechanics like landing gear, or radar that goes between sweep and track modes, etc.
@@ -9,7 +17,6 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@field states table
 ---@field stateName string current state to run
 ---@field ticks number number of ticks that have been spent in the current state
----@section LBStateMachine 1 LBSTATEMACHINECLASS
 LifeBoatAPI.LBStateMachine = {
     ---@param this LBStateMachine
     ---@param defaultStateCallback fun(ticks:number, statemachine:LBStateMachine):string default state function
@@ -24,9 +31,9 @@ LifeBoatAPI.LBStateMachine = {
         })
     end;
 
+    ---@section lbstatemachine_onTick
     ---Call during the onTick function for this state machine to function
     ---@param this LBStateMachine
-    ---@section lbstatemachine_onTick
     lbstatemachine_onTick = function (this)
         this.currentState = this.states[this.stateName]
         if this.currentState then
@@ -38,12 +45,12 @@ LifeBoatAPI.LBStateMachine = {
     end;
     ---@endsection
 
+    ---@section lbstatemachine_setState
     ---Recommended to just do myStatemachine.states["MyStateName"] = function() ... end,
     ---But let this act as active code documentation
     ---@param this LBStateMachine
     ---@param stateName string name of the state
     ---@param callback fun(ticks:number, statemachine:LBStateMachine):string state callback that will be run while in the given state. Returns the name of the next state to move into or nil
-    ---@section lbstatemachine_setState
     lbstatemachine_setState = function (this, stateName, callback)
         this.states[stateName] = callback
     end;
