@@ -88,12 +88,12 @@ LifeBoatAPI.Tools.MultiSimulator = {
     ---@param this MultiSimulator
     loadMC = function(this, name)
         local originalEnv = _ENV
-        _ENV = this.copyENV("MAIN", _ENV)
+        _ENV = this:copyENV("MAIN", _ENV)
 
         require(name)
 
-        local mcENV = this.copyENV(name, _ENV._G)
-        table.insert(_mcs, mcENV)
+        local mcENV = this:copyENV(name, _ENV._G)
+        table.insert(this._mcs, mcENV)
 
         _ENV = originalEnv
         _ENV.__simulator.config = LifeBoatAPI.Tools.SimulatorConfig:new(__simulator)

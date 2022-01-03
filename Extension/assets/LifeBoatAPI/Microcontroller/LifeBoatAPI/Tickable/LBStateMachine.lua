@@ -15,7 +15,7 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---Can also be using in onDraw to handle e.g. different menus/screens in a fairly straight forward way
 ---@class LBStateMachine
 ---@field states table
----@field stateName string current state to run
+---@field currentState string current state to run
 ---@field ticks number number of ticks that have been spent in the current state
 LifeBoatAPI.LBStateMachine = {
     ---@param this LBStateMachine
@@ -27,7 +27,7 @@ LifeBoatAPI.LBStateMachine = {
                 default = defaultStateCallback
             },
             ticks = 0,
-            stateName = "default"
+            currentState = "default"
         })
     end;
 
@@ -35,12 +35,12 @@ LifeBoatAPI.LBStateMachine = {
     ---Call during the onTick function for this state machine to function
     ---@param this LBStateMachine
     lbstatemachine_onTick = function (this)
-        this.currentState = this.states[this.stateName]
-        if this.currentState then
-            this.nextState = this.currentState(this.ticks, this) or this.stateName -- nil preserves the current state
-            this.ticks = this.nextState == this.stateName and this.ticks + 1 or 0 -- reset ticks when the stateName changes
+        this._currentStateFunc = this.states[this.currentState]
+        if this._currentStateFunc then
+            this._nextState = this._currentStateFunc(this.ticks, this) or this.currentState -- nil preserves the current state
+            this.ticks = this._nextState == this.currentState and this.ticks + 1 or 0 -- reset ticks when the stateName changes
         else
-            this.stateName = "default"
+            this.currentState = "default"
         end
     end;
     ---@endsection
@@ -51,7 +51,7 @@ LifeBoatAPI.LBStateMachine = {
     ---@param this LBStateMachine
     ---@param stateName string name of the state
     ---@param callback fun(ticks:number, statemachine:LBStateMachine):string state callback that will be run while in the given state. Returns the name of the next state to move into or nil
-    lbstatemachine_setState = function (this, stateName, callback)
+    lbstatemachine_addState = function (this, stateName, callback)
         this.states[stateName] = callback
     end;
     ---@endsection
