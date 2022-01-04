@@ -150,20 +150,23 @@ LifeBoatAPI.Tools.Minimizer = {
     ---@param text string text to minimize
     ---@return string text
     _reduceWhitespace = function(this, text)
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s%s", "\n") -- remove duplicate spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*,%s*", ",")  -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*=%s*", "=")  -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*>%s*", ">")  -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*<%s*", "<")  -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*+%s*", "+")  -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*-%s*", "-")  -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%*%s*", "*") -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%/%s*", "/") -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%{%s*", "{") -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%}%s*", "}") -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%(%s*", "(") -- remove unnecessary spacing
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%)%s*", ")") -- remove unnecessary spacing
-            return text
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s%s", "\n") -- remove duplicate spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*,%s*", ",")  -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*=%s*", "=")  -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*>%s*", ">")  -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*<%s*", "<")  -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*+%s*", "+")  -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*-%s*", "-")  -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%*%s*", "*") -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%/%s*", "/") -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%{%s*", "{") -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%}%s*", "}") -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%(%s*", "(") -- remove unnecessary spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%)%s*", ")") -- remove unnecessary spacing
+        --text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%~%s*", "~") -- remove unnecessary spacing
+        --text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%^%s*", "^") -- remove unnecessary spacing
+        --text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%..%s*", "..") -- remove unnecessary spacing
+        return text
     end
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Minimizer)
