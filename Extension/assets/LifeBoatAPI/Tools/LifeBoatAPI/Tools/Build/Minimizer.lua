@@ -150,23 +150,30 @@ LifeBoatAPI.Tools.Minimizer = {
     ---@param text string text to minimize
     ---@return string text
     _reduceWhitespace = function(this, text)
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s%s", "\n") -- remove duplicate spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*,%s*", ",")  -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*=%s*", "=")  -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*>%s*", ">")  -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*<%s*", "<")  -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*+%s*", "+")  -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*-%s*", "-")  -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%*%s*", "*") -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%/%s*", "/") -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%{%s*", "{") -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%}%s*", "}") -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%(%s*", "(") -- remove unnecessary spacing
-        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%)%s*", ")") -- remove unnecessary spacing
-        --text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%~%s*", "~") -- remove unnecessary spacing
-        --text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%^%s*", "^") -- remove unnecessary spacing
-        --text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*%..%s*", "..") -- remove unnecessary spacing
+         -- remove duplicate spacing
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "%s%s", "\n")
+        
+        -- remove whitespace around certain operators
+        local characters = {
+            "=", ",", ">", "<",
+            "+", "-", "*", "/", "%",
+            "{", "}", "(", ")", "[", "]",
+            "^", "|", "~", "#",
+            ".."
+        }
+        for _, character in ipairs(characters) do
+            text = this:_reduceWhitespaceCharacter(text, character)
+        end
+
         return text
-    end
+    end;
+
+    ---@param this Minimizer
+    ---@param text string text to minimize
+    ---@param character string character/operator to remove space around
+    ---@return string text
+    _reduceWhitespaceCharacter = function (this, text, character)
+        return LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*"..LifeBoatAPI.Tools.StringUtils.escape(character) .."%s*", character)
+    end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Minimizer)

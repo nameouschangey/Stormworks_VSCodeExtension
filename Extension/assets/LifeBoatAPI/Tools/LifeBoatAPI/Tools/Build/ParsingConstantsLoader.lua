@@ -18,7 +18,7 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
         ,"end"       ,"for"       ,"function"  ,"goto"      ,"if"
         ,"in"        ,"local"     ,"not"       ,"or"
         ,"repeat"    ,"return"    ,"then"      ,"until"
-        ,"while"     ,"self"      -- self is technically not a restricted keyword, but it has special language meaning
+        ,"while"
     };
     _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
