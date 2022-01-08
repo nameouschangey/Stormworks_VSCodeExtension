@@ -6,6 +6,7 @@
 	"displayName": "Stormworks Lua with LifeBoatAPI",
 	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
 	"version": "0.0.8",
+	"os": ["win32-x64", "win32-ia32"],
 	"engines": {
 		"vscode": "^1.62.0"
 	},
