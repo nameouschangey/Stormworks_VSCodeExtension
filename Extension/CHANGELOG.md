@@ -3,7 +3,9 @@ Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issu
 
 ### [0.0.9] - 9th January 2022
 **major**
-- Using non-stormworks compatible lua standard-libraries (e.g. "os" and "package") will now result in errors similar to the game
+- Added colour-correction so the simulator colour-space matches the ingame one.
+- Added LBColorSpace for correcting the in-game colours, back to how they should actually appear.
+- Using non-stormworks compatible lua standard-libraries (e.g. "os" and "package") will now correctly result in errors similar to the game
 
 **minor**
 - Improved Minimizer; some leading spaces were being missed between certain operators

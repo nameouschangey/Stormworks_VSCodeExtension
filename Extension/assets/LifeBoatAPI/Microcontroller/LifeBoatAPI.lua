@@ -17,3 +17,5 @@ require("LifeBoatAPI.Maths.LBRollingAverage")
 require("LifeBoatAPI.Tickable.LBAnimation")
 require("LifeBoatAPI.Tickable.LBStateMachine")
 require("LifeBoatAPI.Tickable.LBTouchScreen")
+
+require("LifeBoatAPI.Drawing.LBColorSpace")

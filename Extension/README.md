@@ -26,9 +26,10 @@ Using:
 - lua-debug extension from: actboy169
 - lua language server extension from: sumneko
 
-# Latest Change
+# Latest Changes
 Try using the LifeBoatAPI library via `require("LifeBoatAPI")` for a full vector library, maths utilities and more.
 
+Just added: LBColorSpace - use this to correct the in-game screen colours, back to what their RGB should be
 
 # Quick Start Guide
 ## (0. Set your name so you can be credited!)

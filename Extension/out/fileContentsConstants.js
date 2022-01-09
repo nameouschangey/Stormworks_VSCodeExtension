@@ -36,12 +36,12 @@ end
 
 
 function onDraw()
-	-- when you simulate, you should see a slightly pink circle growing over 10 seconds and repeating.
+	-- when you simulate, you should see a slightly green circle growing over 10 seconds and repeating.
     -- Clicking the button, will change between red and green
     if isRedToggle then
-        screen.setColor(255, 125, 125)
+        LifeBoatAPI.LBColorSpace.lbcolorspace_setColorGammaCorrected(255, 125, 125) -- replacement for screen.setColor, that corrects the colours to be less washed out
     else
-        screen.setColor(125, 255, 125)
+        LifeBoatAPI.LBColorSpace.lbcolorspace_setColorGammaCorrected(125, 255, 125)
     end
 	
 	screen.drawCircleF(16, 16, (ticks%600)/60)

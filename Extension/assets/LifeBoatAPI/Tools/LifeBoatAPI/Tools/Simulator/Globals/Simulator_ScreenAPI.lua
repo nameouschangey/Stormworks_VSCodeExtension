@@ -52,7 +52,23 @@ screen = {
     --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
     setColor = function(r, g, b, a)
         screen._ensureIsRendering()
-        screen._simulator._connection:sendCommand("COLOUR", r or 0, g or 0, b or 0, a or 255)
+
+        --- the game applies gamma - which we need to replicate
+        --- makes all colours far more washed out.
+        --- see: https://steamcommunity.com/sharedfiles/filedetails/?id=2273112890
+        local correctColor = function (c)
+            local A = 1/0.85
+            local Y = 1/2.4
+
+            c = c / 255
+            return 255 * (A*c)^Y
+        end
+
+        r = correctColor(r or 0)
+        g = correctColor(g or 0)
+        b = correctColor(b or 0)
+
+        screen._simulator._connection:sendCommand("COLOUR", r, g, b, a or 255)
     end;
 
     --- Clear the screen with the current color

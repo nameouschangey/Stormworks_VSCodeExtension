@@ -46,8 +46,8 @@ LifeBoatAPI.Tools.Builder = {
         this.combiner:combineFile(entrypoint, cmbFile)
 
         local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.vehicle_constants, params)
-        local finalText, originalLength, sizeWithoutRedundancies, newLength = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
-        print(name .. " " .. tostring(originalLength) .. " -> " .. tostring(sizeWithoutRedundancies) .. " -> " .. tostring(newLength) .. " chars") 
+        local finalText, newSize = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
+        print(name .. " minimized to: " .. tostring(newSize) .. " (" .. tostring(#finalText) .. ") chars") 
     end;
 
     ---@param this Builder
@@ -63,8 +63,8 @@ LifeBoatAPI.Tools.Builder = {
         this.combiner:combineFile(entrypoint, cmbFile)
 
         local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.mission_constants, params or {})
-        local finalText, originalLength, sizeWithoutRedundancies, newLength = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
-        print(name .. " " .. tostring(originalLength) .. " -> " .. tostring(sizeWithoutRedundancies) .. " -> " .. tostring(newLength) .. " chars") 
+        local finalText, newSize = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
+        print(name .. " minimized to: " .. tostring(newSize) .. " (" .. tostring(#finalText) .. ") chars")
     end;
 
 
