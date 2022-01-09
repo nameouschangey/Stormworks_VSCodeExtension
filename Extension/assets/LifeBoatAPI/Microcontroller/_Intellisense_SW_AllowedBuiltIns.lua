@@ -1,3 +1,14 @@
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+
+
+--- DO NOT EVER REQUIRE THIS FILE
+--- IT IS TO RE-ADD THE DELETED BUILTINS, TO GET INTELLISENSE TO WORK CORRECTLY FOR STORMWORKS CODE
+--- THIS FILE JUST NEEDS TO EXIST WITHIN THE SEARCH PATH
+
 --- Include the contents from another file, into the global environment of this file
 --- e.g. require("_build._simulator_config") will include the contents of the file "ProjectFolder/_build/_simulator_config.lua" into this file
 ---@param filename string filename to include, with "." instead of "/" between folders
