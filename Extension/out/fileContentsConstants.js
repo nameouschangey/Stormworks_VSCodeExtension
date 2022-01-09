@@ -121,6 +121,17 @@ exports.postBuildActionsDefault = `
 -- default is no actions
 print("Build Success - No additional actions in _build/_post_buildactions.lua file")
 print("See the /out/release/ folder for your minimized code")
+
+
+-- Example: Copy the addon script into the game folder every time you hit F7
+--
+--local username = "YourWindowsUsername"
+--local missionName = "YourAddonName"
+--
+--local outDir = LifeBoatAPI.Tools.Filepath:new(arg[3]):add("/release/")
+--local missionsFolder = LifeBoatAPI.Tools.Filepath:new("C:/Users/" .. username.. "/AppData/Roaming/Stormworks/data/missions/")
+--
+--LifeBoatAPI.Tools.FileSystemUtils.copyFile(outDir:add("/script.lua"), missionsFolder:add(missionName .. "/script.lua"))
 `;
 exports.simulateMultipleExample = `
 -- Please note, this is an example setup, but as you do not have the MCs it expects - it will NOT "just run"

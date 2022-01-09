@@ -10,6 +10,15 @@ require("LifeBoatAPI.Tools.Utils.Filepath")
 
 ---@class FileSystemUtils
 LifeBoatAPI.Tools.FileSystemUtils = {
+
+    --- Copies the given source file to the given destination filepath
+    ---@param sourceFilepath Filepath
+    ---@param destinationFilepath Filepath
+    copyFile = function(sourceFilepath, destinationFilepath)
+        local fileContents = LifeBoatAPI.Tools.FileSystemUtils.readAllText(sourceFilepath)
+        LifeBoatAPI.Tools.FileSystemUtils.writeAllText(destinationFilepath, fileContents)
+    end;
+
     ---@param filepath Filepath
     openForWrite = function(filepath)
         os.execute("mkdir \"" .. filepath:directory():win() .. "\" 2>nul")

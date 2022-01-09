@@ -62,10 +62,10 @@ LifeBoatAPI.Tools.Minimizer = {
     minimizeFile = function(this, filepath, outPath, boilerplate)
         outPath = outPath or filepath
         local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filepath)
-        local minimized, originalLength, newLength = this:minimize(text, boilerplate)
+        local minimized, originalLength, sizeWithoutRedundancies, newLength = this:minimize(text, boilerplate)
         LifeBoatAPI.Tools.FileSystemUtils.writeAllText(outPath, minimized)
 
-        return minimized, originalLength, newLength
+        return minimized, originalLength, sizeWithoutRedundancies, newLength
     end;
 
     ---@param text string text to be minimized
@@ -73,7 +73,7 @@ LifeBoatAPI.Tools.Minimizer = {
     ---@return string minimized
     minimize = function(this, text, boilerplate)
         boilerplate = boilerplate or ""
-        local originalLength = #text
+        local originalSize = #text
         -- insert space at the start prevents issues where the very first character in the file, is part of a variable name
         text = " " .. text .. "\n\n"
 
@@ -92,6 +92,8 @@ LifeBoatAPI.Tools.Minimizer = {
             local remover = LifeBoatAPI.Tools.RedundancyRemover:new()
             text = remover:removeRedundantCode(text)
         end
+
+        local sizeWithoutRedundancies = #text
 
         -- re-parse to remove all code-section comments now we're done with them
         text = parser:removeStringsAndComments(text)
@@ -124,7 +126,11 @@ LifeBoatAPI.Tools.Minimizer = {
         end
 
         -- repopulate the original string data now it's safe
+        local sizeWithoutStrings = #text
         text = parser:repopulateStrings(text, this.params.shortenStringDuplicates)
+
+        -- add back the size of the strings
+        sizeWithoutRedundancies = sizeWithoutRedundancies + (#text - sizeWithoutStrings)
 
         -- add boilerplate if the file is small enough
         -- please do not remove this, the user's boilerplate has precedence over the nameous changey one
@@ -134,7 +140,7 @@ LifeBoatAPI.Tools.Minimizer = {
 [[-- Developed & Minimized using LifeBoatAPI - Stormworks Lua plugin for VSCode
 -- https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --      By Nameous Changey]]
-.. "\n-- Originally: " .. tostring(originalLength) .. " chars, Reduced to: " .. tostring(newLength) .. " chars"
+.. "\n-- Combined: " .. tostring(originalSize) .. " -> ".. tostring(sizeWithoutRedundancies) .. " chars (without comments & redundancies) -> " .. tostring(newLength) .. " minimized chars"
 
         -- add boilerplate if the file is small enough (4000 chars instead of 4096, gives some slight wiggle room)
         if(this.params.forceNCBoilerplate or (#text + #boilerplate + #nameousBoilerplate < 4000)) then
@@ -143,7 +149,7 @@ LifeBoatAPI.Tools.Minimizer = {
             text = boilerplate .. "\n" .. text
         end
 
-        return text, originalLength, newLength
+        return text, originalSize, sizeWithoutRedundancies, newLength
     end;
 
     ---@param this Minimizer
@@ -173,7 +179,7 @@ LifeBoatAPI.Tools.Minimizer = {
     ---@param character string character/operator to remove space around
     ---@return string text
     _reduceWhitespaceCharacter = function (this, text, character)
-        return LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*"..LifeBoatAPI.Tools.StringUtils.escape(character) .."%s*", character)
+        return LifeBoatAPI.Tools.StringUtils.subAll(text, "%s*"..LifeBoatAPI.Tools.StringUtils.escape(character) .."%s*", LifeBoatAPI.Tools.StringUtils.escapeSub(character))
     end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Minimizer)

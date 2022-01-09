@@ -36,6 +36,7 @@ LifeBoatAPI.Tools.VariableShortener = {
         -- filter out variables that we're not allowed to shorten
         variables = LifeBoatAPI.Tools.TableUtils.iwhere(variables, function(v) return v.captures[1]
                                                                 and not v.captures[1]:find("STRING%d%d%d%d%d%d%dREPLACEMENT")
+                                                                and not v.captures[1]:find("COMMENT%d%d%d%d%d%d%dREPLACEMENT")
                                                                 and not this.constants.baseNames[v.captures[1]]
                                                                 and not this.constants.fullNames[v.captures[1]]
                                                                 and not this.constants.restrictedKeywords[v.captures[1]] end)

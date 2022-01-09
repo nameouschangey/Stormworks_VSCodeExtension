@@ -91,6 +91,22 @@ function beginUpdateWorkspaceSettings(context) {
         }
         return luaDiagnosticsConfig.update("disable", existing, vscode.ConfigurationTarget.Workspace);
     }).then(() => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)).then(() => {
+        // disable intellisense for lua modules that aren't available in stormworks
+        let luaModulesToDisable = {
+            "coroutine": "disable",
+            "bit32": "disable",
+            "bit": "disable",
+            "builtin": "disable",
+            "utf8": "disable",
+            "package": "disable",
+            "os": "disable",
+            "jit": "disable",
+            "io": "disable",
+            "ffi": "disable",
+            "debug": "disable"
+        };
+        luaRuntimeConfig.update("builtin", luaModulesToDisable, vscode.ConfigurationTarget.Workspace);
+    }).then(() => {
         //Lua.workspace.ignoreDir
         return luaLibWorkspace.update("ignoreDir", lifeboatIgnorePaths, vscode.ConfigurationTarget.Workspace);
     }).then(() => {
