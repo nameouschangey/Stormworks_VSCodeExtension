@@ -1,6 +1,16 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+### [0.0.9] - 9th January 2022
+**major**
+- Using non-stormworks compatible lua standard-libraries (e.g. "os" and "package") will now result in errors similar to the game
+
+**minor**
+- Improved Minimizer; some leading spaces were being missed between certain operators
+- Addon projects are now created with most minifications disabled
+- Fixed issue where comment removal was disabled, that may cause issues in the output
+- Minimizer now returns a more meaningful "reduced x characters" size; post redundancy removal
+
 ### [0.0.8] - 2nd January 2022
 **major**
 - **Add require("LifeBoatAPI") library for Microcontrollers:**
