@@ -12,6 +12,7 @@ Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issu
 - Addon projects are now created with most minifications disabled
 - Fixed issue where comment removal was disabled, that may cause issues in the output
 - Minimizer now returns a more meaningful "reduced x characters" size; post redundancy removal
+- Addon LUA intellisense was showing within MC projects
 
 ### [0.0.8] - 2nd January 2022
 **major**

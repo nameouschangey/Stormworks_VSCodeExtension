@@ -57,9 +57,10 @@ function getDebugCPaths(context) {
 }
 exports.getDebugCPaths = getDebugCPaths;
 function beginUpdateWorkspaceSettings(context) {
-    let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
+    let lifeboatLibConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
+    let lifeboatMainConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
     let lifeboatLibraryPaths = getLibraryPaths(context);
-    let lifeboatIgnorePaths = lifeboatConfig.get("ignorePaths") ?? [];
+    let lifeboatIgnorePaths = lifeboatLibConfig.get("ignorePaths") ?? [];
     // add standard ignores
     if (!lifeboatIgnorePaths.includes(".vscode")) {
         lifeboatIgnorePaths.push(".vscode");
@@ -126,8 +127,13 @@ function beginUpdateWorkspaceSettings(context) {
             neloAddonDoc = docConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
             neloMCDoc = docConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
         }
-        lifeboatLibraryPaths.push(neloAddonDoc);
-        lifeboatLibraryPaths.push(neloMCDoc);
+        // Nelo Docs should only be in the library path for the relevant project type
+        if (lifeboatMainConfig.get("isAddonProject") === true) {
+            lifeboatLibraryPaths.push(neloAddonDoc);
+        }
+        else {
+            lifeboatLibraryPaths.push(neloMCDoc);
+        }
         return luaLibWorkspace.update("library", lifeboatLibraryPaths, vscode.ConfigurationTarget.Workspace);
     }).then(() => luaDebugConfig.update("luaVersion", "5.3", vscode.ConfigurationTarget.Workspace))
         .then(() => luaDebugConfig.update("luaArch", "x86", vscode.ConfigurationTarget.Workspace))

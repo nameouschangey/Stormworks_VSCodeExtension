@@ -81,9 +81,10 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 }
 
 export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
-	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
+	let lifeboatLibConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
+	let lifeboatMainConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
     let lifeboatLibraryPaths = getLibraryPaths(context);
-	let lifeboatIgnorePaths : string[]= lifeboatConfig.get("ignorePaths") ?? [];
+	let lifeboatIgnorePaths : string[]= lifeboatLibConfig.get("ignorePaths") ?? [];
 
 	// add standard ignores
 	if (!lifeboatIgnorePaths.includes(".vscode"))
@@ -164,13 +165,18 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		// Nelo Docs root
 		let neloAddonDoc = utils.sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_missions.lua";
 		let neloMCDoc = utils.sanitisePath(context.extensionPath) + "/assets/nelodocs/docs_vehicles.lua";
-		if(docConfig.get("overwriteNeloDocsPath") === true)
+		if (docConfig.get("overwriteNeloDocsPath") === true)
 		{
 			neloAddonDoc = docConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
 			neloMCDoc = docConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
 		}
-		lifeboatLibraryPaths.push(neloAddonDoc);
-		lifeboatLibraryPaths.push(neloMCDoc);
+
+		// Nelo Docs should only be in the library path for the relevant project type
+		if (lifeboatMainConfig.get("isAddonProject") === true) {
+			lifeboatLibraryPaths.push(neloAddonDoc);
+		} else {
+			lifeboatLibraryPaths.push(neloMCDoc);
+		}
 
 		return luaLibWorkspace.update("library", lifeboatLibraryPaths, vscode.ConfigurationTarget.Workspace);
 	}).then( () => luaDebugConfig.update("luaVersion", "5.3", vscode.ConfigurationTarget.Workspace))
