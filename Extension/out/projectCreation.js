@@ -12,7 +12,7 @@ function beginCreateNewProjectFolder(isMicrocontrollerProject) {
         canSelectFolders: true,
         canSelectMany: false,
         title: "Select or Create empty Project Folder",
-        defaultUri: vscode.workspace.workspaceFolders === undefined ? vscode.Uri.file("C:/") : vscode.Uri.file(path.dirname(vscode.workspace.workspaceFolders[0].uri.fsPath))
+        defaultUri: (vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders.length === 0) ? vscode.Uri.file("C:/") : vscode.Uri.file(path.dirname(vscode.workspace.workspaceFolders[0].uri.fsPath))
     };
     return vscode.window.showOpenDialog(fileDialog)
         .then((folders) => {
