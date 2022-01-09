@@ -142,11 +142,12 @@ LifeBoatAPI.Tools.Minimizer = {
 --      By Nameous Changey]]
 .. "\n-- Combined: " .. tostring(originalSize) .. " -> ".. tostring(sizeWithoutRedundancies) .. " chars (without comments & redundancies) -> " .. tostring(newLength) .. " minimized chars"
 
+        local addedSpacing = not this.params.removeComments and "\n\n" or ""
         -- add boilerplate if the file is small enough (4000 chars instead of 4096, gives some slight wiggle room)
         if(this.params.forceNCBoilerplate or (#text + #boilerplate + #nameousBoilerplate < 4000)) then
-            text = boilerplate .. "--\n" .. nameousBoilerplate .. "\n" .. text
+            text = boilerplate .. "--\n" .. nameousBoilerplate .. "\n" .. addedSpacing .. text
         elseif(this.params.forceBoilerplate or #text + #boilerplate < 4000) then
-            text = boilerplate .. "\n" .. text
+            text = boilerplate .. "\n" .. addedSpacing .. text
         end
 
         return text, originalSize, sizeWithoutRedundancies, newLength

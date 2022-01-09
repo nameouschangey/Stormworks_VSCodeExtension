@@ -141,7 +141,8 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 				"jit": 			"disable",
 				"io": 			"disable",
 				"ffi": 			"disable",
-				"debug": 		"disable"
+				"debug": 		"disable",
+				"basic":		"disable"
 		};		
 		luaRuntimeConfig.update("builtin", luaModulesToDisable, vscode.ConfigurationTarget.Workspace);
 

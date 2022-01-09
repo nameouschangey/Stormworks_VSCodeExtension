@@ -5,7 +5,7 @@ import { TextEncoder } from 'util';
 import { settings } from 'cluster';
 import * as utils from "./utils";
 import * as projectCreation from "./projectCreation";
-import * as settingsManagement from "./settingsManagement"
+import * as settingsManagement from "./settingsManagement";
 
 function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscode.Uri)
 {
@@ -32,6 +32,11 @@ __simulator:beginSimulation(false, arg[1], arg[2])
 
 -- compatibility with 0.0.7 projects
 LBSimulatorInputHelpers = LifeBoatAPI.Tools.SimulatorInputHelpers
+
+-- nillify globals that aren't available in Stormworks Lua
+dofile,dostring,nextvar,print,assert,error,setglobal,getglobal,collectgarbage =nil
+getmetatable,setmetatable,load,loadfile,pcall,xpcall,select = nil
+coroutine,package,utf8,io,os,debug= nil
 
 require("${relativePath}");
 
