@@ -1,6 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+### [0.0.9.1] - 10th January 2022
+**minor**
+- Reverted previous nillification of debug/package libraries, which removed the debuggers ability to run properly
+- LBStateMachine now uses 0 as default state name instead of "default" to save characters
+- Apologies
+
 ### [0.0.9] - 9th January 2022
 **major**
 - Added colour-correction so the simulator colour-space matches the ingame one.

@@ -15,7 +15,7 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---Can also be using in onDraw to handle e.g. different menus/screens in a fairly straight forward way
 ---@class LBStateMachine
 ---@field states table
----@field currentState string current state to run
+---@field currentState string name of the current state to run
 ---@field ticks number number of ticks that have been spent in the current state
 LifeBoatAPI.LBStateMachine = {
     ---@param this LBStateMachine
@@ -24,10 +24,10 @@ LifeBoatAPI.LBStateMachine = {
     new = function (this, defaultStateCallback)
         return LifeBoatAPI.lb_copy(this, {
             states = {
-                default = defaultStateCallback
+                [0] = defaultStateCallback
             },
             ticks = 0,
-            currentState = "default"
+            currentState = 0
         })
     end;
 
@@ -40,7 +40,7 @@ LifeBoatAPI.LBStateMachine = {
             this._nextState = this._currentStateFunc(this.ticks, this) or this.currentState -- nil preserves the current state
             this.ticks = this._nextState == this.currentState and this.ticks + 1 or 0 -- reset ticks when the stateName changes
         else
-            this.currentState = "default"
+            this.currentState = 0
         end
     end;
     ---@endsection
