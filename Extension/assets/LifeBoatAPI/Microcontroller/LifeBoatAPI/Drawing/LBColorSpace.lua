@@ -11,7 +11,6 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@section LBColorSpace 1 LBCOLORSPACECLASS
 ---@class LBColorSpace
 LifeBoatAPI.LBColorSpace = {
-
     ---@section lbcolorspace_setColorGammaCorrected
     --- Sets the screen colour, correcting for the game's gamma factor
     --- Allows for colours that are closer to the expected HTML values

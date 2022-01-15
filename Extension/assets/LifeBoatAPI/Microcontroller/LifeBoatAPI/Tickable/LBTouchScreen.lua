@@ -100,6 +100,104 @@ LifeBoatAPI.LBTouchScreen = {
     end;
     ---@endsection LBTOUCHSCREEN_NEWBASICBUTTON
 
+    ---@section lbtouchscreen_newStyledButton 1 LBTOUCHSCREEN_NEWSTYLEDBUTTON
+    --- PLEASE BE AWARE, FANCY STYLED BUTTONS HAVE A RELATIVELY HIGH CHARACTER COST
+    --- Create a new button that works with the LBTouchScreen
+    --- Note, you must call LBTouchScreen.lbtouchscreen_ontick() at the start of onTick to make these buttons work
+    ---@param this LBTouchScreen
+    ---@param x number topleft x position of the button
+    ---@param y number topleft y position of the button
+    ---@param width number width of the button
+    ---@param height number height of the button
+    ---@param borderColor LBColorRGBA color for the border
+    ---@param fillColor LBColorRGBA color for the fill, when not clicked
+    ---@param fillPushColor LBColorRGBA color when pushed
+    ---@param textColor LBColorRGBA color for the text
+    ---@param textPushColor LBColorRGBA color for the text when clicked
+    ---@return LBTouchScreenButtonStyled button button object to check for touches
+    lbtouchscreen_newStyledButton = function (this, x, y, width, height,
+                                                        text,
+                                                        borderColor,
+                                                        fillColor,
+                                                        fillPushColor,
+                                                        textColor,
+                                                        textPushColor)
+        this.default_white = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newRGBA(255,255,255)
+        this.default_black = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newRGBA(0,0,0)
+
+        ---@class LBTouchScreenButtonStyled
+        ---@field touchScreenRef LBTouchScreen reference to the touchscreen, needed for tracking click state
+        ---@field x number topLeft x position of the button
+        ---@field y number topLeft y position of the button
+        ---@field width number width of the button rect
+        ---@field height number height of the button rect
+        ---@field text string text to display in the button
+        ---@field borderColor LBColorRGBA height of the button rect
+        ---@field fillColor LBColorRGBA height of the button rect
+        ---@field fillPushColor LBColorRGBA height of the button rect
+        ---@field textColor LBColorRGBA height of the button rect
+        ---@field textPushColor LBColorRGBA height of the button rect
+        local button = {
+            touchScreenRef = this,
+            x = x,
+            y = y,
+            width = width,
+            height = height,
+            text = text,
+            borderColor     = borderColor   or this.default_white,
+            fillColor       = fillColor     or this.default_black,
+            fillPushColor   = fillPushColor or this.default_white,
+            textColor       = textColor     or this.default_white,
+            textPushColor   = textPushColor or this.default_black,
+
+            ---@section lbstyledbutton_isClicked
+            --- Checks if this button was clicked; triggers ONLY on the frame it's being clicked
+            ---@param this LBTouchScreenButtonStyled
+            lbstyledbutton_isClicked = function(this)
+                return this.touchScreenRef.isPressed
+                        and not this.touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            end;
+            ---@endsection
+
+            ---@section lbstyledbutton_isHeld
+            --- Checks if this button is being pressed (i.e. HELD down), returns true on every frame it is being held
+            ---@param this LBTouchScreenButtonStyled
+            lbstyledbutton_isHeld = function(this)
+                return this.touchScreenRef.isPressed
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            end;
+            ---@endsection
+
+            ---@section lbstyledbutton_isReleased
+            --- Checks for the user lifting the mouse button, like a "on mouse up" event. Note; this is actually how most buttons work on your computer.
+            ---@param this LBTouchScreenButtonStyled
+            lbstyledbutton_isReleased = function(this)
+                return not this.touchScreenRef.isPressed
+                        and this.touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            end;
+            ---@endsection
+
+            ---@section lbstyledbutton_draw
+            --- Simple drawing function, can make life easier while prototyping things
+            ---@param this LBTouchScreenButtonStyled
+            lbstyledbutton_draw = function(this)
+                (this:lbstyledbutton_isHeld() and this.fillPushColor or this.fillColor):lbcolorrgba_setColor()
+                screen.drawRectF(this.x, this.y, this.width, this.height);
+
+                (this:lbstyledbutton_isHeld() and this.textPushColor or this.textColor):lbcolorrgba_setColor()
+                screen.drawTextBox(this.x, this.y, this.width, this.height, this.text, 0, 0)
+
+                this.borderColor:lbcolorrgba_setColor()
+                screen.drawRect(this.x, this.y, this.width, this.height)
+            end;
+            ---@endsection
+        }
+        return button
+    end;
+    ---@endsection LBTOUCHSCREEN_NEWSTYLEDBUTTON
+
     ---@section lbtouchscreen_newVectorButton 1 LBTOUCHSCREEN_NEWVECTORBUTTON
     --- Create a new button that works with the LBTouchScreen
     --- If already using the LBVec library, it's recommended to use this as it'll make life easier
