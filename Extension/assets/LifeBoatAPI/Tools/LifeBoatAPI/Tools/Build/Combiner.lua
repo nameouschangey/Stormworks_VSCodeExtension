@@ -48,8 +48,9 @@ LifeBoatAPI.Tools.Combiner = {
     ---@param this Combiner
     ---@param data string
     combine = function (this, data)   
-        local requiresSeen = {}
+        data = "\n" .. data -- ensure the file starts with a new line, so any first-line requires get found
 
+        local requiresSeen = {}
         local keepSearching = true
         while keepSearching do
             keepSearching = false
