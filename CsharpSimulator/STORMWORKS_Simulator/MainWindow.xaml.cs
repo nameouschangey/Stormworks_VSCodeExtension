@@ -39,10 +39,11 @@ namespace STORMWORKS_Simulator
             Logger.InfoEnabled = args.EnableLogging;
 
             Logger.Log("Launching, time stamp.");
+            ViewModel = new MainVM();
+            DataContext = ViewModel;
 
             InitializeComponent();
 
-            ViewModel = new MainVM();
             TickHandler = new TickHandler(ViewModel);
             VSConnection = new SocketConnection(ViewModel);
             VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
@@ -70,7 +71,7 @@ namespace STORMWORKS_Simulator
                 Properties.Settings.Default.LastZoomY = transform.ScaleY;
             };
 
-            DataContext = ViewModel;
+            
 
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             

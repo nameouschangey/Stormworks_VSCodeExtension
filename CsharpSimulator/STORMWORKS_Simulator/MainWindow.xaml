@@ -8,7 +8,9 @@
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
         mc:Ignorable="d"
-        Title="LifeBoatAPI Simulator by Nameous Changey" Height="768" Width="1024"
+        Title="LifeBoatAPI Simulator by Nameous Changey"
+        Width="{Binding WindowWidth, Mode=TwoWay}"
+        Height="{Binding WindowHeight, Mode=TwoWay}"
         Style="{StaticResource WindowStyle}">
     <Window.Resources>
         <DataTemplate x:Key="SWInOutItemTemplate">

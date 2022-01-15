@@ -131,6 +131,31 @@ namespace STORMWORKS_Simulator
         }
         private bool _AutoReset = true;
 
+        public double WindowWidth
+        {
+            get
+            {
+                return Properties.Settings.Default.WindowWidth;
+            }
+            set
+            {
+                Properties.Settings.Default.WindowWidth = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+        public double WindowHeight
+        {
+            get
+            {
+                return Properties.Settings.Default.WindowHeight;
+            }
+            set
+            {
+                Properties.Settings.Default.WindowHeight = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+
         public MainVM()
         {
             _AutoReset = Properties.Settings.Default.ResetZoomAutomatically;

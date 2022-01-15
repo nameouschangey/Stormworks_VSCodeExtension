@@ -1,6 +1,11 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+### [0.0.11] - 10th January 2022
+**minor**
+- Fixed require issue, if there was no newline before the first require, it won't get picked up
+- 
+
 ### [0.0.10] - 10th January 2022
 **minor**
 - Reverted previous nillification of debug/package libraries, which removed the debuggers ability to run properly
