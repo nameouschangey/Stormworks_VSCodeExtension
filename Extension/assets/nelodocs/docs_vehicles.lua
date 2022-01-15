@@ -10,6 +10,12 @@ property = {}
 screen = {}
 map = {}
 async = {}
+debug = {}
+
+--- Prints a message to the debug log, see DebugViewer by SysInternals (google)
+--- In the simulator, prints the message using regular "print"
+--- @varargs same parameters as print
+function debug.log(...) end
 
 --- Read an on/off value from the composite input
 --- @param index number The composite index to read from

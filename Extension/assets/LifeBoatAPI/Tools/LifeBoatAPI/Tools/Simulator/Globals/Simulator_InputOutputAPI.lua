@@ -148,4 +148,9 @@ for i=1,32 do
     output._bools[i] = false
 end
 
+-- allow debug.log for printing, as this also works in-game
+debug = debug or {}
+debug.log = print
+
+
 ---@diagnostic enable: lowercase-global
