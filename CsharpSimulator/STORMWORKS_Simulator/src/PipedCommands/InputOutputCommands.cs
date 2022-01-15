@@ -31,7 +31,24 @@ namespace STORMWORKS_Simulator
             for (var i = 0; i < 32; ++i)
             {
                 vm.Inputs[i].BoolValue = commandParts[(i * 2) + 1] == "1";
-                vm.Inputs[i].NumberValue = float.Parse(commandParts[(i * 2) + 2], CultureInfo.InvariantCulture);
+
+                var numberValue = commandParts[(i * 2) + 2];
+                if(numberValue == "INF")
+                {
+                    vm.Inputs[i].NumberValue = float.PositiveInfinity;
+                }
+                else if(numberValue == "-INF")
+                {
+                    vm.Inputs[i].NumberValue = float.NegativeInfinity;
+                }
+                else if (numberValue.Contains("NAN"))
+                {
+                    vm.Inputs[i].NumberValue = float.NaN;
+                }
+                else
+                {
+                    vm.Inputs[i].NumberValue = float.Parse(numberValue, CultureInfo.InvariantCulture);
+                }
             }
         }
     }
@@ -50,7 +67,24 @@ namespace STORMWORKS_Simulator
             for (var i = 0; i < 32; ++i)
             {
                 vm.Outputs[i].BoolValue = commandParts[(i * 2) + 1] == "1";
-                vm.Outputs[i].NumberValue = float.Parse(commandParts[(i * 2) + 2], CultureInfo.InvariantCulture);
+
+                var numberValue = commandParts[(i * 2) + 2];
+                if (numberValue == "INF")
+                {
+                    vm.Inputs[i].NumberValue = float.PositiveInfinity;
+                }
+                else if (numberValue == "-INF")
+                {
+                    vm.Inputs[i].NumberValue = float.NegativeInfinity;
+                }
+                else if (numberValue.Contains("NAN"))
+                {
+                    vm.Inputs[i].NumberValue = float.NaN;
+                }
+                else
+                {
+                    vm.Inputs[i].NumberValue = float.Parse(numberValue, CultureInfo.InvariantCulture);
+                }
             }
         }
     }

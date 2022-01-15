@@ -11,8 +11,8 @@ require("LifeBoatAPI.Tools.Utils.Base")
 ---@field height number
 ---@field touchX number
 ---@field touchY number
----@field isTouchedL boolean
----@field isTouchedR boolean
+---@field isTouchedL boolean is E held down (left mouse button)
+---@field isTouchedR boolean is Q held down (right mouse button)
 ---@field poweredOn boolean
 ---@field screenNumber number
 LifeBoatAPI.Tools.SimulatorScreen = {

@@ -2,6 +2,8 @@
 -- Based on data in: https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y
 -- Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y, then create an issue on the GitHub repo
 
+-- Minor edits by NameousChangey to bring this up to date
+
 --- @diagnostic disable: lowercase-global
 
 server = {}

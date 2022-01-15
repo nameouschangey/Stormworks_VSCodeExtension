@@ -19,11 +19,11 @@ require("LifeBoatAPI.Tools.Simulator.SimulatorInputHelpers")
 local _socket = require("socket")
 
 ---@class Simulator : BaseClass
----@field config SimulatorConfig reference to the Simulator input/output config
----@field timePerFrame number in seconds
----@field renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
----@field sendOutputSkip number frame-skip for sending the input/output changes.
----@field isRendering boolean whether we are currently rendering or not, for blocking the screen operations
+----@field config SimulatorConfig reference to the Simulator input/output config (Deprecated)
+---@field _timePerFrame number in seconds
+---@field _renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
+---@field _sendOutputSkip number frame-skip for sending the input/output changes.
+---@field _isRendering boolean whether we are currently rendering or not, for blocking the screen operations
 ---@field _connection SimulatorConnection (internal) simulator connection handler
 ---@field _simulatorProcess file* (internal) currently running simulator process 
 ---@field _handlers table (internal) list of event handlers
@@ -37,15 +37,15 @@ LifeBoatAPI.Tools.Simulator = {
     new = function (this)
         this = LifeBoatAPI.Tools.BaseClass.new(this)
         this._handlers = {}
-        this.config = LifeBoatAPI.Tools.SimulatorConfig:new(this)
-        this.timePerFrame = 1/60
+        this.config = LifeBoatAPI.Tools.SimulatorConfig:new(this) -- can't be renamed due to older "handlers" config
+        this._timePerFrame = 1/60
         this._screens = {}
         this._currentScreen = nil
-        this.renderOnFrames = 1
-        this.sendOutputSkip = 1
-        this.isRendering = false
+        this._renderOnFrames = 1
+        this._sendOutputSkip = 1
+        this._isRendering = false
 
-        this:registerHandler("TOUCH",
+        this:_registerHandler("TOUCH",
             function(simulator, screenNumber, isDownL, isDownR, x, y)
                 screenNumber = tonumber(screenNumber)
                 x = tonumber(x)
@@ -61,7 +61,7 @@ LifeBoatAPI.Tools.Simulator = {
                 thisScreen.touchY = y
             end)
 
-        this:registerHandler("SCREENSIZE",
+        this:_registerHandler("SCREENSIZE",
             function (simulator, screenNumber, width, height)
                 screenNumber = tonumber(screenNumber)
                 width = tonumber(width)
@@ -73,7 +73,7 @@ LifeBoatAPI.Tools.Simulator = {
                 thisScreen.height = height
             end)
 
-        this:registerHandler("SCREENPOWER",
+        this:_registerHandler("SCREENPOWER",
             function (simulator, screenNumber, poweredOn)
                 screenNumber = tonumber(screenNumber)
                 poweredOn = poweredOn == "1"
@@ -88,114 +88,24 @@ LifeBoatAPI.Tools.Simulator = {
                 end
             end)
 
-        this:registerHandler("TICKRATE",
+        this:_registerHandler("TICKRATE",
             function (simulator, ticksPerSecond, frameSkip)
                 ticksPerSecond = tonumber(ticksPerSecond)
                 frameSkip = tonumber(frameSkip)
-                this.timePerFrame = 1 / ticksPerSecond
-                this.renderOnFrames = math.max(1, frameSkip)
+                this._timePerFrame = 1 / ticksPerSecond
+                this._renderOnFrames = math.max(1, frameSkip)
             end)
 
         return this
     end;
 
+    --- Get the touchscreen info for use in onLBSimulatorTick, to simulate touch inputs
     ---@param this Simulator
-    ---@param attachToExistingProcess boolean attach to an existing running Simulator, instead of kicking off a new instance
-    beginSimulation = function(this, attachToExistingProcess, simulatorFile, simulatorLogFile)
-        simulatorLogFile = simulatorLogFile or ""
-
-        if not attachToExistingProcess then
-            local simulatorExePath = LifeBoatAPI.Tools.Filepath:new(simulatorFile)
-            this._simulatorProcess = io.popen(simulatorExePath:win() .. " -logfile \"" .. simulatorLogFile .. "\"", "w")
-        end
-
-        this._connection = LifeBoatAPI.Tools.SimulatorConnection:new()
-
-        -- set the global screen and output to be simulated
-        -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
-        screen._setSimulator(this)
-        input._setSimulator(this)
-        output._setSimulator(this)
-
-        -- default screen
-        this.config:configureScreen(1, "1x1", true)
-
-        -- enable touchscreen by default
-        local helpers = LifeBoatAPI.Tools.SimulatorInputHelpers
-        this.config:addBoolHandler(1, helpers.touchScreenIsTouched(this,1))
-
-        this.config:addNumberHandler(1, helpers.touchScreenWidth(this,1))
-        this.config:addNumberHandler(2, helpers.touchScreenHeight(this,1))
-        this.config:addNumberHandler(3, helpers.touchScreenXPosition(this,1))
-        this.config:addNumberHandler(4, helpers.touchScreenYPosition(this,1))
-    end;
-
-
-    ---@param this Simulator
-    giveControlToMainLoop = function(this)
-        -- reliable 60 FPS main thread
-        local timeRunning = 0.0
-        local lastTime = _socket.gettime()
-        local timeSinceFrame = 0.0
-        local framesSinceRender = 1
-        local framesSinceOut = 1
-
-        while this._connection.isAlive do
-            local time = _socket.gettime()
-            timeRunning = timeRunning + (time - lastTime)
-            timeSinceFrame = timeSinceFrame + (time - lastTime)
-            lastTime = time
-
-            if timeSinceFrame > this.timePerFrame then
-                timeSinceFrame = 0.0
-
-                -- messages incoming from the server
-                this:readSimulatorMessages()
-
-                -- run tick
-                onSimulate = onLBSimulatorTick or LifeBoatAPI.Tools.Empty
-                onTick = onTick or LifeBoatAPI.Tools.Empty
-                onDraw = onDraw or LifeBoatAPI.Tools.Empty
-
-                this.isRendering = false
-
-                -- possibility that the server has closed connection at any of these points
-                -- in which case, we want to stop processing asap
-                if this._connection.isAlive then this.config:onSimulate() end
-                if this._connection.isAlive then onSimulate(this) end
-
-                if this._connection.isAlive then onTick() end
-
-                -- we can frame-skip, which means rendering (=>less networking, significant cost reduction)
-                --  can be useful when frame rate is suffering
-                if framesSinceRender%this.renderOnFrames == 0 and this._connection.isAlive then
-                    framesSinceRender = 1
-
-                    local outputRate = math.max(this.sendOutputSkip, this.renderOnFrames) -- no point sending the data more often than rendering it
-                    if framesSinceOut%outputRate == 0 then
-                        if this._connection.isAlive then this:_sendInOuts() end
-                        framesSinceOut = 1
-                    else
-                        framesSinceOut = framesSinceOut + 1
-                    end
-
-                    for screenNumber, screenData in pairs(this._screens) do 
-                        if screenData.poweredOn then
-                            this._currentScreen = screenData
-                            this.isRendering = true
-                            if this._connection.isAlive then onDraw() end
-                        end
-                    end
-
-                    if this._connection.isAlive then this._connection:sendCommand("TICKEND", 1) end
-                else
-                    framesSinceRender = framesSinceRender + 1
-                    if this._connection.isAlive then this._connection:sendCommand("TICKEND", 0) end
-                end
-            end
-        end
-
-        this._connection:close()
+    ---@param screenNumber number touch info from which screen (default is 1)
+    ---@return SimulatorScreen screen screen data for the requested screen, to be used in onLBSimulatorTick
+    getTouchScreen = function (this, screenNumber)
+        screenNumber = screenNumber or 1
+        return this._screens[screenNumber] or LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
     end;
 
     ---@param this Simulator
@@ -207,8 +117,8 @@ LifeBoatAPI.Tools.Simulator = {
         tickRate = tickRate or 60
         sendOutputSkip = sendOutputSkip or 1
 
-        this.timePerFrame = 1 / tickRate
-        this.renderOnFrames = frameSkip
+        this._timePerFrame = 1 / tickRate
+        this._renderOnFrames = frameSkip
     end;
 
     ---simulate the value an input should have
@@ -239,9 +149,69 @@ LifeBoatAPI.Tools.Simulator = {
         end
     end;
 
+    ---@param this SimulatorConfig
+    ---@param label string name of the property
+    ---@param value string|boolean|number value to set as a property
+    setProperty = function(this, label, value)
+        if type(value) == "string" then
+            property._texts[label] = value
+        elseif type(value) == "boolean" then
+            property._bools[label] = value
+        elseif type(value) == "number" then
+            property._numbers[label] = value
+        else
+            error("Stormworks properties must be Numbers, Strings or Booleans, when you tried to set property: " .. tostring(label))
+        end
+    end;
+
+    ---@param this Simulator
+    ---@param screenNumber number screen to configure, if this is not an existing screen - it becomes the next available integer
+    ---@param screenSize string should be a valid SW screen size: 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5
+    ---@param poweredOn boolean true if the screen is turned on 
+    ---@param portrait boolean (optional) true if this screen will be stood on its end in the game
+    ---@overload fun(this : SimulatorConfig, screenNumber:number, screenSize:string)
+    ---@return number screenNumber the actual screen number that was created
+    setScreen = function(this, screenNumber, screenSize, poweredOn, portrait)
+        portrait = portrait or false
+        poweredOn = (poweredOn == nil and true) or poweredOn
+
+        if not this._screens[screenNumber] then
+            screenNumber = #this._screens + 1
+            this._screens[screenNumber] = LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
+        end
+        local thisScreen = this._screens[screenNumber]
+
+        local validScreenConfigs = {
+            ["1x1"] = true,
+            ["2x1"] = true,
+            ["2x2"] = true,
+            ["3x2"] = true,
+            ["3x3"] = true,
+            ["5x3"] = true,
+            ["9x5"] = true
+        }
+        if not validScreenConfigs[screenSize] then
+            error("Must be a valid screen size, 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5")
+        end
+
+        local splits = LifeBoatAPI.Tools.StringUtils.split(screenSize, "x")
+        thisScreen.width = splits[1] * 32
+        thisScreen.height = splits[2] * 32
+
+        -- send the new screen data to the server
+        this._connection:sendCommand("SCREENCONFIG",
+            screenNumber,
+            poweredOn and "1" or "0",
+            screenSize,
+            portrait and "1" or "0")
+
+        return screenNumber
+    end;
+
+
     ---read and handle all messages sent by the simulator server since the last tick
     ---@param this Simulator
-    readSimulatorMessages = function(this)
+    _readSimulatorMessages = function(this)
         while (this._connection.isAlive and this._connection:hasMessage()) do
             local message = this._connection:readMessage()
             if message then
@@ -257,12 +227,111 @@ LifeBoatAPI.Tools.Simulator = {
         end
     end;
 
+    ---@param this Simulator
+    ---@param attachToExistingProcess boolean attach to an existing running Simulator, instead of kicking off a new instance
+    _beginSimulation = function(this, attachToExistingProcess, simulatorFile, simulatorLogFile)
+        simulatorLogFile = simulatorLogFile or ""
+
+        if not attachToExistingProcess then
+            local simulatorExePath = LifeBoatAPI.Tools.Filepath:new(simulatorFile)
+            this._simulatorProcess = io.popen(simulatorExePath:win() .. " -logfile \"" .. simulatorLogFile .. "\"", "w")
+        end
+
+        this._connection = LifeBoatAPI.Tools.SimulatorConnection:new()
+
+        -- set the global screen and output to be simulated
+        -- if you are brought here from an error; it's because you redefined screen or output. Please don't.
+        screen._setSimulator(this)
+        input._setSimulator(this)
+        output._setSimulator(this)
+
+        -- default screen
+        this.config:configureScreen(1, "1x1", true)
+
+        -- enable touchscreen by default
+        local helpers = LifeBoatAPI.Tools.SimulatorInputHelpers
+        this.config:addBoolHandler(1, helpers.touchScreenIsTouched(this,1))
+
+        this.config:addNumberHandler(1, helpers.touchScreenWidth(this,1))
+        this.config:addNumberHandler(2, helpers.touchScreenHeight(this,1))
+        this.config:addNumberHandler(3, helpers.touchScreenXPosition(this,1))
+        this.config:addNumberHandler(4, helpers.touchScreenYPosition(this,1))
+    end;
+
+
+    ---@param this Simulator
+    _giveControlToMainLoop = function(this)
+        -- reliable 60 FPS main thread
+        local timeRunning = 0.0
+        local lastTime = _socket.gettime()
+        local timeSinceFrame = 0.0
+        local framesSinceRender = 1
+        local framesSinceOut = 1
+
+        while this._connection.isAlive do
+            local time = _socket.gettime()
+            timeRunning = timeRunning + (time - lastTime)
+            timeSinceFrame = timeSinceFrame + (time - lastTime)
+            lastTime = time
+
+            if timeSinceFrame > this._timePerFrame then
+                timeSinceFrame = 0.0
+
+                -- messages incoming from the server
+                this:_readSimulatorMessages()
+
+                -- run tick
+                onSimulate = onLBSimulatorTick or LifeBoatAPI.Tools.Empty
+                onTick = onTick or LifeBoatAPI.Tools.Empty
+                onDraw = onDraw or LifeBoatAPI.Tools.Empty
+
+                this.isRendering = false
+
+                -- possibility that the server has closed connection at any of these points
+                -- in which case, we want to stop processing asap
+                if this._connection.isAlive then this.config:onSimulate() end
+                if this._connection.isAlive then onSimulate(this) end
+
+                if this._connection.isAlive then onTick() end
+
+                -- we can frame-skip, which means rendering (=>less networking, significant cost reduction)
+                --  can be useful when frame rate is suffering
+                if framesSinceRender%this._renderOnFrames == 0 and this._connection.isAlive then
+                    framesSinceRender = 1
+
+                    local outputRate = math.max(this._sendOutputSkip, this._renderOnFrames) -- no point sending the data more often than rendering it
+                    if framesSinceOut%outputRate == 0 then
+                        if this._connection.isAlive then this:_sendInOuts() end
+                        framesSinceOut = 1
+                    else
+                        framesSinceOut = framesSinceOut + 1
+                    end
+
+                    for _, screenData in pairs(this._screens) do 
+                        if screenData.poweredOn then
+                            this._currentScreen = screenData
+                            this.isRendering = true
+                            if this._connection.isAlive then onDraw() end
+                        end
+                    end
+
+                    if this._connection.isAlive then this._connection:sendCommand("TICKEND", 1) end
+                else
+                    framesSinceRender = framesSinceRender + 1
+                    if this._connection.isAlive then this._connection:sendCommand("TICKEND", 0) end
+                end
+            end
+        end
+
+        this._connection:close()
+    end;
+
     ---register a handler to listen for simulator server messages
     ---only one listener may be registered per command
     ---@param this Simulator
     ---@param commandName string name of the command to listen for
     ---@param func fun(...) function taking arbitrary args that are filled in from the simulator params
-    registerHandler = function (this, commandName, func)
+    _registerHandler = function (this, commandName, func)
         this._handlers[commandName] = func
     end;
 
