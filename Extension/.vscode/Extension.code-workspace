@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "..\\assets\\LifeBoatAPI"
+		},
+		{
+			"path": "..\\..\\..\\Sandbox"
 		}
 	],
 	"settings": {
