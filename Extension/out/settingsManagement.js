@@ -71,6 +71,9 @@ function beginUpdateWorkspaceSettings(context) {
     if (!lifeboatIgnorePaths.includes("/_build/")) {
         lifeboatIgnorePaths.push("/_build/");
     }
+    if (!lifeboatIgnorePaths.includes("/_examples_and_tutorials/")) {
+        lifeboatIgnorePaths.push("/_examples_and_tutorials/");
+    }
     let luaDiagnosticsConfig = vscode.workspace.getConfiguration("Lua.diagnostics");
     let luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
     let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");

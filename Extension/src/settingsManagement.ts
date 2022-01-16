@@ -102,9 +102,9 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		lifeboatIgnorePaths.push("/_build/");
 	}
 
-	if (!lifeboatIgnorePaths.includes("/docs_and_examples/"))
+	if (!lifeboatIgnorePaths.includes("/_examples_and_tutorials/"))
 	{
-		lifeboatIgnorePaths.push("/docs_and_examples/");
+		lifeboatIgnorePaths.push("/_examples_and_tutorials/");
 	}
 
 	let luaDiagnosticsConfig = vscode.workspace.getConfiguration("Lua.diagnostics");
@@ -135,23 +135,27 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 
 	}).then( () => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)
 	).then( () => {
+		let shouldDisableIntellisense = lifeboatMainConfig.get("lifeboatapi.stormworks.shouldDisableNonSWIntellisense");
+		let enableLibraryValue = shouldDisableIntellisense ? "disable" : "default";
+
 		// disable intellisense for lua modules that aren't available in stormworks
 		let luaModulesToDisable = {
-				"coroutine": 	"disable",
-				"bit32": 		"disable",
-				"bit": 			"disable",
-				"builtin": 		"disable",
-				"utf8": 		"disable",
-				"package": 		"disable",
-				"os": 			"disable",
-				"jit": 			"disable",
-				"io": 			"disable",
-				"ffi": 			"disable",
-				"debug": 		"disable",
-				"basic":		"disable"
-		};		
+				"coroutine": 	enableLibraryValue,
+				"bit32": 		enableLibraryValue,
+				"bit": 			enableLibraryValue,
+				"builtin": 		enableLibraryValue,
+				"utf8": 		enableLibraryValue,
+				"package": 		enableLibraryValue,
+				"os": 			enableLibraryValue,
+				"jit": 			enableLibraryValue,
+				"io": 			enableLibraryValue,
+				"ffi": 			enableLibraryValue,
+				"debug": 		enableLibraryValue,
+				"basic":		enableLibraryValue
+		};
+		
 		luaRuntimeConfig.update("builtin", luaModulesToDisable, vscode.ConfigurationTarget.Workspace);
-
+		
 	}).then( () => {
 		//Lua.workspace.ignoreDir
 		return luaLibWorkspace.update("ignoreDir", lifeboatIgnorePaths, vscode.ConfigurationTarget.Workspace);

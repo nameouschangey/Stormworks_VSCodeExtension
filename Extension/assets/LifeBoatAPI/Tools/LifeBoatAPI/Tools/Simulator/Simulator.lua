@@ -300,7 +300,7 @@ LifeBoatAPI.Tools.Simulator = {
                 onTick = onTick or LifeBoatAPI.Tools.Empty
                 onDraw = onDraw or LifeBoatAPI.Tools.Empty
 
-                this.isRendering = false
+                this._isRendering = false
 
                 -- possibility that the server has closed connection at any of these points
                 -- in which case, we want to stop processing asap
@@ -327,7 +327,7 @@ LifeBoatAPI.Tools.Simulator = {
                     for _, screenData in pairs(this._screens) do 
                         if screenData.poweredOn then
                             this._currentScreen = screenData
-                            this.isRendering = true
+                            this._isRendering = true
                             if this._connection.isAlive then onDraw() end
                         end
                     end

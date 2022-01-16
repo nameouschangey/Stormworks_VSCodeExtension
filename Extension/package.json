@@ -132,6 +132,12 @@
 						"scope": "application",
 						"description": "If enabled, when using Open Folder - presents the option to open any .code-workspace files found in sub folders; in separate windows. Apologies to any developer this annoys - but it should make VSCode more palatable for newcomers."
 					},
+					"lifeboatapi.stormworks.shouldDisableNonSWIntellisense" : {
+						"type":"boolean",
+						"default": true,
+						"scope": "user",
+						"description": "Disable this is you want all Lua intellisense available. Otherwise, non-SW libraries are removed to help new users."
+					},
 					
 					"lifeboatapi.stormworks.minimizer.removeComments" : {
 						"type":"boolean",
