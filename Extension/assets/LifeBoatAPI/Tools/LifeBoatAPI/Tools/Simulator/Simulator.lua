@@ -175,12 +175,6 @@ LifeBoatAPI.Tools.Simulator = {
         portrait = portrait or false
         poweredOn = (poweredOn == nil and true) or poweredOn
 
-        if not this._screens[screenNumber] then
-            screenNumber = #this._screens + 1
-            this._screens[screenNumber] = LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
-        end
-        local thisScreen = this._screens[screenNumber]
-
         local validScreenConfigs = {
             ["1x1"] = true,
             ["2x1"] = true,
@@ -193,17 +187,36 @@ LifeBoatAPI.Tools.Simulator = {
         if not validScreenConfigs[screenSize] then
             error("Must be a valid screen size, 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5")
         end
-
+        
         local splits = LifeBoatAPI.Tools.StringUtils.split(screenSize, "x")
-        thisScreen.width = splits[1] * 32
-        thisScreen.height = splits[2] * 32
 
-        -- send the new screen data to the server
-        this._connection:sendCommand("SCREENCONFIG",
-            screenNumber,
-            poweredOn and "1" or "0",
-            screenSize,
-            portrait and "1" or "0")
+        local width = splits[1] * 32
+        local height = splits[2] * 32
+
+        if (not this._screens[screenNumber]
+            or this._screens[screenNumber].width  ~= width
+            or this._screens[screenNumber].height ~= height
+            or this._screens[screenNumber].poweredOn ~= poweredOn
+            or this._screens[screenNumber].portrait ~= portrait) then
+                
+            if not this._screens[screenNumber] then
+                screenNumber = #this._screens + 1
+                this._screens[screenNumber] = LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
+            end
+            local thisScreen = this._screens[screenNumber]
+
+            thisScreen.width = width
+            thisScreen.height = height
+            thisScreen.portrait = portrait
+            thisScreen.poweredOn = poweredOn
+
+            -- send the new screen data to the server
+            this._connection:sendCommand("SCREENCONFIG",
+                screenNumber,
+                poweredOn and "1" or "0",
+                screenSize,
+                portrait and "1" or "0")
+        end
 
         return screenNumber
     end;
@@ -267,6 +280,7 @@ LifeBoatAPI.Tools.Simulator = {
         local timeSinceFrame = 0.0
         local framesSinceRender = 1
         local framesSinceOut = 1
+        local tickCount = 1
 
         while this._connection.isAlive do
             local time = _socket.gettime()
@@ -290,9 +304,11 @@ LifeBoatAPI.Tools.Simulator = {
                 -- possibility that the server has closed connection at any of these points
                 -- in which case, we want to stop processing asap
                 if this._connection.isAlive then this.config:onSimulate() end
-                if this._connection.isAlive then onSimulate(this) end
+                if this._connection.isAlive then onSimulate(this, tickCount) end
 
                 if this._connection.isAlive then onTick() end
+
+                tickCount = tickCount + 1
 
                 -- we can frame-skip, which means rendering (=>less networking, significant cost reduction)
                 --  can be useful when frame rate is suffering

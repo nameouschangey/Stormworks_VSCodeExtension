@@ -102,6 +102,11 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		lifeboatIgnorePaths.push("/_build/");
 	}
 
+	if (!lifeboatIgnorePaths.includes("/docs_and_examples/"))
+	{
+		lifeboatIgnorePaths.push("/docs_and_examples/");
+	}
+
 	let luaDiagnosticsConfig = vscode.workspace.getConfiguration("Lua.diagnostics");
 	let luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
 	let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");

@@ -14,6 +14,7 @@ require("LifeBoatAPI.Tools.Utils.Base")
 ---@field isTouchedL boolean is E held down (left mouse button)
 ---@field isTouchedR boolean is Q held down (right mouse button)
 ---@field poweredOn boolean
+---@field portrait boolean
 ---@field screenNumber number
 LifeBoatAPI.Tools.SimulatorScreen = {
     ---@param this SimulatorScreen
@@ -27,6 +28,7 @@ LifeBoatAPI.Tools.SimulatorScreen = {
         this.isTouchedL = false
         this.isTouchedR = false
         this.poweredOn = true
+        this.portrait = false
         this.screenNumber = screenNumber
         return this
     end;
