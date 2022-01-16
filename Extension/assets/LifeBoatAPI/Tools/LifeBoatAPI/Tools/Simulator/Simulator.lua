@@ -179,13 +179,14 @@ LifeBoatAPI.Tools.Simulator = {
             ["1x1"] = true,
             ["2x1"] = true,
             ["2x2"] = true,
+            ["3x1"] = true,
             ["3x2"] = true,
             ["3x3"] = true,
             ["5x3"] = true,
             ["9x5"] = true
         }
         if not validScreenConfigs[screenSize] then
-            error("Must be a valid screen size, 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5")
+            error("Must be a valid screen size, 1x1, 2x1, 2x2, 3x1, 3x2, 3x3, 5x3, 9x5")
         end
         
         local splits = LifeBoatAPI.Tools.StringUtils.split(screenSize, "x")

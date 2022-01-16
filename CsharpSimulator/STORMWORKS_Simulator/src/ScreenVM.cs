@@ -42,7 +42,7 @@ namespace STORMWORKS_Simulator
     public class ScreenVM : INotifyPropertyChanged
     {
         public readonly double CanvasScale = 5.0f;
-        public static List<string> ScreenDescriptionsList { get; private set; } = new List<string>() { "1x1", "2x1", "2x2", "3x2", "3x3", "5x3", "9x5" };
+        public static List<string> ScreenDescriptionsList { get; private set; } = new List<string>() { "1x1", "2x1",  "2x2", "3x1", "3x2", "3x3", "5x3", "9x5" };
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<ScreenVM> OnResolutionChanged;
