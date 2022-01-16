@@ -136,7 +136,7 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 	}).then( () => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)
 	).then( () => {
 		let shouldDisableIntellisense = lifeboatMainConfig.get("lifeboatapi.stormworks.shouldDisableNonSWIntellisense");
-		let enableLibraryValue = shouldDisableIntellisense ? "disable" : "default";
+		let enableLibraryValue = shouldDisableIntellisense ? "disable" : "enable";
 
 		// disable intellisense for lua modules that aren't available in stormworks
 		let luaModulesToDisable = {
@@ -153,7 +153,7 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 				"debug": 		enableLibraryValue,
 				"basic":		enableLibraryValue
 		};
-		
+
 		luaRuntimeConfig.update("builtin", luaModulesToDisable, vscode.ConfigurationTarget.Workspace);
 		
 	}).then( () => {
