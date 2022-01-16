@@ -31,9 +31,11 @@ LifeBoatAPI.Tools.NumberLiteralReducer = {
         text = this:_shortenType(text, LifeBoatAPI.Tools.StringUtils.find(text, "[^%w_](%d+%.?%d*[Ee]%-?%d*)"))   --exponents
         text = this:_shortenType(text, LifeBoatAPI.Tools.StringUtils.find(text, "[^%w_](%d+%.?%d*)"))             --all other numbers
 
+        -- numbers in the form 0.123 can be shortened to .123
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "([^%w_])0+(%.%d+)", "%1%2")
+
         return text
     end;
-
 
     _shortenType = function(this, text, variables)
         -- filter down to numbers that are at least 3 characters long, or it's pointless
