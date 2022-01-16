@@ -10,6 +10,7 @@
 --      Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go, then create an issue on the GitHub repo
 
 ---@diagnostic disable: lowercase-global
+---@diagnostic disable: undefined-doc-param
 
 ---@class Simulator_InputAPI
 ---@field _numbers number[] array of numbers inputs

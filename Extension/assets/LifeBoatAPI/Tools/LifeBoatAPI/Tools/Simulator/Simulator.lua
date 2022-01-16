@@ -19,7 +19,7 @@ require("LifeBoatAPI.Tools.Simulator.SimulatorInputHelpers")
 local _socket = require("socket")
 
 ---@class Simulator : BaseClass
-----@field config SimulatorConfig reference to the Simulator input/output config (Deprecated)
+---@field config SimulatorConfig reference to the Simulator input/output config (Deprecated)
 ---@field _timePerFrame number in seconds
 ---@field _renderOnFrames number effectively, frame-skip; how many frames to go between renders. 0 or 1 mean render every frame. 2 means render every 2nd frame
 ---@field _sendOutputSkip number frame-skip for sending the input/output changes.

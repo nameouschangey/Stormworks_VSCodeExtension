@@ -1,0 +1,56 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "..\\assets\\LifeBoatAPI"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off",
+		"files.associations": {
+			"*.lbinternal": "lua"
+		},
+		"Lua.IntelliSense.traceLocalSet": true,
+		"Lua.diagnostics.disable": [
+			"lowercase-global",
+			"undefined-doc-name"
+		],
+		"Lua.runtime.version": "Lua 5.3",
+		"Lua.workspace.ignoreDir": [
+			".vscode",
+			"/out/",
+			"/_build/",
+			"re.lua"
+		],
+		"lua.debug.settings.cpath": [
+			"c:\\Users\\Gmckendrick\\.vscode\\extensions\\nameouschangey.lifeboatapi-0.0.4/assets/luasocket/dll/socket/core.dll",
+			"c:\\Users\\Gmckendrick\\.vscode\\extensions\\nameouschangey.lifeboatapi-0.0.4/assets/luasocket/dll/mime/core.dll",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/luasocket/dll/socket/core.dll",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/luasocket/dll/mime/core.dll"
+		],
+		"lua.debug.settings.path": [
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/luasocket/?.lua",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/LifeBoatAPI/Microcontroller/?.lua",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/LifeBoatAPI/Microcontroller/?.lbinternal",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/LifeBoatAPI/Tools/?.lua",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/LifeBoatAPI/Tools/?.lbinternal"
+		],
+		"Lua.workspace.library": [
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/LifeBoatAPI/Microcontroller/",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/LifeBoatAPI/Tools/",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/nelodocs/docs_missions.lua",
+			"c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.8//assets/nelodocs/docs_vehicles.lua"
+		],
+		"lua.debug.settings.luaVersion": "5.3",
+		"lua.debug.settings.luaArch": "x86",
+		"Lua.IntelliSense.traceBeSetted": true,
+		"Lua.IntelliSense.traceFieldInject": true,
+		"Lua.IntelliSense.traceReturn": true,
+		"Lua.diagnostics.globals": [
+			"__simulator",
+			"LBSimulatorInputHelpers"
+		]
+	}
+}

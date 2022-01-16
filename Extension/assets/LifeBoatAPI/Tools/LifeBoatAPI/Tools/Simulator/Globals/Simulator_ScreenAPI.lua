@@ -9,6 +9,8 @@
 --      Based on data in: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go
 --      Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go, then create an issue on the GitHub repo
 
+---@diagnostic disable: undefined-doc-param
+
 LifeBoatAPI.Tools.AreNumbersNan = function(...)
     for _,v in ipairs({...}) do
         if v == math.huge or v == -math.huge or v ~= v then
