@@ -11,8 +11,10 @@ require("LifeBoatAPI.Tools.Utils.Base")
 ---@field height number
 ---@field touchX number
 ---@field touchY number
----@field isTouchedL boolean is E held down (left mouse button)
----@field isTouchedR boolean is Q held down (right mouse button)
+---@field touchAltX number      last position E & Q were held
+---@field touchAltY number      last position E & Q were held
+---@field isTouched boolean     is E or Q held down
+---@field isTouchedAlt boolean  are E and Q both held down
 ---@field poweredOn boolean
 ---@field portrait boolean
 ---@field screenNumber number
@@ -21,15 +23,17 @@ LifeBoatAPI.Tools.SimulatorScreen = {
     ---@return SimulatorScreen
     new = function(this, screenNumber)
         this = LifeBoatAPI.Tools.BaseClass.new(this)
-        this.width = 0
-        this.height = 0
-        this.touchX = 0
-        this.touchY = 0
-        this.isTouchedL = false
-        this.isTouchedR = false
-        this.poweredOn = true
-        this.portrait = false
-        this.screenNumber = screenNumber
+        this.width          = 0
+        this.height         = 0
+        this.touchX         = 0
+        this.touchY         = 0
+        this.touchAltX      = 0
+        this.touchAltY      = 0
+        this.isTouched      = false
+        this.isTouchedAlt   = false
+        this.poweredOn      = true
+        this.portrait       = false
+        this.screenNumber   = screenNumber
         return this
     end;
 }

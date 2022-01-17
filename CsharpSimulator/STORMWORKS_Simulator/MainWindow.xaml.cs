@@ -131,7 +131,10 @@ namespace STORMWORKS_Simulator
             var xTouchPos = Math.Min(Math.Max(vm.TouchPosition.X, 0), vm.Monitor.Size.X-1);
             var yTouchPos = Math.Min(Math.Max(vm.TouchPosition.Y, 0), vm.Monitor.Size.Y-1);
 
-            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{xTouchPos}|{yTouchPos}";
+            var xAltTouchPos = Math.Min(Math.Max(vm.TouchAltPosition.X, 0), vm.Monitor.Size.X - 1);
+            var yAltTouchPos = Math.Min(Math.Max(vm.TouchAltPosition.Y, 0), vm.Monitor.Size.Y - 1);
+
+            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown || vm.IsRDown ? '1' : '0') }|{ (vm.IsLDown && vm.IsRDown ? '1' : '0') }|{xTouchPos}|{yTouchPos}|{xAltTouchPos}|{yAltTouchPos}";
             if (newCommand != vm.LastTouchCommand)
             {
                 vm.LastTouchCommand = newCommand;

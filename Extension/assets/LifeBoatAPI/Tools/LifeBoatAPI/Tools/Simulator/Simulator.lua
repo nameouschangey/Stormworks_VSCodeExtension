@@ -46,19 +46,23 @@ LifeBoatAPI.Tools.Simulator = {
         this._isRendering = false
 
         this:_registerHandler("TOUCH",
-            function(simulator, screenNumber, isDownL, isDownR, x, y)
+            function(simulator, screenNumber, isTouched, isTouchedAlt, x, y, xAlt, yAlt)
                 screenNumber = tonumber(screenNumber)
                 x = tonumber(x)
                 y = tonumber(y)
-                isDownL = isDownL == "1"
-                isDownR = isDownR == "1"
+                xAlt = tonumber(xAlt)
+                yAlt = tonumber(yAlt)
+                isTouched = isTouched == "1"
+                isTouchedAlt = isTouchedAlt == "1"
 
                 this._screens[screenNumber] = this._screens[screenNumber] or LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
                 local thisScreen = this._screens[screenNumber]
-                thisScreen.isTouchedL = isDownL
-                thisScreen.isTouchedR = isDownR
+                thisScreen.isTouched = isTouched
+                thisScreen.isTouchedAlt = isTouchedAlt
                 thisScreen.touchX = x
                 thisScreen.touchY = y
+                thisScreen.touchAltX = xAlt
+                thisScreen.touchAltY = yAlt
             end)
 
         this:_registerHandler("SCREENSIZE",
@@ -81,10 +85,12 @@ LifeBoatAPI.Tools.Simulator = {
                 local thisScreen = this._screens[screenNumber]
                 thisScreen.poweredOn = poweredOn
                 if not thisScreen.poweredOn then
+                    thisScreen.isTouched = false
+                    thisScreen.isTouchedAlt = false
                     thisScreen.touchX = 0
                     thisScreen.touchY = 0
-                    thisScreen.isTouchedL = false
-                    thisScreen.isTouchedR = false
+                    thisScreen.touchAltX = 0
+                    thisScreen.touchAltY = 0
                 end
             end)
 
@@ -308,6 +314,11 @@ LifeBoatAPI.Tools.Simulator = {
                 if this._connection.isAlive then onSimulate(this, tickCount) end
 
                 if this._connection.isAlive then onTick() end
+
+
+
+
+
 
                 tickCount = tickCount + 1
 

@@ -140,7 +140,8 @@ namespace STORMWORKS_Simulator
         #region Touches
         // touch data
         public string LastTouchCommand = "";
-        public Point TouchPosition = new Point(0, 0);
+        public Point TouchPosition      = new Point(0, 0);
+        public Point TouchAltPosition   = new Point(0, 0);
         public bool IsLDown { get => _IsLDown && _IsInCanvas; }
         public bool IsRDown { get => _IsRDown && _IsInCanvas; }
 
@@ -262,6 +263,11 @@ namespace STORMWORKS_Simulator
                 TouchPosition = e.GetPosition(canvas);
                 TouchPosition.X = Math.Floor(TouchPosition.X / CanvasScale);
                 TouchPosition.Y = Math.Floor(TouchPosition.Y / CanvasScale);
+
+                if (IsRDown && IsLDown)
+                {
+                    TouchAltPosition = new Point(TouchPosition.X, TouchPosition.Y);
+                }
             }
 
             if (IsPowered)

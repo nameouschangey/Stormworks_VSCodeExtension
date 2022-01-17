@@ -39,16 +39,6 @@ LifeBoatAPI.Tools.SimulatorInputHelpers = {
         end
     end;
 
-    ---@deprecated 
-    touchScreenIsQTouched = function (simulator, screenNumber)
-        return LifeBoatAPI.Tools.SimulatorInputHelpers.touchScreenIsTouched(simulator, screenNumber)
-    end;
-
-    ---@deprecated 
-    touchScreenIsETouched = function (simulator, screenNumber)
-        return LifeBoatAPI.Tools.SimulatorInputHelpers.touchScreenIsTouched(simulator, screenNumber)
-    end;
-
     ---Connect the "is the screen being touched" input (normally input.getBool(1))
     ---@param simulator Simulator
     ---@param screenNumber number 
@@ -56,7 +46,7 @@ LifeBoatAPI.Tools.SimulatorInputHelpers = {
     touchScreenIsTouched = function (simulator, screenNumber)
         screenNumber = screenNumber or 1
         return function()
-            return simulator._screens[screenNumber] and (simulator._screens[screenNumber].isTouchedL or simulator._screens[screenNumber].isTouchedR) or false
+            return simulator._screens[screenNumber] and simulator._screens[screenNumber].isTouched or false
         end
     end;
 
