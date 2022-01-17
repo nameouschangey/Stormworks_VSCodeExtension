@@ -1,3 +1,10 @@
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+
+
 -- Please note, this is an example setup, but as you do not have the MCs it expects - it will NOT "just run"
 -- If you are not confident with Lua, it is advised you DO NOT use this feature
 -- Simulating multiple MCs has a lot of quirks and you may be making your life harder.

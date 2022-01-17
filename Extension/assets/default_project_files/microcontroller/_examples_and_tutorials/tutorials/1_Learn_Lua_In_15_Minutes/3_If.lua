@@ -1,3 +1,10 @@
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+
+
 -- Just hit F5 at any time, to run this file as a regular Lua file (without the Stormworks simulator).
 --     You'll see debugger controls at the top of the window once it starts running.
 --     Click StepInto to move 1 instruction at a time
