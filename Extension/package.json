@@ -198,7 +198,14 @@
 						"default": false,
 						"scope": "resource",
 						"description": "(Off by default) Minimizer is forced to output the authors custom boilerplate - even if the file goes over 4000 characters."
+					},
+					"lifeboatapi.stormworks.minimizer.skipCombinedFileOutput" : {
+						"type":"boolean",
+						"default": false,
+						"scope": "resource",
+						"description": "(Off by default) Skips saving the combined file output when building with F7. May slightly speed up build process on some systems."
 					}
+					
 				}
 			}
 		],

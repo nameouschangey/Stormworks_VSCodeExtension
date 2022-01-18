@@ -4,7 +4,6 @@ import { Func } from 'mocha';
 import { TextDecoder, TextEncoder } from 'util';
 import { settings } from 'cluster';
 import * as utils from "./utils";
-import * as fileContents from "./fileContentsConstants";
 
 export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isMicrocontrollerProject: boolean)
 {
