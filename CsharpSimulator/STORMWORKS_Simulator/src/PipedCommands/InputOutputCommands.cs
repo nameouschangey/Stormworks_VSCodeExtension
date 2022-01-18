@@ -71,19 +71,19 @@ namespace STORMWORKS_Simulator
                 var numberValue = commandParts[(i * 2) + 2];
                 if (numberValue == "INF")
                 {
-                    vm.Inputs[i].NumberValue = float.PositiveInfinity;
+                    vm.Outputs[i].NumberValue = float.PositiveInfinity;
                 }
                 else if (numberValue == "-INF")
                 {
-                    vm.Inputs[i].NumberValue = float.NegativeInfinity;
+                    vm.Outputs[i].NumberValue = float.NegativeInfinity;
                 }
                 else if (numberValue.Contains("NAN"))
                 {
-                    vm.Inputs[i].NumberValue = float.NaN;
+                    vm.Outputs[i].NumberValue = float.NaN;
                 }
                 else
                 {
-                    vm.Inputs[i].NumberValue = float.Parse(numberValue, CultureInfo.InvariantCulture);
+                    vm.Outputs[i].NumberValue = float.Parse(numberValue, CultureInfo.InvariantCulture);
                 }
             }
         }

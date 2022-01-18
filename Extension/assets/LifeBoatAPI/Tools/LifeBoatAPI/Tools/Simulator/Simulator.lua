@@ -312,13 +312,7 @@ LifeBoatAPI.Tools.Simulator = {
                 -- in which case, we want to stop processing asap
                 if this._connection.isAlive then this.config:onSimulate() end
                 if this._connection.isAlive then onSimulate(this, tickCount) end
-
                 if this._connection.isAlive then onTick() end
-
-
-
-
-
 
                 tickCount = tickCount + 1
 

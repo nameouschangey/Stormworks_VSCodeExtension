@@ -21,12 +21,12 @@ function onLBSimulatorTick(simulator, ticks)
     -- default touchscreen connection
     screenConnection = simulator:getTouchScreen(1)
     simulator:setInputBool(1, screenConnection.isTouched)
-    simulator:setInputBool(1, screenConnection.isTouchedAlt)
+    simulator:setInputBool(2, screenConnection.isTouchedAlt)
     simulator:setInputNumber(1, screenConnection.width)
     simulator:setInputNumber(2, screenConnection.height)
     simulator:setInputNumber(3, screenConnection.touchX)
     simulator:setInputNumber(4, screenConnection.touchY)
-    simulator:setInputNumber(3, screenConnection.touchAltX)
-    simulator:setInputNumber(4, screenConnection.touchAltY)
+    simulator:setInputNumber(5, screenConnection.touchAltX)
+    simulator:setInputNumber(6, screenConnection.touchAltY)
 end;
 ---@endsection
