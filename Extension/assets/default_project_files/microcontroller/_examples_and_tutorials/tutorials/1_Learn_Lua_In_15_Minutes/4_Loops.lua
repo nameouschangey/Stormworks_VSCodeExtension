@@ -18,79 +18,153 @@
 
 
 -------------------------------------------------------------------------------------------------------------
-print("-----If------")
+print("-----Loops------")
 
 
-print("You've learned that code runs from top to bottom")
-print("But what if you only want some things, to run at some times?")
+print("Sometimes you write the same code")
+print("Over and")
+print("Over and")
+print("Over and")
+print("Over")
 
--- if statements let you run one set of code or another, based on a condition
+-- you can use loops to repeat instructions multiple times
+-- like in a recipe, they say "beat 3 eggs", not "beat an egg then beat an egg then beat an egg"
 
-a = 5
-if a < 10 then  -- if <boolean> then <actions> else <otheractions> end
-    print("a was less than 10")
-else
-    print("THIS WON'T RUN BECAUSE A is 5") -- this instruction will never be run, unless you change the value of a
+-----------------------------------------------------------
+-- the syntax is simple:
+-- while boolean do
+--     instructions to run over and over again
+-- end
+-- will keep running the instructions until it the boolean is false
+
+i = 0
+while i < 3 do
+    i = i + 1 -- remember variables, this increases i by 1
+    print("this loop has run " .. i .. " times")
 end
 
+print("that's all there is to it, a loop just repeats instructions over and over again")
 
+-- Just note, in Stormworks a loop has NOTHING to do with ticks.
+--  in-game, your loop will run IN FULL till it ends, before the control is returned to the game
+--  remember, computers are simple; instructions run from the top - down to the bottom. Like a recipe book.
 
--- note that anything can be used as your boolean
--- any variable value that isn't "nil" or "false" will be treated as true
+print("that while (boolean) do (instructions) end syntax is called a 'while loop' - really imaginative isn't it.")
+print("and remember, ANY boolean will work, but if it never becomes false - your code will never end.")
 
-number = 123
-nilValue = nil
+-- ever wonder how games don't close after you open them, if code runs from top-to-bottom and then finishes?
+-- (extremely simplified - but you can guarantee there's a while loop involved)
 
-if nilValue then
-    print("This wont run")
-end
+gameIsRunning = false -- just to avoid you getting stuck in a never-ending loop, obviously this would be `true` for it to run
 
-if number then
-    print("This will")
-end
+while gameIsRunning do
+    -- in case it's not clear, all these variables will be `nil` as they've not been defined
+    --    they're just for the example
+    if currentTime - lastFrameTime > 1/60 then
+        simulatePhysicsFrame()
+        renderToScreen()
 
-if 0 then
-    print("Even this will, because 0 ISNT FALSE OR NIL")
-end
+        if playerIsPressingQuit then
+            gameIsRunning = false -- will cause the loop to end
+        end
 
-
-
---- and here we have a boolean value stored in a variable before we use it in the if statements
-myValue = 10 > 5 and 11 > 2 and not (false or 2 > 11) -- and, or, not are just like the logic blocks you have in the game
-if myValue then
-    print("my value is true")
-end
-
-if 5 < 10 and not 5 < 1 then
-    print("should be clearer now?")
-end
-
-
-
-print("but we're also neglecting the elseif here")
-print("extremely easy, you can chain multiple conditions to make your life easier")
-
-if 5 > 10 then
-    print("condition that isn't true")
-elseif 5 > 6 then
-    print("only gets evaluated if the first condition isn't true")
-elseif 5 < 100 then
-    print("again, only runs because the ones before werent true")
-else
-    print("none of the above conditions were true if this runs")
-end
-
-
-
--- and that's really ALL there is to "if, else"
--- you can obviously; use this in functions - (because you can use ANY instructions in functions)
-
-function returnBiggest(num1, num2)
-    if num1 > num2 then
-        return num1
-    else
-        return num2
+        lastFrameTime = currentTime
     end
 end
 
-print("return biggest: " .. returnBiggest(10, 15))
+---------------------------------------------------------------
+
+-- another kind of loop you can use is a `for` loop
+
+-- as in "do these actions *for* 5 repetitions" 
+-- versus, "keep doing these actions *while* the boolean is true"
+
+firstValue = 1 -- note, in lua, we tend to count from 1 not 0; if you're used to other languages that may seem odd to you
+maximumValue = 5
+amountToIncreaseEachTimeOr1AsDefault = 1
+for counter=firstValue, maximumValue, amountToIncreaseEachTimeOr1AsDefault do
+    print("For loops are good when you have a PRE-DETERMINED times you want to repeat. " .. counter);
+end
+
+print("a for loop uses a counter (just a variable), and it increases that counter until it reaches the maximum you set")
+print("you can omit the 3rd parameter (`amountToIncrease..`) if you want to increase 1 at a time")
+
+-- "i" is a really common name for the counter
+-- note how we only put in 2 values, because we increase 1 at a time
+for i = 1, 5 do
+    -- instructions to repeat go in here, between the "do" and "end"
+    -- again, any instructions are fine 
+    print("Looping, i has the value: " .. i)
+end
+
+for i = 1, 100, 50 do
+    print("But this time we're skipping 50 at a time. This is i: " .. i)
+end
+
+-- and this one counts backwards
+for i=100, 95, -1 do
+    print("backwards counting: " .. i) -- remember ".." joins a two pieces of text, or a number onto a piece of text
+end
+
+-- you might already be realising in stormworks, it's not uncommon to want to draw multiple things
+-- for example, drawing 5 buttons...I wonder what you could use for that
+
+
+-- as a side note, you may be wondering if this will work:
+for i = 1, 3 do
+    for j = 1, 3 do
+        print("i: " .. i .. ", j: " .. j .. ", i*j: " .. i*j)
+    end
+    -- ANY instructions can go in here.
+end
+
+
+-----------------------------------------------------------------------------------------------------------------------
+
+print("Finally on loops, you sometimes want some extra control.")
+print("A keywords you can use to control how loops work is `break`")
+print("It's really straight forward, and works the same in all loops (for and while)")
+
+while true do
+    print("you might be thinking this is insane")
+    print("won't this loop run forever, and the program will stall?")
+
+    shouldWeEscape = true
+    if shouldWeEscape then
+        break -- like a prison break, we escape the current loop we're in. No matter what the condition is
+    end
+end
+
+print("straight after the break statement, this is what will be run - the rest of the loop is skipped")
+
+while true do
+    for i=1, 9999999 do
+        print("if you see this multiple times, we didn't break out. See you in iteration 9999999")
+        break -- escape the loop
+    end
+
+    print("notice we escape the for loop; but we were in two loops. So now let's escape the while loop too")
+    break
+end
+
+print("freedom!")
+
+-- you might use this, for example, to find a value in a list of things
+--  you'd loop through the list checking each thing. Once you find one that matches in an if statement, you can break.
+--  no point running the code for the rest of the loop right?
+
+for targetNumber=1,8 do
+    -- run some code to check the radar inputs
+    -- some code to calculate a distance to the target
+    distanceToTarget = 10
+
+    if distanceToTarget < 100 then
+        print("found a target that's close enough, we don't need to check the rest")
+        -- run some code to detonate, or avoid it, whatever the desired action is
+        break
+    end
+end
+
+print("and that's 'break'")
+
+------------------------------------------------------------------------------------------

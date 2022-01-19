@@ -24,7 +24,7 @@ print("-----If------")
 print("You've learned that code runs from top to bottom")
 print("But what if you only want some things, to run at some times?")
 
--- if statements let you run one set of code or another, based on a condition
+-- if statements let you run one set of code or another, based on a boolean
 
 a = 5
 if a < 10 then  -- if <boolean> then <actions> else <otheractions> end
@@ -38,12 +38,14 @@ end
 -- note that anything can be used as your boolean
 -- any variable value that isn't "nil" or "false" will be treated as true
 
-number = 123
+
 nilValue = nil
 
 if nilValue then
     print("This wont run")
 end
+
+number = 123
 
 if number then
     print("This will")
@@ -81,7 +83,6 @@ else
 end
 
 
-
 -- and that's really ALL there is to "if, else"
 -- you can obviously; use this in functions - (because you can use ANY instructions in functions)
 
@@ -94,3 +95,23 @@ function returnBiggest(num1, num2)
 end
 
 print("return biggest: " .. returnBiggest(10, 15))
+
+
+condition1 = false
+condition2 = false
+condition3 = true
+
+-- Final note, be CAREFUL of this
+if condition1 then
+    -- this is fine, will run if `condition1` is NOT false or nil
+
+elseif condition2 then
+    -- this is fine, will run if `condition2` is NOT false or nil (assuming condition1 was)
+
+else if condition3 then
+    -- NOPE. This is not an elseif. This is a separate "else" for the above, that CONTAINS an if
+    -- the space shouldn't be there. Notice, it means we need an extra `end` at the bottom
+    -- extremely easy mistake to make, just be careful
+end
+end -- yes it ruins the above example, but no I'm not letting this tutorial contain broken code.
+
