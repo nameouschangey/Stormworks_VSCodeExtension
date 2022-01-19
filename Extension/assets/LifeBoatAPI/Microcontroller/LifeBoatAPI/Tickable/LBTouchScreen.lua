@@ -88,12 +88,23 @@ LifeBoatAPI.LBTouchScreen = {
             end;
             ---@endsection
 
-            ---@section lbbutton_drawRect
+            ---@section lbbutton_draw
             --- Simple drawing function, can make life easier while prototyping things
             ---@param this LBTouchScreenButton
             lbbutton_draw = function(this)
                 screen.drawRect(this.x, this.y, this.width, this.height)
                 screen.drawTextBox(this.x+1, this.y+1, this.width-1, this.height-1, this.text, 0, 0)
+            end;
+            ---@endsection
+
+            ---@section lbbutton_drawRect
+            ---@deprecated
+            --- DEPRECATED please use lbbutton_draw instead, and set text value in :new()
+            --- This function will be removed in a future version, please update your code.
+            ---@param this LBTouchScreenButton
+            lbbutton_drawRect = function(this, text)
+                screen.drawRect(this.x, this.y, this.width, this.height)
+                screen.drawTextBox(this.x+1, this.y+1, this.width-1, this.height-1, this.text or text, 0, 0)
             end;
             ---@endsection
         }

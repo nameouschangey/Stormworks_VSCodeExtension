@@ -54,7 +54,6 @@ export function getDebugPaths(context : vscode.ExtensionContext)
 	for(let path of getLibraryPaths(context))
 	{
 		debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
-		debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)
 	}
 	return debugPaths;
 }
