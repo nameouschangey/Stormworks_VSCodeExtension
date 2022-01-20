@@ -1,10 +1,6 @@
--- Author: Nameous Changey
--- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
--- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
-require("_examples_and_tutorials.tutorials._intellisense_for_tutorials")
 
 --[[
     The best way to learn is to RUN the file, and to try messing with things
@@ -15,8 +11,8 @@ require("_examples_and_tutorials.tutorials._intellisense_for_tutorials")
     **There is no such thing as not being smart enough to code. No programmer is really that smart. It's just about putting time into it.**
 ]]
 
--- Hit F5 at any time, to run this file as a regular Lua file (without the Stormworks simulator).
---     You'll see debugger controls at the top of the window once it starts running.
+-- Hit F5 at any time (try it now!), to run this file as a regular Lua file without the Stormworks simulator.
+--     You'll see debugger controls at the top of the window once it starts running
 --     Click StepInto to move 1 instruction at a time
 --
 --     You can use these to run 1 instruction at a time and see EXACTLY what lua is doing
@@ -24,8 +20,9 @@ require("_examples_and_tutorials.tutorials._intellisense_for_tutorials")
 --          * clicking left of the line numbers will set a red circle ("breakpoint"). Pressing F5 will run all code up to that instruction.
 --             you can use that to skip the parts you understand, and get straight to the "new" stuff each time
 
--- PS: If you noticed these green lines all start with "--", and don't seem to do anything. You've already intuitively figured out how comments work.
 
+
+-- Note: If you noticed these green lines all start with "--", and don't seem to do anything. You've already intuitively figured out how comments work.
 
 -------------------------------------------------------------------------------------------------------------
 print("Notice how instructions")
@@ -38,6 +35,9 @@ print("You can see these outputs in the DEBUG CONSOLE window at the bottom of VS
 
 -------------------------------------------------------------------------------------------------------------
 print("-----Variables------")
+
+print("Variables are like little named boxes, each one contains a value - and we can overwrite what's in it at any time.")
+
 -- these are variables
 -- We assign values into variables using "=". This is assignment, *not* equality (it doesn't work like maths)
 thisIsAVariable = 123                   -- numbers
@@ -71,5 +71,6 @@ print("value of b: " .. b)
 
 print("it shouldn't surprise you then, that this resolves to a single number before printing: " .. ((a + b) * 10) )
 
+print("and that's it, that's how variables work. Congrats!")
 
 
