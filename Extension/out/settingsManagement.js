@@ -36,7 +36,6 @@ function getDebugPaths(context) {
     ];
     for (let path of getLibraryPaths(context)) {
         debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
-        debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)
     }
     return debugPaths;
 }
@@ -86,7 +85,7 @@ function beginUpdateWorkspaceSettings(context) {
         }
     }).then(() => {
         //Lua.diagnostics.disable
-        let existing = luaLibWorkspace.get("disable") ?? [];
+        let existing = luaDiagnosticsConfig.get("disable") ?? [];
         if (existing.indexOf("lowercase-global") === -1) {
             existing.push("lowercase-global");
         }
@@ -94,6 +93,18 @@ function beginUpdateWorkspaceSettings(context) {
             existing.push("undefined-doc-name");
         }
         return luaDiagnosticsConfig.update("disable", existing, vscode.ConfigurationTarget.Workspace);
+    }).then(() => {
+        let existing = luaDiagnosticsConfig.get("globals") ?? [];
+        if (!lifeboatIgnorePaths.includes("__simulator")) {
+            lifeboatIgnorePaths.push("__simulator");
+        }
+        if (!lifeboatIgnorePaths.includes("print")) {
+            lifeboatIgnorePaths.push("print");
+        }
+        if (!lifeboatIgnorePaths.includes("simulator")) {
+            lifeboatIgnorePaths.push("simulator");
+        }
+        return luaDiagnosticsConfig.update("globals", existing, vscode.ConfigurationTarget.Workspace);
     }).then(() => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)).then(() => {
         let shouldDisableIntellisense = lifeboatMainConfig.get("lifeboatapi.stormworks.shouldDisableNonSWIntellisense");
         let enableLibraryValue = shouldDisableIntellisense ? "disable" : "enable";

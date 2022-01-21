@@ -121,7 +121,7 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 
 	}).then( () => {
 		//Lua.diagnostics.disable
-		let existing : string[] = luaLibWorkspace.get("disable") ?? [];
+		let existing : string[] = luaDiagnosticsConfig.get("disable") ?? [];
 		if(existing.indexOf("lowercase-global") === -1)
 		{
 			existing.push("lowercase-global");
@@ -132,7 +132,25 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		}
 		return luaDiagnosticsConfig.update("disable", existing, vscode.ConfigurationTarget.Workspace);
 
-	}).then( () => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)
+	}).then(
+		() => {
+			let existing : string[] = luaDiagnosticsConfig.get("globals") ?? [];
+
+			if (!lifeboatIgnorePaths.includes("__simulator"))
+			{
+				lifeboatIgnorePaths.push("__simulator");
+			}
+			if (!lifeboatIgnorePaths.includes("print"))
+			{
+				lifeboatIgnorePaths.push("print");
+			}
+			if (!lifeboatIgnorePaths.includes("simulator"))
+			{
+				lifeboatIgnorePaths.push("simulator");
+			}
+			return luaDiagnosticsConfig.update("globals", existing, vscode.ConfigurationTarget.Workspace);
+		}
+	).then( () => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)
 	).then( () => {
 		let shouldDisableIntellisense = lifeboatMainConfig.get("lifeboatapi.stormworks.shouldDisableNonSWIntellisense");
 		let enableLibraryValue = shouldDisableIntellisense ? "disable" : "enable";
