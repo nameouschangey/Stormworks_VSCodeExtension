@@ -235,7 +235,7 @@ namespace STORMWORKS_Simulator
 
             while (index < (text.Length - charsPerLine))
             {
-                var nextIndex = text.LastIndexOf(" ", index + charsPerLine, charsPerLine) + 1;
+                var nextIndex = text.LastIndexOf(" ", index + charsPerLine, charsPerLine+1) + 1;
                 if (nextIndex == 0
                     || nextIndex > index + charsPerLine)
                 {
@@ -250,25 +250,6 @@ namespace STORMWORKS_Simulator
             {
                 lines.Add(text.Substring(index));
             }
-
-            /*
-            while (index < (text.Length - (charsPerLine + 1)))
-            {
-                var nextIndex = text.LastIndexOf(" ", index + charsPerLine + 1, charsPerLine + 1) + 1;
-                if (nextIndex == 0
-                    || nextIndex > index + charsPerLine)
-                {
-                    nextIndex = index + charsPerLine;
-                }
-
-                lines.Add(text.Substring(index, nextIndex - index));
-                index = nextIndex;
-            }
-
-            if (index < text.Length)
-            {
-                lines.Add(text.Substring(index));
-            }*/
 
             var lineHeight = 6;
 
@@ -280,7 +261,7 @@ namespace STORMWORKS_Simulator
 
             if (verticalAlign == 0)
             {// center
-                var centerY = (y + height / 2);
+                var centerY = y + (int)Math.Ceiling(height / 2);
                 startY = centerY - (textBlockHeight/2);
             }
             else if(verticalAlign == 1)
@@ -307,13 +288,13 @@ namespace STORMWORKS_Simulator
             {
                 var line = lines[i];
 
-                // calculate vertical align
+                // calculate horizontal align
                 var textBlockWidth = (line.Length * 5);
 
                 if (horizontalAlign == 0)
                 {// center
-                    var centerX = (x + width / 2);
-                    startX = centerX - textBlockWidth / 2;
+                    var centerX = x + (int)Math.Floor(width / 2);
+                    startX = centerX - (textBlockWidth / 2);
                 }
                 else if (horizontalAlign == 1)
                 { // bottom
