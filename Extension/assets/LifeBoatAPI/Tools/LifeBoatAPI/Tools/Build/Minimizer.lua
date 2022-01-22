@@ -130,7 +130,7 @@ LifeBoatAPI.Tools.Minimizer = {
 
         local nameousBoilerplateSize = 233 + #tostring(sizeWithoutBoilerplate) + #tostring(#text)
         local predictedBoilerplateSize = ((this.params.forceNCBoilerplate or (#text + #boilerplate + nameousBoilerplateSize < 4000)) and nameousBoilerplateSize + #boilerplate) 
-                                       or ((this.params.forceBoilerplate or #text + #boilerplate < 4000) and #boilerplate)
+                                       or ((this.params.forceBoilerplate or (#text + #boilerplate < 4000)) and #boilerplate)
                                        or 0
 
         -- add boilerplate if the file is small enough
