@@ -200,7 +200,9 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		// Nelo Docs should only be in the library path for the relevant project type
 		if (lifeboatMainConfig.get("isAddonProject") === true) {
 			lifeboatLibraryPaths.push(neloAddonDoc);
-		} else {
+		} else if (docConfig.get("overwriteNeloDocsPath") === true) {
+			// only add the Rene-sackers doc, if the user has actively said to overwrite our one
+			// otherwise, we don't want intellisense on it
 			lifeboatLibraryPaths.push(neloMCDoc);
 		}
 

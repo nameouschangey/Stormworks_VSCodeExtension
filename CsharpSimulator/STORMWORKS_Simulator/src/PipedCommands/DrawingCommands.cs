@@ -233,6 +233,25 @@ namespace STORMWORKS_Simulator
             var lines = new List<string>();
             var index = 0;
 
+            while (index < (text.Length - charsPerLine))
+            {
+                var nextIndex = text.LastIndexOf(" ", index + charsPerLine, charsPerLine) + 1;
+                if (nextIndex == 0
+                    || nextIndex > index + charsPerLine)
+                {
+                    nextIndex = index + charsPerLine;
+                }
+
+                lines.Add(text.Substring(index, nextIndex - index));
+                index = nextIndex;
+            }
+
+            if (index < text.Length)
+            {
+                lines.Add(text.Substring(index));
+            }
+
+            /*
             while (index < (text.Length - (charsPerLine + 1)))
             {
                 var nextIndex = text.LastIndexOf(" ", index + charsPerLine + 1, charsPerLine + 1) + 1;
@@ -249,8 +268,7 @@ namespace STORMWORKS_Simulator
             if (index < text.Length)
             {
                 lines.Add(text.Substring(index));
-            }
-
+            }*/
 
             var lineHeight = 6;
 

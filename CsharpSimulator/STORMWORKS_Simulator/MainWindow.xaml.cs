@@ -91,6 +91,15 @@ namespace STORMWORKS_Simulator
             };
 
             Logger.Log("MainWindow Initialized and running");
+
+            screen.ScreenResolutionDescription = "3x3";
+
+        }
+
+        private void FakeDraw(int x, int y, int width, int height, string text, int align = 0)
+        {
+            TickHandler.OnLineRead(this, $"RECT|1|0|{x}|{y}|{width}|{height}");
+            TickHandler.OnLineRead(this, $"TEXTBOX|1|{x}|{y}|{width}|{height}|{align}|{align}|{text}");
         }
 
         private void OnKeepAliveTimer(object state)
@@ -108,6 +117,29 @@ namespace STORMWORKS_Simulator
                     Application.Current.Shutdown();
                 });
             }
+
+
+            FakeDraw(2, 2, 6, 6, "+");
+            FakeDraw(12, 2, 7, 7, "+");
+            FakeDraw(22, 2, 8, 8, "+");
+            
+            FakeDraw(2, 12, 6, 6, "+", -1);
+            FakeDraw(12, 12, 7, 7, "+", -1);
+            FakeDraw(22, 12, 8, 8, "+", -1);
+            
+            FakeDraw(2, 22, 6, 6, "++");
+            FakeDraw(12, 22, 7, 7, "++");
+            FakeDraw(22, 22, 8, 8, "++");
+            FakeDraw(32, 22, 9, 9, "++");
+            FakeDraw(42, 22, 10, 10, "++");
+            
+            FakeDraw(2, 42, 6, 6, " ++");
+            FakeDraw(12, 42, 7, 7, " ++");
+            FakeDraw(22, 42, 8, 8, " ++");
+            FakeDraw(32, 42, 9, 9, " ++");
+            FakeDraw(42, 42, 10, 10, " ++");
+
+            TickHandler.OnLineRead(this, "TICKEND|1");
         }
 
         private void Pipe_OnPipeClosed(object sender, EventArgs e)
