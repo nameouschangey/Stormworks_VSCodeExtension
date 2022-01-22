@@ -106,5 +106,17 @@ namespace STORMWORKS_Simulator.Properties {
                 this["WindowHeight"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableHardwareAcceleration {
+            get {
+                return ((bool)(this["EnableHardwareAcceleration"]));
+            }
+            set {
+                this["EnableHardwareAcceleration"] = value;
+            }
+        }
     }
 }

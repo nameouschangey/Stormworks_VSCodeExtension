@@ -106,6 +106,27 @@ namespace STORMWORKS_Simulator
         public int TickRateIndex { get; set; }
         public int TickRate { get; private set; } = 0;
 
+        public bool EnableHWAccel
+        {
+            get
+            {
+                return Properties.Settings.Default.EnableHardwareAcceleration;
+            }
+            set
+            {
+                Properties.Settings.Default.EnableHardwareAcceleration = value;
+                Properties.Settings.Default.Save();
+
+                if (EnableHWAccel)
+                {
+                    RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+                }
+                else
+                {
+                    RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                }
+            }
+        }
 
         public bool EnablePan
         {

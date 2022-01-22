@@ -66,16 +66,19 @@
             <DockPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <CheckBox Margin="10,0"
                           VerticalAlignment="Center"
+                          ToolTip="If Enabled, will reset the view each time the monitors are changed"
                           IsChecked="{Binding AutoReset}"
                           Content="AutoReset" />
                 
                 <Button DockPanel.Dock="Left"
                         Margin="10,0"
-                        Content="Reset"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Reset View"
                         Click="OnResetClicked"/>
 
                 <CheckBox Margin="10,0"
                           VerticalAlignment="Center"
+                          ToolTip="Can turn off the click-to-pan function when testing click functionality"
                           IsChecked="{Binding EnablePan}"
                           Content="Enable Pan" />
                 <Button DockPanel.Dock="Left"
@@ -87,6 +90,7 @@
                 <ComboBox DockPanel.Dock="Left"
                           Margin="10,0"
                           Text="FrameSkip"
+                          ToolTip="Number of ticks to run between rendering"
                           ItemsSource="{Binding FrameSkipOptions}"
                           SelectedItem="{Binding FrameSkipOption}"
                           SelectedIndex="{Binding FrameSkipIndex}" />
@@ -94,9 +98,15 @@
                            Text="TickRate: " />
                 <ComboBox DockPanel.Dock="Left"
                           Text="TickRate"
+                          ToolTip="How many ticks to simulate per second"
                           ItemsSource="{Binding TickRateOptions}"
                           SelectedItem="{Binding TickRateOption}"
                           SelectedIndex="{Binding TickRateIndex}" />
+                <CheckBox Margin="10,0"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding EnableHWAccel}"
+                          ToolTip="Recommended ON; only disable this on certain laptops to fix major rendering issues"
+                          Content="Hardware Accelerated" />
             </DockPanel>
 
             <!--<Border Grid.Row="1"

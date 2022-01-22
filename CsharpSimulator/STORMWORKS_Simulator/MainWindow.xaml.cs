@@ -90,10 +90,17 @@ namespace STORMWORKS_Simulator
                 Properties.Settings.Default.Save();
             };
 
+            // set HW acceleration from previous value
+            if (ViewModel.EnableHWAccel)
+            {
+                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+            }
+            else
+            {
+                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+            }
+
             Logger.Log("MainWindow Initialized and running");
-
-            screen.ScreenResolutionDescription = "3x3";
-
         }
 
         private void OnKeepAliveTimer(object state)
