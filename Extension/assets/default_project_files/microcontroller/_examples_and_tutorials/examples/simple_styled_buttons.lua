@@ -3,11 +3,13 @@
 -- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-- F6 To run me!
+
 
 require("LifeBoatAPI")              -- Type 'LifeBoatAPI.' and use intellisense to checkout the new LifeBoatAPI library functions; such as the LBVec vector maths library
-
---  Want to test everything works? Just hit F6 and the simulator will run
---  Remember, you can add a breakpoint by clicking to the left of the line-number, for full debugging!
 
 
 -- color palette, keeping them here makes UI easier to restyle
@@ -43,6 +45,3 @@ function onDraw()
     -- draw our button - using its internal styling (set at the top when we created it)
     myButton:lbstyledbutton_draw() -- this button code is of course just as an example, CTRL+CLICK any function to see how it was written, to write your own better one
 end
-
---- Ready to put this in the game?
---- Just hit F7 and then copy the (now tiny) file from the /out/ folder
