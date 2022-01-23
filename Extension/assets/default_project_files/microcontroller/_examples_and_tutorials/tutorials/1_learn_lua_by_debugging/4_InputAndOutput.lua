@@ -8,17 +8,21 @@
 -- Remember you can set Breakpoints! Click to the left of the line number to add a little red circle!
 -- And once you've got an idea of what the code does, you can always try messing with it too!
 
+
+-- This example shows how we can read from the in-game `input` and `output` objects
+--   Even if you're just learning lua outside the game - knowing this will let us do more interesting things!
+
+
 tickCounter = 0 -- we'll use this in onTick
 
 -- NB: Just for functions, this is an alternative way of writing:
---     `onTick = function() ... end` (I actually prefer the `onTick =` way, it's clearer how it works)
+--     `onTick = function() ... end` (I actually prefer the `onTick =` way, it's clearer what it's doing)
 function onTick()
     tickCounter = tickCounter + 1 -- add 1 each tick, so we can count how many ticks
 
     -- the variable `input` is provided by the game. It holds a `table` (box that can hold many variables), with two functions in it
     --    these functions let you read the numbers and booleans from the composite input
     -- note that `input` and `output` can only be used within the onTick function. That's just a limitation the game enforces (not a lua one)
-
 
     -- by default, in VScode, the composite input will contain the touchscreen coordinates
     -- the `input` values are shown on the left hand side of the simulator, when it's running
