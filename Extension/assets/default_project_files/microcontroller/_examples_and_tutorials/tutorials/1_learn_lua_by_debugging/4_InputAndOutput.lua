@@ -6,7 +6,7 @@
 
 
 -- Remember you can set Breakpoints! Click to the left of the line number to add a little red circle!
-
+-- And once you've got an idea of what the code does, you can always try messing with it too!
 
 tickCounter = 0 -- we'll use this in onTick
 
@@ -26,7 +26,6 @@ function onTick()
     monitorTouchY = input.getNumber(4) -- y coordinate that's being clicked on the monitor
 
     monitorIsBeingClicked = input.getBool(1)
-    
 
     -----------------------
     -- the variable `output` is provided by the game, it holds a `table`, with functions in it
