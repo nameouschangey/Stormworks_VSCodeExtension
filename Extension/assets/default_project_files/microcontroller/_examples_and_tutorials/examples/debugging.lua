@@ -14,7 +14,10 @@
 --  And in the "Run and Debug" tab on the left, you can see the callstack, and list of all global variables
 
 
+ticks = 0
 function onTick()
+    ticks = ticks + 1
+    
     randomValue = math.random()
 
     if ticks % 100 == 0 then
