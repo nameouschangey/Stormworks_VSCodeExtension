@@ -11,15 +11,17 @@
 tickCounter = 0 -- we'll use this in onTick
 
 -- NB: Just for functions, this is an alternative way of writing:
---     `onTick = function() ... end`
---     (which is actually how I'd recommend it - it's clearer that all you're doing is assigning a function, into the variable called "onTick")
+--     `onTick = function() ... end` (I actually prefer the `onTick =` way, it's clearer how it works)
 function onTick()
     tickCounter = tickCounter + 1 -- add 1 each tick, so we can count how many ticks
 
     -- the variable `input` is provided by the game. It holds a `table` (box that can hold many variables), with two functions in it
     --    these functions let you read the numbers and booleans from the composite input
+    -- note that `input` and `output` can only be used within the onTick function. That's just a limitation the game enforces (not a lua one)
+
 
     -- by default, in VScode, the composite input will contain the touchscreen coordinates
+    -- the `input` values are shown on the left hand side of the simulator, when it's running
     monitorWidth  = input.getNumber(1)
     monitorHeight = input.getNumber(2)
     monitorTouchX = input.getNumber(3) -- x coordinate that's being clicked on the monitor
@@ -30,6 +32,7 @@ function onTick()
     -----------------------
     -- the variable `output` is provided by the game, it holds a `table`, with functions in it
     --      these functions let you write data to the composite output
+    --      in the simulator, these values are shown on the right hand side
     output.setNumber(1, monitorWidth)
     output.setNumber(2, 1020202)
     output.setBool(1, true)

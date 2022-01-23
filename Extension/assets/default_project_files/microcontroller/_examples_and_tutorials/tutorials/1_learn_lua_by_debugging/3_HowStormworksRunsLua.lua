@@ -18,11 +18,16 @@ debug.log("In-game, the file is run when the MC is loaded. ONCE ONLY")
 debug.log("That means in game, this part of the code would only run ONCE when the file loads")
 
 
+
+---- QUICK REMINDER ON VARIABLES
 exampleVariable = 123  -- assign the value 123 into the value "exampleVariable".
-abc = 22               -- a variable is like a box, with a label on the front. The box "ABC" now holds the NUMBER, 22
-def = "my text"        -- and on this line, the box "def" has the TEXT value "my text" put into it
+exampleVariable = 11   -- overwrites the previous value with the new one
+abc123 = 22               -- a variable is like a box, with a label on the front. The box "abc123" now holds the NUMBER, 22
+def456 = "my text"        -- and on this line, the box "def456" has the TEXT value "my text" put into it
 
 debug.log("Note: The = sign means 'assign' NOT 'equals'. That means 'put the value from the right hand side, into the variable on the left")
+------------------------------
+
 
 
 tickCounter = 0 -- we'll use this in onTick
@@ -49,4 +54,5 @@ end
 onDraw = function ()
     -- the game also wants to find a variable called onDraw containing a function
     -- if it does, it will run this function each time the MC draws to a connected monitor
+    debug.log("onDraw running here!")
 end

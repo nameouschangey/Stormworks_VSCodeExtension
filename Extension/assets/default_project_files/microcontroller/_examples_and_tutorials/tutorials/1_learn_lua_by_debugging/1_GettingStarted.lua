@@ -22,9 +22,37 @@
 
 -- Hit F6 to run this file!
 
-debug.log("We'll be using this function to log messages to the DEBUG CONSOLE at the bottom of you screen")
+debug.log("We'll be using this function to log messages to the DEBUG CONSOLE at the bottom of your VSCode screen")
 debug.log("Notice how each line of this file is run one after another")
 
 debug.log("Don't worry about remembering everything")
 
 debug.log("Off you go, close the simulator and move on to step 2")
+
+
+-- Tip:
+--  Ever get lost and can't find your files
+--  Just look on the far left bar, and select the "Explorer" tab (CTRL+SHIFT+E)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--ignore me---------------------------------------------------------------------------------------------------
+simulator:exit() -- this isn't an in-game instruction, we're just using it to make your life easier

@@ -17,14 +17,16 @@
     --      It will add a little red circle
     --    This is called a "Breakpoint"
     --      When the file is running (F6), it will pause when it reaches any lines with a "breakpoint" on them
+    --      (Don't be alarmed if the breakpoint moves down - it just moves past the comments to the first "real" instruction, to help you.)
 
     -- 2. Press F6 to run this file
+    --    (If anything ever goes wrong, just click the big red STOP square at the top, come back to this file and go again.)
 
-    -- 3. Notice it's stopped running at the breakpoint, that line has gone yellow (this shows it's the current instruction)
+    -- 3. Notice it's stopped running at the breakpoint, the yellow line is instruction to be executed next
 
-    -- 4. Look for the play/pause/stop controls at the top of this VSCode editor screen 
+    -- 4. Look for the continue/pause/stop controls at the top of this VSCode editor screen 
 
-    -- 5. Use the different controls ("Step Over" and "Step Into") to run code 1 line at a time
+    -- 5. Click "Step Into" (F11) to run the code 1 line at a time
 
     -- 6. Hover your cursor over any variables (don't worry), to see their values
     --      It'll make sense when you try it.
@@ -32,45 +34,72 @@
 
 -- here are some example lines of code, stick breakpoints and see how it runs:
 
-debug.log("Breakpoints tutorial now running!")
+debug.log("Breakpoints tutorial now running!") -- debug.log is just an instruction that writes text, to the DEBUG CONSOLE at the bottom of your VSCode screen
 
-a = 22      -- "a" is a variable (think "box with a label on the front"), and we assign the value 22 into it.
-b = 1123    -- don't worry for now, but just know - the '=' in lua is 'assign value' NOT mathematic 'equals'
+a = 22      -- "a" is a variable (think "box with a label on the front"), and we tell it to store the number 22
+b = 1123    -- unlike maths, we're not making an equation, b is a box - we put a value in it. It overwrites whatever value was in it before. That's it.
 
-c = a + b
+c = a + b   -- hover over this while debugging (debug controls visible at the top of the screen) - to check what the value is
 
-d = (100 * 10)
-d = 123 + 123
-d = 55
+
+d = (100 * 10)  -- set d to 1000 (100 * 10)
+d = 123 + 123   -- overwrite d with a new value, 246 (123 + 123)
+d = 55          -- notice how we overwrite the last value of d each time. Each instruction runs without caring what ran before it. We're just putting values in boxes.
+
 
 e = 1
 e = e + 1 -- see how the right hand side resolves into a simple number value, so we can "stick it in the box" (assign it to the variable)
--- remember, each instruction runs 1 at a time, like a recipe book. That's all it's doing.
-
+          -- remember, each instruction runs 1 at a time, like a recipe book. That's all it's doing.
+          -- if it's not obvious: use the debugger, and hover over 'e' to see what it's doing
 e = e * 10
 
+debug.log("current value of e is: " .. e)
 
-myBoolean = true
 
--- don't stress over this, it'll make sense later, but an if statement runs the instruction inside it; IF the boolean is not nil or false
-if myBoolean then
-    debug.log("Calling the function `log`, stored in the table `debug`, because `myBoolean` wasnt nil and wasnt false")
+
+isMyHatFancy = true
+
+if isMyHatFancy then
+    -- code in this bit runs if the variable 'isMyHatFancy' holds any value that isn't `nil` or `false` (variables are all 'nil' until we give them a value)
+    debug.log("My Hat is Fancy")
 else
-    debug.log("This will only run if myBoolean was nil or false")
+    -- code here runs if the variable `isMyHatFancy` has the value `false` or `nil`
+    debug.log("This code won't run because right now, my hat is fancy...Unless you changed that above.")
 end
 
 
-debug.log("as a note: you can also add/remove breakpoints while the code is running. Or while it's paused.")
-debug.log("of course, if you have none set to start, this file will probably finish a bit too quick!")
+-- Congratulations
+--      That might have been a lot to take in - especially if "things went wrong", like it opening up other files etc.
+--      The start is THE HARDEST part of learning to code. If the above made sense, even just some sense, celebrate. It gets easier from here.
+--      Remember, it's fine to take breaks - your brain might feel overloaded really fast; and that's because you're learning a lot.
+--      And if something doesn't make sense, take a break, come back - don't get frustrated or feel like you can't do it. It's normal to find it hard, it'll get easier.
 
--- Don't stress over how the specifics above work
 
--- The aim is just to see the following:
+-- So, to recap - the aim is just to notice the following:
 --      1. Code runs like a recipe book; one instruction at a time
 --      2. Breakpoints let you pause the code, so you can run it one instruction at a time
 --      3. Clicking to the left of the line number is how you set a breakpoint
---      4. Hovering the cursor over variables, lets you see their values
+--      4. F6 lets you run the file
+--      5. While debugging, hovering the cursor over variables, lets you see their values
 
 
-debug.log("Because there's nothing for the game to hook into here, nothing more will happen after here")
-debug.log("So you can close the simulator, and move onto the next step - where we learn how to run things each tick")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--ignore me---------------------------------------------------------------------------------------------------
+simulator:exit() -- this isn't an in-game instruction, we're just using it to make your life easier

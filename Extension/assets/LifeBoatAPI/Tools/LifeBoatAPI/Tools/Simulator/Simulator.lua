@@ -30,6 +30,7 @@ local _socket = require("socket")
 ---@field _screens SimulatorScreen[] (internal) list of currently active screens
 ---@field _currentScreen SimulatorScreen (internal) screen currently being rendered to or nil
 ---@field _isInputOutputChanged boolean (internal) true if the input/output was changed within this frame
+---@field running boolean whether or not it's running
 LifeBoatAPI.Tools.Simulator = {
 
     ---@param this Simulator
@@ -44,6 +45,7 @@ LifeBoatAPI.Tools.Simulator = {
         this._renderOnFrames = 1
         this._sendOutputSkip = 1
         this._isRendering = false
+        this.running = false
 
         this:_registerHandler("TOUCH",
             function(simulator, screenNumber, isTouched, isTouchedAlt, x, y, xAlt, yAlt)
@@ -228,6 +230,9 @@ LifeBoatAPI.Tools.Simulator = {
         return screenNumber
     end;
 
+    exit = function(this)
+        this.running = false
+    end,
 
     ---read and handle all messages sent by the simulator server since the last tick
     ---@param this Simulator
@@ -276,6 +281,8 @@ LifeBoatAPI.Tools.Simulator = {
         this.config:addNumberHandler(2, helpers.touchScreenHeight(this,1))
         this.config:addNumberHandler(3, helpers.touchScreenXPosition(this,1))
         this.config:addNumberHandler(4, helpers.touchScreenYPosition(this,1))
+
+        this.running = true
     end;
 
 
@@ -289,7 +296,7 @@ LifeBoatAPI.Tools.Simulator = {
         local framesSinceOut = 1
         local tickCount = 1
 
-        while this._connection.isAlive do
+        while this._connection.isAlive and this.running do
             local time = _socket.gettime()
             timeRunning = timeRunning + (time - lastTime)
             timeSinceFrame = timeSinceFrame + (time - lastTime)

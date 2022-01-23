@@ -20,12 +20,17 @@ onTick = myVariable -- assign the value of myVariable (a function) into onTick
 
     We can use the basic ideas before, to see why.
     
-    Every tick, in-game, the game will look for a variable called "onTick" containing a function.
-        If it finds it, it will run that function.
+    Every tick, in-game, the game will look for a variable called "onTick"
+        If it finds that variable, and the variable contains it function, it runs that function.
 
     So it doesn't matter where the function came from originally.
     All that the game cares about, is each tick - did it find a variable called onTick that has a function in it
         and if so, it runs that function.
 
     That's all there is to it!
+
+
+    And if you're now having the thought "so could I change which function runs, every tick? By giving onTick a new value?"
+        Yep, exactly.
+        Then the next frame, when the game looks for "onTick", it will find the new value and run that instead
 ]]
