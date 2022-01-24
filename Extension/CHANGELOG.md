@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.12] - 25th January 2022
+**minor**
+- _buildactions.lua fixed for addons lua, which was breaking build process (caused by 0.0.11, sorry!)
+
 ### [0.0.11] - 24th January 2022
 **major**
 - **Added massive, interative tutorial for learning lua**
