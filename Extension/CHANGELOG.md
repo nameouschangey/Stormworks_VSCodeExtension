@@ -20,7 +20,6 @@ Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issu
 - can now disable the lua-built in libraries
 - second set of touch data wasn't being utilized correctly
 - button sizes fixed
-- 
 
 ### [0.0.10] - 10th January 2022
 **minor**

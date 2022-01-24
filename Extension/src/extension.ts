@@ -115,13 +115,13 @@ export function activate(context: vscode.ExtensionContext)
 	// New MC
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newMCProject',
 	() =>{
-		return projectCreation.beginCreateNewProjectFolder(true);
+		return projectCreation.beginCreateNewProjectFolder(context, true);
 	}));
 	
 	// New Addon
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newAddonProject',
 	() =>{
-		return projectCreation.beginCreateNewProjectFolder(false);
+		return projectCreation.beginCreateNewProjectFolder(context, false);
 	}));
 }
 

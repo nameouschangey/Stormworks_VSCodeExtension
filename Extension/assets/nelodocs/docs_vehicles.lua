@@ -2,6 +2,8 @@
 -- Based on data in: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go
 -- Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go, then create an issue on the GitHub repo
 
+-- Minor edits by NameousChangey to bring this up to date
+
 --- @diagnostic disable: lowercase-global
 
 input = {}
@@ -10,6 +12,12 @@ property = {}
 screen = {}
 map = {}
 async = {}
+debug = {}
+
+--- Prints a message to the debug log, see DebugViewer by SysInternals (google)
+--- In the simulator, prints the message using regular "print"
+--- @varargs same parameters as print
+function debug.log(...) end
 
 --- Read an on/off value from the composite input
 --- @param index number The composite index to read from

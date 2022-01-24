@@ -26,7 +26,8 @@ local params            = {
     forceNCBoilerplate      = arg[11]== "true",
     forceBoilerplate        = arg[12]== "true",
     shortenStringDuplicates = arg[13]== "true",
-    removeComments          = arg[14]== "true"      
+    removeComments          = arg[14]== "true",
+    skipCombinedFileOutput  = arg[15]== "true"
 };
 local rootDirs          = {};
 
@@ -34,8 +35,11 @@ for i=15, #arg do
     table.insert(rootDirs, LifeBoatAPI.Tools.Filepath:new(arg[i]));
 end
 
-local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)`;
-    return vscode.workspace.findFiles(new vscode.RelativePattern(workspace, "**/*.lua"), "**/{_build,out,.vscode}/**")
+local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)
+
+if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]])) end
+`;
+    return vscode.workspace.findFiles(new vscode.RelativePattern(workspace, "**/*.lua"), "**/{_build,out,.vscode,_examples_and_tutorials}/**")
         .then((files) => {
         for (let file of files) {
             // turn the relative path into a lua require
@@ -45,16 +49,17 @@ local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPat
              {
                 relativePath = relativePath.substr(1);
             }
-            let buildLine = isMC ? `_builder:buildMicrocontroller([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`
-                : `_builder:buildAddonScript([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`;
-            content += "\n" + buildLine;
+            let buildLine = isMC ? `local combinedText, outText, outFile = _builder:buildMicrocontroller([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`
+                : `local combinedText, outText, outFile = _builder:buildAddonScript([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`;
+            content += `\nif onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]]), [[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]])) end\n`
+                + `\n${buildLine}`
+                + `\nif onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]]), [[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), outFile, combinedText, outText) end\n`;
         }
         return content;
     }).then((content) => {
-        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_post_buildactions.lua"), () => content + "\nrequire([[_build._post_buildactions]])", () => content);
-    }).then((content) => {
-        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_pre_buildactions.lua"), () => "require([[_build._pre_buildactions]])\n" + content, () => content);
-    }).then((content) => content + "\n" + "--- @diagnostic enable: undefined-global\n");
+        return utils.doesFileExist(vscode.Uri.file(workspace.fsPath + "/_build/_buildactions.lua"), () => "\nrequire([[_build._buildactions]])" + content, () => content);
+    }).then((content) => content + `\nif onLBBuildComplete then onLBBuildComplete(_builder, params, LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]])) end`
+        + "\n--- @diagnostic enable: undefined-global\n");
 }
 function beginBuild(context) {
     let lifeboatapiConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
@@ -98,7 +103,8 @@ function beginBuild(context) {
                     `${minimizerConfig.get("forceNCBoilerplate", false)}`,
                     `${minimizerConfig.get("forceBoilerplate", false)}`,
                     `${minimizerConfig.get("shortenStringDuplicates", true)}`,
-                    `${minimizerConfig.get("removeComments", true)}`
+                    `${minimizerConfig.get("removeComments", true)}`,
+                    `${minimizerConfig.get("skipCombinedFileOutput", false)}`
                 ]
             };
             // all remaining args are root paths to load scripts from

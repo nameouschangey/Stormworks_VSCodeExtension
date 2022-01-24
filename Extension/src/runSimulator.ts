@@ -28,7 +28,9 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
 
 require("LifeBoatAPI.Tools.Simulator.Simulator");
 __simulator = LifeBoatAPI.Tools.Simulator:new() 
-__simulator:beginSimulation(false, arg[1], arg[2])
+__simulator:_beginSimulation(false, arg[1], arg[2])
+
+simulator = __simulator -- 0.0.11 easier to read by far but could be overwritten by somebody's global
 
 -- compatibility with 0.0.7 projects
 LBSimulatorInputHelpers = LifeBoatAPI.Tools.SimulatorInputHelpers
@@ -40,7 +42,7 @@ if onLBSimulatorInit then
     onLBSimulatorInit(__simulator, __simulator.config, LBSimulatorInputHelpers)
 end
 
-__simulator:giveControlToMainLoop()
+__simulator:_giveControlToMainLoop()
 
 --- @diagnostic enable: undefined-global
 `;

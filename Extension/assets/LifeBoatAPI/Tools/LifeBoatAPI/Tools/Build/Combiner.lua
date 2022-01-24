@@ -38,18 +38,19 @@ LifeBoatAPI.Tools.Combiner = {
     ---@param entryPointFile Filepath
     ---@param outputFile Filepath
     combineFile = function (this, entryPointFile, outputFile)   
-        local outputFileHandle = LifeBoatAPI.Tools.FileSystemUtils.openForWrite(outputFile)
-        local data = LifeBoatAPI.Tools.FileSystemUtils.readAllText(entryPointFile)
-        data = this:combine(data)
-        outputFileHandle:write(data)
-        outputFileHandle:close()
+        local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(entryPointFile)
+        local combinedText = this:combine(text)
+        LifeBoatAPI.Tools.FileSystemUtils.writeAllText(outputFile, combinedText)
+        
+        return combinedText
     end;
 
     ---@param this Combiner
     ---@param data string
     combine = function (this, data)   
-        local requiresSeen = {}
+        data = "\n" .. data -- ensure the file starts with a new line, so any first-line requires get found
 
+        local requiresSeen = {}
         local keepSearching = true
         while keepSearching do
             keepSearching = false

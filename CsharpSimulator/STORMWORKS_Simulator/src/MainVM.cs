@@ -106,6 +106,27 @@ namespace STORMWORKS_Simulator
         public int TickRateIndex { get; set; }
         public int TickRate { get; private set; } = 0;
 
+        public bool EnableHWAccel
+        {
+            get
+            {
+                return Properties.Settings.Default.EnableHardwareAcceleration;
+            }
+            set
+            {
+                Properties.Settings.Default.EnableHardwareAcceleration = value;
+                Properties.Settings.Default.Save();
+
+                if (EnableHWAccel)
+                {
+                    RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+                }
+                else
+                {
+                    RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                }
+            }
+        }
 
         public bool EnablePan
         {
@@ -130,6 +151,31 @@ namespace STORMWORKS_Simulator
             }
         }
         private bool _AutoReset = true;
+
+        public double WindowWidth
+        {
+            get
+            {
+                return Properties.Settings.Default.WindowWidth;
+            }
+            set
+            {
+                Properties.Settings.Default.WindowWidth = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+        public double WindowHeight
+        {
+            get
+            {
+                return Properties.Settings.Default.WindowHeight;
+            }
+            set
+            {
+                Properties.Settings.Default.WindowHeight = value;
+                Properties.Settings.Default.Save();
+            }
+        }
 
         public MainVM()
         {

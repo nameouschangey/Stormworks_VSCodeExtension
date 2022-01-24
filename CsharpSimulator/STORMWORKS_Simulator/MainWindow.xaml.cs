@@ -39,10 +39,11 @@ namespace STORMWORKS_Simulator
             Logger.InfoEnabled = args.EnableLogging;
 
             Logger.Log("Launching, time stamp.");
+            ViewModel = new MainVM();
+            DataContext = ViewModel;
 
             InitializeComponent();
 
-            ViewModel = new MainVM();
             TickHandler = new TickHandler(ViewModel);
             VSConnection = new SocketConnection(ViewModel);
             VSConnection.OnPipeClosed += Pipe_OnPipeClosed;
@@ -70,7 +71,7 @@ namespace STORMWORKS_Simulator
                 Properties.Settings.Default.LastZoomY = transform.ScaleY;
             };
 
-            DataContext = ViewModel;
+            
 
             KeepAliveTimer = new Timer(OnKeepAliveTimer, null, 100, 100);
             
@@ -88,6 +89,16 @@ namespace STORMWORKS_Simulator
             Closing += (s,e) => {
                 Properties.Settings.Default.Save();
             };
+
+            // set HW acceleration from previous value
+            if (ViewModel.EnableHWAccel)
+            {
+                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+            }
+            else
+            {
+                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+            }
 
             Logger.Log("MainWindow Initialized and running");
         }
@@ -107,7 +118,43 @@ namespace STORMWORKS_Simulator
                     Application.Current.Shutdown();
                 });
             }
+
+            //TickHandler.OnLineRead(this, $"COLOUR|255|255|255|255");
+            //FakeDraw(2, 2, 6, 6, "+");
+            //FakeDraw(12, 2, 7, 7, "+");
+            //FakeDraw(22, 2, 8, 8, "+");
+            //
+            //TickHandler.OnLineRead(this, $"COLOUR|255|0|0|255");
+            //FakeDraw(2, 12, 6, 6, "+", -1);
+            //FakeDraw(12, 12, 7, 7, "+", -1);
+            //FakeDraw(22, 12, 8, 8, "+", -1);
+            //
+            //TickHandler.OnLineRead(this, $"COLOUR|0|0|255|255");
+            //FakeDraw(2, 22, 6, 6, "++");
+            //FakeDraw(12, 22, 7, 7, "++");
+            //FakeDraw(22, 22, 8, 8, "++");
+            //FakeDraw(32, 22, 9, 9, "++");
+            //FakeDraw(42, 22, 10, 10, "++");
+            //
+            //TickHandler.OnLineRead(this, $"COLOUR|0|0|255|255");
+            //FakeDraw(2, 42, 6, 6, " ++");
+            //FakeDraw(12, 42, 7, 7, " ++");
+            //FakeDraw(22, 42, 8, 8, " ++");
+            //FakeDraw(32, 42, 9, 9, " ++");
+            //FakeDraw(42, 42, 10, 10, " ++");
+            //
+            //TickHandler.OnLineRead(this, $"COLOUR|0|255|0|255");
+            //FakeDraw(10, 55, 40, 10, "TOGGLE");
+            //FakeDraw(64, 10, 30, 10, "DAN DAN DAN DAN DAN");
+            //
+            //TickHandler.OnLineRead(this, "TICKEND|1");
         }
+
+        //private void FakeDraw(int x, int y, int width, int height, string text, int align = 0)
+        //{
+        //    TickHandler.OnLineRead(this, $"RECT|1|0|{x}|{y}|{width}|{height}");
+        //    TickHandler.OnLineRead(this, $"TEXTBOX|1|{x}|{y}|{width}|{height}|{align}|{align}|{text}");
+        //}
 
         private void Pipe_OnPipeClosed(object sender, EventArgs e)
         {
@@ -130,7 +177,10 @@ namespace STORMWORKS_Simulator
             var xTouchPos = Math.Min(Math.Max(vm.TouchPosition.X, 0), vm.Monitor.Size.X-1);
             var yTouchPos = Math.Min(Math.Max(vm.TouchPosition.Y, 0), vm.Monitor.Size.Y-1);
 
-            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown ? '1' : '0') }|{ (vm.IsRDown ? '1' : '0') }|{xTouchPos}|{yTouchPos}";
+            var xAltTouchPos = Math.Min(Math.Max(vm.TouchAltPosition.X, 0), vm.Monitor.Size.X - 1);
+            var yAltTouchPos = Math.Min(Math.Max(vm.TouchAltPosition.Y, 0), vm.Monitor.Size.Y - 1);
+
+            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown || vm.IsRDown ? '1' : '0') }|{ (vm.IsLDown && vm.IsRDown ? '1' : '0') }|{xTouchPos}|{yTouchPos}|{xAltTouchPos}|{yAltTouchPos}";
             if (newCommand != vm.LastTouchCommand)
             {
                 vm.LastTouchCommand = newCommand;

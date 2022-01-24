@@ -5,8 +5,7 @@ const vscode = require("vscode");
 const path = require("path");
 const util_1 = require("util");
 const utils = require("./utils");
-const fileContents = require("./fileContentsConstants");
-function beginCreateNewProjectFolder(isMicrocontrollerProject) {
+function beginCreateNewProjectFolder(context, isMicrocontrollerProject) {
     const fileDialog = {
         canSelectFiles: false,
         canSelectFolders: true,
@@ -82,10 +81,10 @@ function beginCreateNewProjectFolder(isMicrocontrollerProject) {
     })
         .then((params) => {
         if (params.isMicrocontroller) {
-            return setupMicrocontrollerFiles(params).then(() => params);
+            return setupMicrocontrollerFiles(context, params).then(() => params);
         }
         else {
-            return setupAddonFiles(params).then(() => params);
+            return setupAddonFiles(context, params).then(() => params);
         }
     })
         .then((params) => vscode.commands.executeCommand("workbench.view.explorer").then(() => params))
@@ -141,55 +140,24 @@ function addBoilerplate(text) {
     return authorName + "\n" + githubLink + "\n" + workshopLink + "\n" + extendedBoilerplate + "--\n" + nameousBoilerplate + "\n" + text;
 }
 exports.addBoilerplate = addBoilerplate;
-function setupMicrocontrollerFiles(params) {
-    const scriptFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/MyMicrocontroller.lua");
-    return utils.doesFileExist(scriptFile, () => params, () => {
-        return vscode.workspace.fs.writeFile(scriptFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.microControllerDefaultScript)))
-            .then(() => params);
-    })
-        .then(() => {
-        const basicConfigFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_simulator_config.lua");
-        return utils.doesFileExist(basicConfigFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(basicConfigFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.microControllerDefaultSimulatorConfig)))
-                .then(() => params);
-        });
-    }).then(() => {
-        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_post_buildactions.lua");
-        return utils.doesFileExist(buildActionsFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.postBuildActionsDefault)))
-                .then(() => params);
-        });
-    }).then(() => {
-        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_pre_buildactions.lua");
-        return utils.doesFileExist(buildActionsFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.preBuildActionsDefault)))
-                .then(() => params);
-        });
-    }).then(() => {
-        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_multi/_simulate_multiple_example.lua");
-        return utils.doesFileExist(buildActionsFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.simulateMultipleExample)))
-                .then(() => params);
-        });
+function copyAllFiles(sourceFolder, destinationFolder, overwrite) {
+    return vscode.workspace.fs.readDirectory(sourceFolder).then((files) => {
+        let thenables = [];
+        for (let file of files) {
+            if (file[1] === 1) {
+                thenables.push(vscode.workspace.fs.copy(vscode.Uri.file(sourceFolder.path + "/" + file[0]), vscode.Uri.file(destinationFolder.path + "/" + file[0]), { overwrite: overwrite }));
+            }
+            else {
+                thenables.push(copyAllFiles(vscode.Uri.file(sourceFolder.path + "/" + file[0]), vscode.Uri.file(destinationFolder.path + "/" + file[0]), overwrite));
+            }
+        }
+        return Promise.all(thenables);
     });
 }
-function setupAddonFiles(params) {
-    const scriptFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/script.lua");
-    return utils.doesFileExist(scriptFile, () => params, () => {
-        return vscode.workspace.fs.writeFile(scriptFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.addonDefaultScript)))
-            .then(() => params);
-    }).then(() => {
-        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_post_buildactions.lua");
-        return utils.doesFileExist(buildActionsFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.postBuildActionsDefault)))
-                .then(() => params);
-        });
-    }).then(() => {
-        const buildActionsFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/_build/_pre_buildactions.lua");
-        return utils.doesFileExist(buildActionsFile, () => params, () => {
-            return vscode.workspace.fs.writeFile(buildActionsFile, new util_1.TextEncoder().encode(addBoilerplate(fileContents.preBuildActionsDefault)))
-                .then(() => params);
-        });
-    });
+function setupMicrocontrollerFiles(context, params) {
+    return copyAllFiles(vscode.Uri.file(context.extensionPath + "/assets/default_project_files/microcontroller/"), vscode.Uri.file(params.selectedFolder.uri.fsPath), false);
+}
+function setupAddonFiles(context, params) {
+    return copyAllFiles(vscode.Uri.file(context.extensionPath + "/assets/default_project_files/addon/"), vscode.Uri.file(params.selectedFolder.uri.fsPath), false);
 }
 //# sourceMappingURL=projectCreation.js.map

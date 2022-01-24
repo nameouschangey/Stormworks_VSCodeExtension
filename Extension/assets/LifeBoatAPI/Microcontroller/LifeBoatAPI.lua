@@ -19,3 +19,4 @@ require("LifeBoatAPI.Tickable.LBStateMachine")
 require("LifeBoatAPI.Tickable.LBTouchScreen")
 
 require("LifeBoatAPI.Drawing.LBColorSpace")
+require("LifeBoatAPI.Drawing.LBColorRGBA")

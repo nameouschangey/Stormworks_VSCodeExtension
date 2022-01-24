@@ -10,6 +10,7 @@
 --      Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1tCvYSzxnr5lWduKlePKg4FerpeKHbKTmwmAxlnjZ_Go, then create an issue on the GitHub repo
 
 ---@diagnostic disable: lowercase-global
+---@diagnostic disable: undefined-doc-param
 
 ---@class Simulator_InputAPI
 ---@field _numbers number[] array of numbers inputs
@@ -23,27 +24,39 @@ input = {
     end;
 
     _ensureNotRendering = function()
-        if input._simulator and input._simulator.isRendering then
+        if input._simulator and input._simulator._isRendering then
             error("Cannot use input functions outside of onTick.")
         end
     end;
 
     --- @param index number The composite index to read from
     --- @return boolean value
-    getBool = function(index)
+    getBool = function(...)
         input._ensureNotRendering()
+
+        if select("#", ...) < 1 then return end
+
+        local index = select(1, ...)
+
         if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " getting bool ") end
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " getting bool ") end
-        return input._bools[index]
+
+        return input._bools[index] or false
     end;
 
     --- @param index number The composite index to read from
     --- @return number value
-    getNumber = function(index)
+    getNumber = function(...)
         input._ensureNotRendering()
+
+        if select("#", ...) < 1 then return end
+
+        local index = select(1, ...)
+        
         if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " getting number ") end
         if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " getting number ") end
-        return input._numbers[index]
+
+        return input._numbers[index] or 0
     end;
 }
 
@@ -60,41 +73,61 @@ output = {
     end;
 
     _ensureNotRendering = function()
-        if output._simulator and output._simulator.isRendering then
+        if output._simulator and output._simulator._isRendering then
             error("Cannot use output functions outside of onTick.")
         end
     end;
 
     --- Set an on/off value on the composite output
-    --- @param index number The composite index to write to
-    --- @param value boolean The on/off value to write
-    setBool = function(index, value)
+    ---@param index number The composite index to write to
+    ---@param value boolean The on/off value to write
+    ---@overload fun(index:number, value:boolean)
+    setBool = function(...)
         output._ensureNotRendering()
+
+        if select("#", ...) < 2 then return end
+
+        local index = select(1, ...)
+        local value = select(2, ...)
+
+        
         if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
 
-        if(value ~= nil and value ~= output._bools[index]) then
+        value = value or false
 
+        if(value ~= output._bools[index]) then
             ---@diagnostic disable: undefined-global
             if onLBSimulatorOutputBoolChanged then -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
                 onLBSimulatorOutputBoolChanged(index, output._bools[index], value)
             end
             ---@diagnostic enable: undefined-global
 
-            output._simulator.isInputOutputChanged = true;
+            output._simulator._isInputOutputChanged = true;
             output._bools[index] = value
         end
     end;
 
     --- Set a number value on the composite output
-    --- @param index number The composite index to write to
-    --- @param value number The number value to write
-    setNumber = function(index, value)
+    ---@param index number The composite index to write to
+    ---@param value number The number value to write
+    ---@overload fun(index:number, value:number)
+    setNumber = function(...)
         output._ensureNotRendering()
+
+        if select("#", ...) < 2 then return end
+
+        local index = select(1, ...)
+        local value = select(2, ...)
+
         if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
         if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
 
-        if(value ~= nil and value ~= output._numbers[index]) then
+        if type(value) ~= "number" then
+            value = 0
+        end
+
+        if(value ~= output._numbers[index]) then
 
             ---@diagnostic disable: undefined-global
             if onLBSimulatorOutputNumberChanged then  -- enables easy ability to stick breakpoints looking for the output changing, rather than tracking it down
@@ -102,7 +135,7 @@ output = {
             end
             ---@diagnostic enable: undefined-global
 
-            output._simulator.isInputOutputChanged = true;
+            output._simulator._isInputOutputChanged = true;
             output._numbers[index] = value
         end
     end;
@@ -120,22 +153,31 @@ property = {
     --- Get a number value from a property
     --- @param label string The name of the property to read
     --- @return number value
-    getNumber = function(label)
-        return property._numbers[label]
+    getNumber = function(...)
+        if select("#", ...) < 1 then return end
+        local label = select(1, ...)
+
+        return property._numbers[label] or 0
     end;
 
     --- Get a bool value from a property
     --- @param label string The name of the property to read
     --- @return boolean value
-    getBool = function(label)
-        return property._bools[label]
+    getBool = function(...)
+        if select("#", ...) < 1 then return end
+        local label = select(1, ...)
+
+        return property._bools[label] or false
     end;
 
     --- Get a text value from a property
     --- @param label string The name of the property to read
     --- @return string value
-    getText = function(label)
-        return property._texts[label]
+    getText = function(...)
+        if select("#", ...) < 1 then return end
+        local label = select(1, ...)
+
+        return property._texts[label] or ""
     end;
 }
 
@@ -147,5 +189,10 @@ for i=1,32 do
     output._numbers[i] = 0
     output._bools[i] = false
 end
+
+-- allow debug.log for printing, as this also works in-game
+debug = debug or {}
+debug.log = print
+
 
 ---@diagnostic enable: lowercase-global

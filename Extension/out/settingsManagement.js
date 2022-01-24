@@ -36,7 +36,6 @@ function getDebugPaths(context) {
     ];
     for (let path of getLibraryPaths(context)) {
         debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
-        debugPaths.push(path + "?.lbinternal"); // paths we want to be useable as lua, that we didn't want intellisense to see (ignore directories doesn't actually work)
     }
     return debugPaths;
 }
@@ -71,6 +70,9 @@ function beginUpdateWorkspaceSettings(context) {
     if (!lifeboatIgnorePaths.includes("/_build/")) {
         lifeboatIgnorePaths.push("/_build/");
     }
+    if (!lifeboatIgnorePaths.includes("/_examples_and_tutorials/")) {
+        lifeboatIgnorePaths.push("/_examples_and_tutorials/");
+    }
     let luaDiagnosticsConfig = vscode.workspace.getConfiguration("Lua.diagnostics");
     let luaRuntimeConfig = vscode.workspace.getConfiguration("Lua.runtime");
     let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");
@@ -83,7 +85,7 @@ function beginUpdateWorkspaceSettings(context) {
         }
     }).then(() => {
         //Lua.diagnostics.disable
-        let existing = luaLibWorkspace.get("disable") ?? [];
+        let existing = luaDiagnosticsConfig.get("disable") ?? [];
         if (existing.indexOf("lowercase-global") === -1) {
             existing.push("lowercase-global");
         }
@@ -91,21 +93,35 @@ function beginUpdateWorkspaceSettings(context) {
             existing.push("undefined-doc-name");
         }
         return luaDiagnosticsConfig.update("disable", existing, vscode.ConfigurationTarget.Workspace);
+    }).then(() => {
+        let existing = luaDiagnosticsConfig.get("globals") ?? [];
+        if (!existing.includes("__simulator")) {
+            existing.push("__simulator");
+        }
+        if (!existing.includes("print")) {
+            existing.push("print");
+        }
+        if (!existing.includes("simulator")) {
+            existing.push("simulator");
+        }
+        return luaDiagnosticsConfig.update("globals", existing, vscode.ConfigurationTarget.Workspace);
     }).then(() => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)).then(() => {
+        let shouldDisableIntellisense = lifeboatMainConfig.get("lifeboatapi.stormworks.shouldDisableNonSWIntellisense");
+        let enableLibraryValue = shouldDisableIntellisense ? "disable" : "enable";
         // disable intellisense for lua modules that aren't available in stormworks
         let luaModulesToDisable = {
-            "coroutine": "disable",
-            "bit32": "disable",
-            "bit": "disable",
-            "builtin": "disable",
-            "utf8": "disable",
-            "package": "disable",
-            "os": "disable",
-            "jit": "disable",
-            "io": "disable",
-            "ffi": "disable",
-            "debug": "disable",
-            "basic": "disable"
+            "coroutine": enableLibraryValue,
+            "bit32": enableLibraryValue,
+            "bit": enableLibraryValue,
+            "builtin": enableLibraryValue,
+            "utf8": enableLibraryValue,
+            "package": enableLibraryValue,
+            "os": enableLibraryValue,
+            "jit": enableLibraryValue,
+            "io": enableLibraryValue,
+            "ffi": enableLibraryValue,
+            "debug": enableLibraryValue,
+            "basic": enableLibraryValue
         };
         luaRuntimeConfig.update("builtin", luaModulesToDisable, vscode.ConfigurationTarget.Workspace);
     }).then(() => {
@@ -131,7 +147,9 @@ function beginUpdateWorkspaceSettings(context) {
         if (lifeboatMainConfig.get("isAddonProject") === true) {
             lifeboatLibraryPaths.push(neloAddonDoc);
         }
-        else {
+        else if (docConfig.get("overwriteNeloDocsPath") === true) {
+            // only add the Rene-sackers doc, if the user has actively said to overwrite our one
+            // otherwise, we don't want intellisense on it
             lifeboatLibraryPaths.push(neloMCDoc);
         }
         return luaLibWorkspace.update("library", lifeboatLibraryPaths, vscode.ConfigurationTarget.Workspace);

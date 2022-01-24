@@ -15,17 +15,17 @@ require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 require("LifeBoatAPI.Tools.Build.NumberLiteralReducer")
 
 ---@class MinimizerParams
----@field reduceAllWhitespace   boolean
----@field reduceNewlines        boolean
----@field removeRedundancies    boolean
----@field shortenVariables      boolean
----@field shortenGlobals        boolean
----@field shortenNumbers        boolean
----@field forceNCBoilerplate    boolean
----@field forceBoilerplate      boolean
----@field removeComments        boolean
----@field shortenStringDuplicates boolean if true, shorten the string duplicates into singles
-
+---@field reduceAllWhitespace   boolean if true, shortens all whitespace duplicates where possible
+---@field reduceNewlines        boolean if true, reduces duplicate newlines but not other whitespace
+---@field removeRedundancies    boolean if true, removes redundant code sections using the ---@section syntax
+---@field shortenVariables      boolean if true, shortens variables down to 1 or 2 character names
+---@field shortenGlobals        boolean if true, shortens the sw-global functions, such as screen.drawRect, to e.g. s=screen.drawRect
+---@field shortenNumbers        boolean if true, shortens numbers, including removing duplicate number literals and removing leading 0s
+---@field forceNCBoilerplate    boolean (recommend false) forces the NC boilerplate to be output, even if it makes the file exceed 4000 characters
+---@field forceBoilerplate      boolean (recommend false) forces the user boilerplate to be output, even if it makes the file exceed 4000 characters
+---@field removeComments        boolean if true, strips all comments from the output
+---@field shortenStringDuplicates boolean if true, reduce duplicate string literals
+---@field skipCombinedFileOutput  boolean if true, doesn't output the combined file - to speed up the build process
 
 ---@class Minimizer : BaseClass
 ---@field constants ParsingConstantsLoader list of external, global keywords
@@ -50,6 +50,7 @@ LifeBoatAPI.Tools.Minimizer = {
         this.params.shortenStringDuplicates     = LifeBoatAPI.Tools.DefaultBool(this.params.shortenStringDuplicates,true)
         this.params.forceNCBoilerplate          = LifeBoatAPI.Tools.DefaultBool(this.params.forceNCBoilerplate,     false)
         this.params.forceBoilerplate            = LifeBoatAPI.Tools.DefaultBool(this.params.forceBoilerplate,       false)   
+        this.params.skipCombinedFileOutput      = LifeBoatAPI.Tools.DefaultBool(this.params.skipCombinedFileOutput, false)   
 
         return this
     end;
@@ -57,11 +58,10 @@ LifeBoatAPI.Tools.Minimizer = {
     ---Minimizes the content of the given file and saves it to disk
     ---@param outPath Filepath path to save to or nil to save over the original file
     ---@param this Minimizer
-    ---@param filepath Filepath
+    ---@param inPath Filepath
     ---@return string minimized for use in any other purpose
-    minimizeFile = function(this, filepath, outPath, boilerplate)
-        outPath = outPath or filepath
-        local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filepath)
+    minimizeFile = function(this, inPath, outPath, boilerplate)
+        local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(inPath)
         local minimized, newsize = this:minimize(text, boilerplate)
         LifeBoatAPI.Tools.FileSystemUtils.writeAllText(outPath, minimized)
 
@@ -130,7 +130,8 @@ LifeBoatAPI.Tools.Minimizer = {
 
         local nameousBoilerplateSize = 233 + #tostring(sizeWithoutBoilerplate) + #tostring(#text)
         local predictedBoilerplateSize = ((this.params.forceNCBoilerplate or (#text + #boilerplate + nameousBoilerplateSize < 4000)) and nameousBoilerplateSize + #boilerplate) 
-                                       or ((this.params.forceBoilerplate or #text + #boilerplate < 4000) and #boilerplate)
+                                       or ((this.params.forceBoilerplate or (#text + #boilerplate < 4000)) and #boilerplate)
+                                       or 0
 
         -- add boilerplate if the file is small enough
         -- please do not remove this, the user's boilerplate has precedence over the nameous changey one

@@ -29,55 +29,15 @@ LifeBoatAPI.Tools.SimulatorConfig = {
     ---@overload fun(this : SimulatorConfig, screenNumber:number, screenSize:string)
     ---@return number screenNumber the actual screen number that was created
     configureScreen = function(this, screenNumber, screenSize, poweredOn, portrait)
-        portrait = portrait or false
-        poweredOn = (poweredOn == nil and true) or poweredOn
-
-        if not this.simulator._screens[screenNumber] then
-            screenNumber = #this.simulator._screens + 1
-            this.simulator._screens[screenNumber] = LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
-        end
-        local thisScreen = this.simulator._screens[screenNumber]
-
-        local validScreenConfigs = {
-            ["1x1"] = true,
-            ["2x1"] = true,
-            ["2x2"] = true,
-            ["3x2"] = true,
-            ["3x3"] = true,
-            ["5x3"] = true,
-            ["9x5"] = true
-        }
-        if not validScreenConfigs[screenSize] then
-            error("Must be a valid screen size, 1x1, 2x1, 2x2, 3x2, 3x3, 5x3, 9x5")
-        end
-
-        local splits = LifeBoatAPI.Tools.StringUtils.split(screenSize, "x")
-        thisScreen.width = splits[1] * 32
-        thisScreen.height = splits[2] * 32
-
-        -- send the new screen data to the server
-        this.simulator._connection:sendCommand("SCREENCONFIG",
-            screenNumber,
-            poweredOn and "1" or "0",
-            screenSize,
-            portrait and "1" or "0")
-
-        return screenNumber
+        this.simulator:setScreen(screenNumber, screenSize, poweredOn, portrait)
     end;
 
     ---@param this SimulatorConfig
     ---@param label string name of the property
     ---@param value string|boolean|number value to set as a property
     setProperty = function(this, label, value)
-        if type(value) == "string" then
-            property._texts[label] = value
-        elseif type(value) == "boolean" then
-            property._bools[label] = value
-        elseif type(value) == "number" then
-            property._numbers[label] = value
-        else
-            error("Stormworks properties must be Numbers, Strings or Booleans, when you tried to set property: " .. tostring(label))
-        end
+        this.simulator:setProperty(label, value)
+        this.simulator:getTouchScreen(1)
     end;
 
     ---@param this SimulatorConfig

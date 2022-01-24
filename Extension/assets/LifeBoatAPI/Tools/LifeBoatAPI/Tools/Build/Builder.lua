@@ -35,38 +35,39 @@ LifeBoatAPI.Tools.Builder = {
 
     ---@param this Builder
     ---@param name string
-    ---@param entrypoint Filepath
-    buildMicrocontroller = function(this, name, entrypoint, params)
-        --print("Building: " .. name)
-        params = params or {}
-
-        local cmbFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
-        local outFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/release/]] .. name, true)
-
-        this.combiner:combineFile(entrypoint, cmbFile)
-
-        local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.vehicle_constants, params)
-        local finalText, newSize = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
-        print(name .. " minimized to: " .. tostring(newSize) .. " (" .. tostring(#finalText) .. ") chars") 
+    ---@param entrypointFile Filepath
+    buildMicrocontroller = function(this, name, entrypointFile, params)
+        return this:_buildScript(name, entrypointFile, params, this.vehicle_constants)
     end;
 
     ---@param this Builder
     ---@param name string
-    ---@param entrypoint Filepath
-    buildAddonScript = function (this, name, entrypoint, params)    
-        --print("Building: " .. name)
+    ---@param entrypointFile Filepath
+    buildAddonScript = function (this, name, entrypointFile, params)    
+        return this:_buildScript(name, entrypointFile, params, this.mission_constants)
+    end;
+
+    _buildScript = function (this, name, entrypointFile, params, minimizerConstants)
         params = params or {}
 
         local cmbFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
         local outFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/release/]] .. name, true)
 
-        this.combiner:combineFile(entrypoint, cmbFile)
+        local originalText = LifeBoatAPI.Tools.FileSystemUtils.readAllText(entrypointFile)
 
-        local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.mission_constants, params or {})
-        local finalText, newSize = minimizer:minimizeFile(cmbFile, outFile, params.boilerPlate)
+        local combinedText = this.combiner:combine(originalText)
+        if not params.skipCombinedFileOutput then
+            LifeBoatAPI.Tools.FileSystemUtils.writeAllText(cmbFile, combinedText)
+        end
+
+        local minimizer = LifeBoatAPI.Tools.Minimizer:new(minimizerConstants, params or {})
+        local finalText, newSize = minimizer:minimize(combinedText, params.boilerPlate)
+        LifeBoatAPI.Tools.FileSystemUtils.writeAllText(outFile, finalText)
+
         print(name .. " minimized to: " .. tostring(newSize) .. " (" .. tostring(#finalText) .. ") chars")
-    end;
 
+        return originalText, combinedText, finalText, outFile
+    end;
 
     _setupVehicleConstants = function(this, docpath)
         local constants = LifeBoatAPI.Tools.ParsingConstantsLoader:new()
