@@ -3,8 +3,6 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
--- An exercise to try, to get the hang of onTick and functions
 -- Write your code and hit F6 to run
 -- Solution at the bottom.
 

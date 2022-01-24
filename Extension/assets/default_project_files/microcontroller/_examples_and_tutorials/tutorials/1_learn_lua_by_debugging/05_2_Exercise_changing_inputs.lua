@@ -18,7 +18,6 @@
 -- in this "root" of the file (outside any function), stick screen config, and properties
 simulator:setScreen(1, "3x3") -- give us a 3x3 screen
 simulator:setScreen(2, "2x2")
-
 simulator:setProperty("My Example Property Name", 123) -- accessible using property.getText, getNumber, getBool
 
 

@@ -8,7 +8,8 @@
 
 --[[
     Apologies ahead of this tutorial, it's a pain
-    It's not hard - it's just that what you need to learn now, isn't anything new in lua, and it's not stormworks, it's JUST applicable to the VSCode extension
+    It's not hard - it's just that what you need to learn now, isn't anything new in lua, and it's not stormworks,
+        it's JUST applicable to the VSCode extension
 
     That said, it's important for you simulating inputs, and testing interesting ideas out.
         Just bear with it, don't worry about understanding it all
@@ -26,7 +27,6 @@
 
 
 
-
 -- For customizing the inputs in the simulator, we can use code
 --  Note that this is NOT an ingame feature, it's just for simulation
 
@@ -34,6 +34,8 @@
 -- To try: mess around with the simulator values and see what outputs
 --         use the input values from `input.getNumber` to draw things, etc.
 
+
+-- (In MyMicrocontroller.lua - your starting point for in-game code, you'll see this is actually stored in the _build folder as: _build/_simulator_config.lua)
 
 ---@section _SIMULATOR_ONLY_
 
@@ -49,6 +51,10 @@ simulator:setProperty("Example", 1234556789)
 
 -- and then for inputs that change every tick, add a variable containing the function onLBSimulatorTick
 onLBSimulatorTick = function(simulator, ticks)
+    -- this function is called by the simulator, JUST before the in-game tick runs
+    --   so you can have inputs that change over time, etc.
+    --   e.g. simulating the altitude of your helicopter, or whatever else
+
     simulator:setInputNumber(10, 123)
     simulator:setInputNumber(11, 22)
 
@@ -96,3 +102,6 @@ onTick = function()
         output.setNumber(10, 222)
     end
 end
+
+
+--

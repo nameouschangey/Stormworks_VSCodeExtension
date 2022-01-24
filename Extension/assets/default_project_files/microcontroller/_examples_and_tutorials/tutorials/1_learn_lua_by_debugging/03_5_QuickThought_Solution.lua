@@ -32,5 +32,5 @@ onTick = myVariable -- assign the value of myVariable (a function) into onTick
 
     And if you're now having the thought "so could I change which function runs, every tick? By giving onTick a new value?"
         Yep, exactly.
-        Then the next frame, when the game looks for "onTick", it will find the new value and run that instead
+        Then the next frame, when the game looks for "onTick", it will find the new value and run that instead.
 ]]
