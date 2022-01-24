@@ -95,14 +95,14 @@ function beginUpdateWorkspaceSettings(context) {
         return luaDiagnosticsConfig.update("disable", existing, vscode.ConfigurationTarget.Workspace);
     }).then(() => {
         let existing = luaDiagnosticsConfig.get("globals") ?? [];
-        if (!lifeboatIgnorePaths.includes("__simulator")) {
-            lifeboatIgnorePaths.push("__simulator");
+        if (!existing.includes("__simulator")) {
+            existing.push("__simulator");
         }
-        if (!lifeboatIgnorePaths.includes("print")) {
-            lifeboatIgnorePaths.push("print");
+        if (!existing.includes("print")) {
+            existing.push("print");
         }
-        if (!lifeboatIgnorePaths.includes("simulator")) {
-            lifeboatIgnorePaths.push("simulator");
+        if (!existing.includes("simulator")) {
+            existing.push("simulator");
         }
         return luaDiagnosticsConfig.update("globals", existing, vscode.ConfigurationTarget.Workspace);
     }).then(() => luaRuntimeConfig.update("version", "Lua 5.3", vscode.ConfigurationTarget.Workspace)).then(() => {

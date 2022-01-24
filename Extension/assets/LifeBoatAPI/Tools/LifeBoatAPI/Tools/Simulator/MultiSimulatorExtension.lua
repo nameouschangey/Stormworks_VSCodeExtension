@@ -120,7 +120,7 @@ LifeBoatAPI.Tools.MultiSimulator = {
 
                 __simulator.config:onSimulate()
                 onSimulate = onLBSimulatorTick or Empty
-                onSimulate(__simulator)
+                onSimulate(__simulator, _globalTicks)
 
                 if onTick then
                     onTick()

@@ -103,7 +103,7 @@ output = {
             end
             ---@diagnostic enable: undefined-global
 
-            output._simulator.isInputOutputChanged = true;
+            output._simulator._isInputOutputChanged = true;
             output._bools[index] = value
         end
     end;
@@ -135,7 +135,7 @@ output = {
             end
             ---@diagnostic enable: undefined-global
 
-            output._simulator.isInputOutputChanged = true;
+            output._simulator._isInputOutputChanged = true;
             output._numbers[index] = value
         end
     end;

@@ -18,15 +18,15 @@ onTick = function ()
     isBlinkerOnToggle = blinkerTick > numTicksToStayOff -- starts off, then after 120 ticks, will be on, until it wraps back to 0
 end
 
+
 onDraw = function ()
-    
     -- example drawing based on the blinker
     if isBlinkerOnToggle then
-        screen.setColor(255,100,100)
-        screen.drawRect(5,5,20,20)
-    else
         screen.setColor(100,255,100)
         screen.drawRectF(5,5,20,20)
+    else
+        screen.setColor(255,100,100)
+        screen.drawRect(5,5,20,20)
     end
 end
 

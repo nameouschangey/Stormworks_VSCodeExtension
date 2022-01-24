@@ -136,17 +136,17 @@ export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {
 		() => {
 			let existing : string[] = luaDiagnosticsConfig.get("globals") ?? [];
 
-			if (!lifeboatIgnorePaths.includes("__simulator"))
+			if (!existing.includes("__simulator"))
 			{
-				lifeboatIgnorePaths.push("__simulator");
+				existing.push("__simulator");
 			}
-			if (!lifeboatIgnorePaths.includes("print"))
+			if (!existing.includes("print"))
 			{
-				lifeboatIgnorePaths.push("print");
+				existing.push("print");
 			}
-			if (!lifeboatIgnorePaths.includes("simulator"))
+			if (!existing.includes("simulator"))
 			{
-				lifeboatIgnorePaths.push("simulator");
+				existing.push("simulator");
 			}
 			return luaDiagnosticsConfig.update("globals", existing, vscode.ConfigurationTarget.Workspace);
 		}

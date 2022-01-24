@@ -47,3 +47,20 @@ function sign(value)
     return value / math.abs(value)
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------
+simulator:exit()

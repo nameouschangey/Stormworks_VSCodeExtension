@@ -5,36 +5,38 @@
 
 -- F6 to run, example blinker
 
+-- function that returns a table that represents a blinker
 createBlinker = function(ticksToStayOff, ticksToStayOn)
     local blinker = {
         ticksOn = ticksToStayOn,
         ticksOff = ticksToStayOff,
         ticks = 1,
-        on = false,
+        isOn = false,
         onTick = function(this)
             this.ticks = (this.ticks + 1) % (this.ticksOn + this.ticksOff)
-            on = this.ticks > this.ticksOff
+            this.isOn = this.ticks > this.ticksOff
         end
     }
+    return blinker
 end
 
+
+-- create a new blinker (we could make multiple, easily like this)
+myBlinker = createBlinker(60, 30)
 
 onTick = function ()
-    ticks = ticks + 1
-
-    blinkerTick = ticks % (numTicksToStayOff + numTicksToStayOn) -- wraps it into the timing range we want
-    isBlinkerOnToggle = blinkerTick > numTicksToStayOff -- starts off, then after 120 ticks, will be on, until it wraps back to 0
+    myBlinker:onTick() -- blinker handles its own updates, we just need to tell it to update each tick
 end
 
+
 onDraw = function ()
-    
-    -- example drawing based on the blinker
-    if isBlinkerOnToggle then
-        screen.setColor(255,100,100)
-        screen.drawRect(5,5,20,20)
-    else
+    -- example drawing based on the blinker's current state
+    if myBlinker.isOn then
         screen.setColor(100,255,100)
-        screen.drawRectF(5,5,20,20)
+        screen.drawRectF(5,5,2,2)
+    else
+        screen.setColor(255,100,100)
+        screen.drawRect(5,5,2,2)
     end
 end
 

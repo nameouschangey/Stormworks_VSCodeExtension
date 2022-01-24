@@ -75,3 +75,17 @@ result = boolean and 1 or 0 -- 1 if true, 0 if false or nil
 a = true
 a = not a -- now if a was true, it's false. If it was false, it's true.
 
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------
+simulator:exit()

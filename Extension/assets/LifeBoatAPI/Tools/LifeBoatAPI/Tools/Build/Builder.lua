@@ -60,7 +60,7 @@ LifeBoatAPI.Tools.Builder = {
             LifeBoatAPI.Tools.FileSystemUtils.writeAllText(cmbFile, combinedText)
         end
 
-        local minimizer = LifeBoatAPI.Tools.Minimizer:new(this.mission_constants, params or {})
+        local minimizer = LifeBoatAPI.Tools.Minimizer:new(minimizerConstants, params or {})
         local finalText, newSize = minimizer:minimize(combinedText, params.boilerPlate)
         LifeBoatAPI.Tools.FileSystemUtils.writeAllText(outFile, finalText)
 
