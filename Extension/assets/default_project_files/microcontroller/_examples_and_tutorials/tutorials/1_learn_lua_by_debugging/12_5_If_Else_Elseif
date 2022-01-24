@@ -19,3 +19,53 @@ elseif a < 0 then
 else
     debug.log("If none of the above ran - else runs instead.")
 end
+
+-- the reason for a separate note on this
+-- is it's very easy to write something that LOOKS like an if,elseif,else - but is actually two if statements
+-- if you do this, you'll get an error about "missing end" that's a pain to understand - so just want to save you the difficulty now.
+
+--[[ THIS is the WRONG way:
+
+if a == 5 then
+    -- fine so far
+else if a == 4 then
+    -- THE SPACE BETWEEN ELSE AND IF MAKES A NEW IF STATEMENT, NOT AN ELSEIF
+else
+
+end
+-- will get an error here, about "missing end"
+
+
+this BAD way, actually is the same as writing:
+if a == 5 then
+    -- stuff
+else
+    if a == 4 then
+        -- stuff
+    end
+
+--? missing end
+
+
+Very easy typo to make, and can be really confusing to figure out.
+
+]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------
+simulator:exit()
