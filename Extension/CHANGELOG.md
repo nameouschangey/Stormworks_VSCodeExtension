@@ -1,6 +1,27 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+### [0.0.11] - 24th January 2022
+**major**
+- **Added massive, interative tutorial for learning lua**
+- **Major accuracy improvements, simulator now replicates many in-game bugs**
+- Fixed issue with require, when it's the first line in the file
+- Fixed simulator running on low-end GPUs/laptops
+- Improvement to the minimizer, can now cut unnecessary 0's off decimals
+- Added new _build_actions.lua system, far more flexible
+- Cleaned up _simulator_config, newer style uses onLBSimulatorTick to simplify things
+- Major work to TextBox wrapping code, now accurate to in-game
+
+**minor**
+- debug.log now prints to the DEBUG CONSOLE
+- simulator window size now saves between sessions
+- added styled button
+- 1x3 monitor was missing
+- can now disable the lua-built in libraries
+- second set of touch data wasn't being utilized correctly
+- button sizes fixed
+- 
+
 ### [0.0.10] - 10th January 2022
 **minor**
 - Reverted previous nillification of debug/package libraries, which removed the debuggers ability to run properly
