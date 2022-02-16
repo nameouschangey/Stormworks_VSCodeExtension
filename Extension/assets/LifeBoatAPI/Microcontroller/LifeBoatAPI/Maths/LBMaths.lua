@@ -54,7 +54,7 @@ LifeBoatAPI.LBMaths = {
         maxRange = maxRange or math.pi * 2
         _rangeDiff = maxRange - minRange
         _half = _rangeDiff / 2
-        return ((a-minRange - b+minRange + _half) % _rangeDiff - _half)
+        return ((a - b + _half) % _rangeDiff - _half)
     end;
     ---@endsection
 
