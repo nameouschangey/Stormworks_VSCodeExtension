@@ -65,7 +65,7 @@ end
 LifeBoatAPI.Globals = LifeBoatAPI.Globals or {}
 
 LifeBoatAPI.Globals.Classes = {
-    classes = {},
+    _classes = {},
 
     register = function(this, uniqueID, cls, parent)
         local keys = {}
@@ -86,7 +86,7 @@ LifeBoatAPI.Globals.Classes = {
         cls.__classkeys = keys
         cls.__classuid = uniqueID
 
-        this.classes[cls.__classuid] = cls
+        this._classes[cls.__classuid] = cls
 
         return cls
     end;
@@ -109,7 +109,7 @@ LifeBoatAPI.Globals.Classes = {
         -- as these are not saved in g_savedata (replaced by the string "?")
         -- this means we can easily save the entire mission state; as long as we avoid anonymous/unregistered functions
         if tbl.__classuid then
-            local class = this.classes[tbl.__classuid]
+            local class = this._classes[tbl.__classuid]
             if class then
                 for i=1, #class.__classkeys do
                     local key = class.__classkeys[i]

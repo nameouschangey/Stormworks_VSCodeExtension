@@ -1,14 +1,11 @@
+Aims:
 
++ make persistence easier (no having to manually save - everything in g_savedata by default)
+    - classes re-form themselves on load
+    - table instance management - combine references together
 
-promises - good for one off 
-but doing repeatable tasks? e.g. "onThisEvent, start this process"
-
-it's kinda hard to decide really
-
-
-how often do we have multiple conditions for starting a mission?
-e.g. "player standing in location, and x, and y"
-
++ Tickables and Coroutines
++ Events
 
 
 

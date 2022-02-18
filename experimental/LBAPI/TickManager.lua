@@ -3,7 +3,7 @@
 ---@field tickables Tickable[]
 ---@field tickableRestructureFrequency number
 LifeBoatAPI.Globals.TickManager = {
-    tickables = {};
+    _tickables = {};
     ticks = 0;
     tickableRestructureFrequency = 60;
     MaxTicks = 100000;
@@ -11,8 +11,8 @@ LifeBoatAPI.Globals.TickManager = {
     onTick = function (this)
         ticks = ticks + 1
 
-        for i=1, #this.tickables do
-            local tickable = this.tickables[i]
+        for i=1, #this._tickables do
+            local tickable = this._tickables[i]
             if tickable.isAlive and (tickable.nextTick == ticks or tickable.shouldTickImmediately) then
                 tickable.shouldTickImmediately = false
                 tickable.nextTick = (this.ticks + (tickable.tickFrequency or 0)) % this.MaxTicks
@@ -30,7 +30,7 @@ LifeBoatAPI.Globals.TickManager = {
         -- safe during iteration, as the loop is fixed length
         -- as such, new tickables will *never* be evaluated during the tick they are added
         if this.tickable and this.tickable.isAlive then
-            this.tickables[#this.tickables + 1] = tickable
+            this._tickables[#this._tickables + 1] = tickable
         end
     end;
 
@@ -40,14 +40,14 @@ LifeBoatAPI.Globals.TickManager = {
     _restructureTickables = function (this)
         local newTickables = {}
 
-        for i=1, #this.tickables do
-            local tickable = this.tickables[i]
+        for i=1, #this._tickables do
+            local tickable = this._tickables[i]
             if tickable.isAlive then
                 newTickables[#newTickables+1] = tickable
             end
         end
 
-        this.tickables = newTickables
+        this._tickables = newTickables
     end;
 }
 LifeBoatAPI.Globals.Classes:register("LifeBoatAPI.Globals.TickManager", LifeBoatAPI.Globals.TickManager)
