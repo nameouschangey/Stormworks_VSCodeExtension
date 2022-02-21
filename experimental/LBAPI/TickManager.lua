@@ -1,15 +1,30 @@
 ---@class TickManager
 ---@field ticks number
----@field tickables Tickable[]
----@field tickableRestructureFrequency number
-LifeBoatAPI.Globals.TickManager = {
-    _tickables = {};
-    ticks = 0;
-    tickableRestructureFrequency = 60;
-    MaxTicks = 100000;
+LifeBoatAPI.TickManager = {
+    new = function (this)
+        return LifeBoatAPI.instantiate(this, {
+            _tickables = LifeBoatAPI.newTable(),
+            _serializableTicks1 = LifeBoatAPI.MinSafeInt,
+            _serializableTicks2 = LifeBoatAPI.MaxSafeInt,
+            _tickableRestructureFrequency = 60,
+            ticks = 0
+        })
+    end;
+
+    onLoad = function (this)
+        -- recalculate the running total of ticks from the serializable ones
+        -- enough tickspace to run for multiple years 24/7 without running into issues
+        this.ticks = this._serializableTicks1 + (LifeBoatAPI.NumSafeInts * (this._serializableTicks2_ + LifeBoatAPI.MinSafeInt))
+    end;
 
     onTick = function (this)
-        ticks = ticks + 1
+        this._serializableTicks1 = this._serializableTicks1 + 1
+        if this._serializableTicks1 > LifeBoatAPI.MaxSafeInt then
+            this._serializableTicks1 = LifeBoatAPI.MinSafeInt
+            this._serializableTicks2 = this._serializableTicks2 + 1
+        end
+
+        this.ticks = this.ticks + 1
 
         for i=1, #this._tickables do
             local tickable = this._tickables[i]
@@ -21,7 +36,7 @@ LifeBoatAPI.Globals.TickManager = {
         end
         
         -- handle restructuring
-        if ticks % this.tickableRestructureFrequency == 0 then
+        if ticks % this._tickableRestructureFrequency == 0 then
             this:_restructureTickables()
         end
     end;
@@ -51,10 +66,6 @@ LifeBoatAPI.Globals.TickManager = {
     end;
 }
 LifeBoatAPI.Globals.Classes:register("LifeBoatAPI.Globals.TickManager", LifeBoatAPI.Globals.TickManager)
-
-
-
-
 
 
 ---@class LifeBoatAPI.ITickable

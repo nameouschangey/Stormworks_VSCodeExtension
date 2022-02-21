@@ -80,31 +80,3 @@ LifeBoatAPI.Globals.Classes:register("LifeBoatAPI.Coroutine", LifeBoatAPI.Corout
 LifeBoatAPI.Globals.Classes:register("LifeBoatAPI.Coroutine._OnAwaitCompleteListener", LifeBoatAPI._OnAwaitCompleteListener)
 
 
-
-EventBase = {
-    new = function (this)
-        this = LifeBoatAPI.instantiate(this, {
-            _listeners = {},
-
-        })
-    end;
-
-    register = function (this, listener)
-        this._listeners[#this._listeners + 1] = listener
-    end;
-
-    registerOneShot = function (this, listener)
-        listener.countLeft = 1
-        this._listeners[#this._listeners + 1] = listener
-    end;
-
-    deregister = function (this)
-        
-    end;
-
-    trigger = function (this)
-        
-    end;
-}
-
-

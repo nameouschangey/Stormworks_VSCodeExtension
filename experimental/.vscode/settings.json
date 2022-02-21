@@ -33,16 +33,18 @@
     ],
     "lua.debug.settings.cpath": [
         "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/socket/core.dll",
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/mime/core.dll"
+        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/mime/core.dll",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/socket/core.dll",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/mime/core.dll"
     ],
     "lua.debug.settings.path": [
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/?.lua",
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Microcontroller/?.lua",
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Tools/?.lua"
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/?.lua",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Microcontroller/?.lua",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Tools/?.lua"
     ],
     "Lua.workspace.library": [
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Microcontroller/",
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Tools/"
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Microcontroller/",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Tools/"
     ],
     "lua.debug.settings.luaVersion": "5.3",
     "lua.debug.settings.luaArch": "x86",

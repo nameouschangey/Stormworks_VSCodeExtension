@@ -1,71 +1,55 @@
 LifeBoatAPI = LifeBoatAPI or {}
 LifeBoatAPI.MaxSafeInt = 16777216
 LifeBoatAPI.MinSafeInt = -16777216
+LifeBoatAPI.NumSafeInts = (16777216*2)+1
 LifeBoatAPI.__instanceid1 = LifeBoatAPI.MinSafeInt
 LifeBoatAPI.__instanceid2 = LifeBoatAPI.MinSafeInt
 
---- instantiates the given class table
---- requires previous call to LifeBoatAPI.setupClass
---- underwrites each value from class into the new instance obj
---- uses the __classkeys lookup to avoid calls to pairs() => calls to next() => *EXTREMELY slow*
-LifeBoatAPI.instantiate = function(class, obj)
-    obj = LifeBoatAPI.newTable(obj)
 
-    for i=1, #class.__classkeys do
-        local key = class.__classkeys[i]
-        if obj[key] == nil then
-            obj[key] = class[key]
-        end
-    end
-    
-    -- generate a UID for persistence loading later
-    LifeBoatAPI.__instanceid1 = LifeBoatAPI.__instanceid1 + 1
-    if LifeBoatAPI.__instanceid1 >= LifeBoatAPI.MaxSafeInt then
-        LifeBoatAPI.__instanceid1 = LifeBoatAPI.MinSafeInt
-        LifeBoatAPI.__instanceid2 = LifeBoatAPI.__instanceid2 + 1
-    end
-    obj.__instanceid1 = LifeBoatAPI.__instanceid1
-    obj.__instanceid2 = LifeBoatAPI.__instanceid2
-
-    return obj
-end
-
-LifeBoatAPI.newTable = function (tbl)
-    tbl = tbl or {}
-
-    -- duplicate of code above, we manually inline it line this to avoid an extra function call per instantiation
-    LifeBoatAPI.__instanceid1 = LifeBoatAPI.__instanceid1 + 1
-    if LifeBoatAPI.__instanceid1 >= LifeBoatAPI.MaxSafeInt then
-        LifeBoatAPI.__instanceid1 = LifeBoatAPI.MinSafeInt
-        LifeBoatAPI.__instanceid2 = LifeBoatAPI.__instanceid2 + 1
-    end
-    
-    tbl.__instanceid1 = LifeBoatAPI.__instanceid1
-    tbl.__instanceid2 = LifeBoatAPI.__instanceid2
-
-    return tbl
-end
-
-
--- what about things like arrays, and other tables that really should be "linked" but the link is lost?
--- not that everything becomes single precision floats when loaded
--- our goal was to make everything easier
--- are we achieving that?
---  potentially we make saving impossible to get wrong
---  at the expense of having to do weird tricks for creating new tables each time
--- the benefit is having complex missions should become far less of a stress
--- we want the game to load, and just "keep working"
--- some rules, e.g. expecting everything to be floats not doubles helps
---   and that all persisting state needs to be stored in tables (potentially everything)
--- ...although could we just persist _ENV?
--- ...then only local variables are lost each re-load
--- 
-
---- Global State
-LifeBoatAPI.Globals = LifeBoatAPI.Globals or {}
-
-LifeBoatAPI.Globals.Classes = {
+LifeBoatAPI.Classes = {
     _classes = {},
+
+    --- instantiates the given class table
+    --- requires previous call to LifeBoatAPI.setupClass
+    --- underwrites each value from class into the new instance obj
+    --- uses the __classkeys lookup to avoid calls to pairs() => calls to next() => *EXTREMELY slow*
+    instantiate = function(class, obj)
+        obj = obj or {}
+
+        for i=1, #class.__classkeys do
+            local key = class.__classkeys[i]
+            if obj[key] == nil then
+                obj[key] = class[key]
+            end
+        end;
+    
+        -- generate a UID for persistence loading later
+        LifeBoatAPI.__instanceid1 = LifeBoatAPI.__instanceid1 + 1
+        if LifeBoatAPI.__instanceid1 >= LifeBoatAPI.MaxSafeInt then
+            LifeBoatAPI.__instanceid1 = LifeBoatAPI.MinSafeInt
+            LifeBoatAPI.__instanceid2 = LifeBoatAPI.__instanceid2 + 1
+        end
+        obj.__instanceid1 = LifeBoatAPI.__instanceid1
+        obj.__instanceid2 = LifeBoatAPI.__instanceid2
+
+        return obj
+    end;
+
+    newReferencableTable = function (tbl)
+        tbl = tbl or {}
+
+        -- duplicate of code above, we manually inline it line this to avoid an extra function call per instantiation
+        LifeBoatAPI.__instanceid1 = LifeBoatAPI.__instanceid1 + 1
+        if LifeBoatAPI.__instanceid1 >= LifeBoatAPI.MaxSafeInt then
+            LifeBoatAPI.__instanceid1 = LifeBoatAPI.MinSafeInt
+            LifeBoatAPI.__instanceid2 = LifeBoatAPI.__instanceid2 + 1
+        end
+        
+        tbl.__instanceid1 = LifeBoatAPI.__instanceid1
+        tbl.__instanceid2 = LifeBoatAPI.__instanceid2
+
+        return tbl
+    end;
 
     register = function(this, uniqueID, cls, parent)
         local keys = {}
@@ -131,8 +115,3 @@ LifeBoatAPI.Globals.Classes = {
         return tbl
     end;
 }
-
--- limitation on working this way:
--- you cannot use anonymous functions; at all.
--- every anonymous function needs to be defined as a class
--- even if it's a one-off
