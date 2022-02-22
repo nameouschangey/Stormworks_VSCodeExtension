@@ -21,7 +21,7 @@ LifeBoatAPI.Tools.FileSystemUtils = {
 
     ---@param filepath Filepath
     openForWrite = function(filepath)
-        os.execute("mkdir \"" .. filepath:directory():win() .. "\" 2>nul")
+        os.execute("\"mkdir \"" .. filepath:directory():win() .. "\" 2>nul\"")
         local file = io.open(filepath:win(), "w")
         return file
     end;
@@ -62,7 +62,7 @@ LifeBoatAPI.Tools.FileSystemUtils = {
     ---@return Filepath[] list of filepaths
     findPathsInDir = function (dirPath, commandlinePattern)
         local result = {}
-        local process = io.popen('dir "'..dirPath:win()..'" /b ' .. commandlinePattern .. " 2>nul")
+        local process = io.popen("\"" .. "dir \""..dirPath:win().."\" /b " .. commandlinePattern .. " 2>nul\"")
 
         for filename in process:lines() do
             LifeBoatAPI.Tools.TableUtils.add(result, LifeBoatAPI.Tools.Filepath:new(filename))
