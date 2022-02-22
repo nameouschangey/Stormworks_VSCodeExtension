@@ -108,6 +108,10 @@ LifeBoatAPI.Tools.Minimizer = {
             text = globalShortener:shortenGlobals(text)
         end
 
+        -- fix hexadecimals
+        local hexadecimalFixer = LifeBoatAPI.Tools.HexadecimalConverter:new()
+        text = hexadecimalFixer:fixHexademicals(text)
+
         -- reduce numbers
         if(this.params.shortenNumbers) then
             local numberShortener = LifeBoatAPI.Tools.NumberLiteralReducer:new(variableRenamer)
