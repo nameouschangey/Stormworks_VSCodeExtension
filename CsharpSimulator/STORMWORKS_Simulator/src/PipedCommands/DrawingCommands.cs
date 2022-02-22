@@ -369,27 +369,6 @@ namespace STORMWORKS_Simulator
     }
 
     [Export(typeof(IPipeCommandHandler))]
-    public class SetColour : IPipeCommandHandler
-    {
-        public string Command => "COLOUR";
-
-        public void Handle(MainVM vm, string[] commandParts)
-        {
-            if (commandParts.Length < 5)
-            {
-                return;
-            }
-
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1], CultureInfo.InvariantCulture))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2], CultureInfo.InvariantCulture))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3], CultureInfo.InvariantCulture))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4], CultureInfo.InvariantCulture))));
-
-            vm.Color = new SkiaSharp.SKColor(r,g,b,a);
-        }
-    }
-
-    [Export(typeof(IPipeCommandHandler))]
     public class ClearScreen : IPipeCommandHandler
     {
         public string Command => "CLEAR";
