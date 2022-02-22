@@ -399,7 +399,6 @@ map = {
     --- @return number worldX, number worldY
     screenToMap = function(...)
         if select("#", ...) < 7 then return end
-        screen._ensureIsRendering()
 
         local mapX          = LifeBoatAPI.Tools.SelectNumber(1,0, ...)
         local mapY          = LifeBoatAPI.Tools.SelectNumber(2,0, ...)
@@ -426,7 +425,6 @@ map = {
     --- @return number pixelX, number pixelY
     mapToScreen = function(...)
         if select("#", ...) < 7 then return end
-        screen._ensureIsRendering()
 
         local mapX          = LifeBoatAPI.Tools.SelectNumber(1,0, ...)
         local mapY          = LifeBoatAPI.Tools.SelectNumber(2,0, ...)
