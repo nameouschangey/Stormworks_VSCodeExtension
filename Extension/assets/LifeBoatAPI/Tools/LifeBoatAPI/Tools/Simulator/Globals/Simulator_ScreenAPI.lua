@@ -65,6 +65,12 @@ screen = {
 
         if LifeBoatAPI.Tools.AreNumbersNan(r,g,b,a) then return end
 
+        -- wrap numbers to 0->255 range before correction
+        r = r % 256
+        g = g % 256
+        b = b % 256
+        a = a % 256
+        
         --- the game applies gamma - which we need to replicate
         --- makes all colours far more washed out.
         --- see: https://steamcommunity.com/sharedfiles/filedetails/?id=2273112890

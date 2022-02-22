@@ -33,7 +33,7 @@ LifeBoatAPI.Tools.HexadecimalConverter = {
             local hexVal = hexValues[i]
             local hexAsNum = tonumber(hexVal.captures[1])
     
-            text = stringUtils.subAll(text, "([^%w_])" .. stringUtils.escape(hexVal.captures[1]), stringUtils.escapeSub(tostring(hexAsNum)))
+            text = stringUtils.subAll(text, "([^%w_])" .. stringUtils.escape(hexVal.captures[1]), "%1" .. tostring(hexAsNum))
         end
     
         return text

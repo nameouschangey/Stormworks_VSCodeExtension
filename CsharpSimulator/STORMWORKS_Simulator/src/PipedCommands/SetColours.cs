@@ -23,11 +23,10 @@ namespace STORMWORKS_Simulator
     {
         public static SKColor ColourFromCommandParts(string[] commandParts)
         {
-
-            var r = Convert.ToByte(((int)float.Parse(commandParts[1], CultureInfo.InvariantCulture))%256);
-            var g = Convert.ToByte(((int)float.Parse(commandParts[2], CultureInfo.InvariantCulture))%256);
-            var b = Convert.ToByte(((int)float.Parse(commandParts[3], CultureInfo.InvariantCulture))%256);
-            var a = Convert.ToByte(((int)float.Parse(commandParts[4], CultureInfo.InvariantCulture))%256);
+            var r = Convert.ToByte(Math.Min(255,Math.Max(0,(int)float.Parse(commandParts[1], CultureInfo.InvariantCulture))));
+            var g = Convert.ToByte(Math.Min(255,Math.Max(0,(int)float.Parse(commandParts[2], CultureInfo.InvariantCulture))));
+            var b = Convert.ToByte(Math.Min(255,Math.Max(0,(int)float.Parse(commandParts[3], CultureInfo.InvariantCulture))));
+            var a = Convert.ToByte(Math.Min(255,Math.Max(0,(int)float.Parse(commandParts[4], CultureInfo.InvariantCulture))));
 
             return new SKColor(r, g, b, a);
         }

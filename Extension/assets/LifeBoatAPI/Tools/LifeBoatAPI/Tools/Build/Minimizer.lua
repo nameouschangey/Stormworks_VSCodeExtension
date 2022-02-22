@@ -13,6 +13,7 @@ require("LifeBoatAPI.Tools.Build.VariableShortener")
 require("LifeBoatAPI.Tools.Build.GlobalVariableReducer")
 require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 require("LifeBoatAPI.Tools.Build.NumberLiteralReducer")
+require("LifeBoatAPI.Tools.Build.HexadecimalConverter")
 
 ---@class MinimizerParams
 ---@field reduceAllWhitespace   boolean if true, shortens all whitespace duplicates where possible
