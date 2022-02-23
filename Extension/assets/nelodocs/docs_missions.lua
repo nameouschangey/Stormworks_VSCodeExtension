@@ -686,7 +686,7 @@ function server.getVehicleDial(vehicle_id, dial_name) end
 --- Fills a fluid tank with the specified liquid
 --- @param vehicle_id number The unique id of the vehicle
 --- @param tank_name string The name of the tank as it appears on the vehicle. Editable using the select tool in the workbench
---- @param amount number The amount you want to fill the tank in litres * 10 (example: 10 -> fills tank to 100L)
+--- @param amount number The amount you want to fill the tank in litres
 --- @param FLUID_TYPE number Refer to FLUID_TYPE (Refer to cells "Types!A173:B173" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
 function server.setVehicleTank(vehicle_id, tank_name, amount, FLUID_TYPE) end
 
