@@ -1,6 +1,7 @@
 
 ---@class LifeBoatAPI.Coroutine : LifeBoatAPI.ITickable
----@field routine function
+---@field routine function function to run each tick
+---@field stage number current stage of the coroutine being run
 ---@field Yield number
 ---@field Repeat number
 ---@field Goto number
@@ -17,9 +18,13 @@ LifeBoatAPI.Coroutine = {
     AwaitGoto = -6;
     End = nil;
 
-    new = function (this, tickFrequency, delay)
+    ---@param this LifeBoatAPI.Coroutine
+    ---@param tickFrequency number how often to run the coroutine
+    ---@param disposable LifeBoatAPI.IDisposable disposable, for determining when the coroutine ends naturally
+    ---@return LifeBoatAPI.Coroutine
+    new = function (this, tickFrequency, disposable, delay)
         this = LifeBoatAPI.instantiate(this, {
-            isAlive = true,
+            disposable = disposable or {},
             tickFrequency = tickFrequency or 1,
             nextTick = LifeBoatAPI.Globals.TickManager.ticks + (delay or 0),
             stage = 1
@@ -27,7 +32,7 @@ LifeBoatAPI.Coroutine = {
     end;
 
     onTick = function (this, ticks)
-        if this.routine and this.isAlive then
+        if this.routine then
             local resultType, resultArg1, resultArg2 = this.routine(this, this.stage, ticks)
 
             if resultType == this.Yield then
@@ -37,7 +42,7 @@ LifeBoatAPI.Coroutine = {
                 -- don't change the stage
 
             elseif resultType == this.Return then
-                this.isAlive = false
+                this.disposable = {isDisposed = true}
 
             elseif resultType == this.Goto then
                 this.stage = resultArg1
@@ -59,7 +64,7 @@ LifeBoatAPI.Coroutine = {
                 this.stage = resultArg2
 
             else 
-                this.isAlive = false
+                this.disposable = {isDisposed = true}
             end
         end
     end;
