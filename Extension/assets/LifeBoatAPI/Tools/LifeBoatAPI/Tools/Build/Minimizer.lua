@@ -13,6 +13,7 @@ require("LifeBoatAPI.Tools.Build.VariableShortener")
 require("LifeBoatAPI.Tools.Build.GlobalVariableReducer")
 require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 require("LifeBoatAPI.Tools.Build.NumberLiteralReducer")
+require("LifeBoatAPI.Tools.Build.HexadecimalConverter")
 
 ---@class MinimizerParams
 ---@field reduceAllWhitespace   boolean if true, shortens all whitespace duplicates where possible
@@ -107,6 +108,10 @@ LifeBoatAPI.Tools.Minimizer = {
             local globalShortener = LifeBoatAPI.Tools.GlobalVariableReducer:new(variableRenamer, this.constants)
             text = globalShortener:shortenGlobals(text)
         end
+
+        -- fix hexadecimals
+        local hexadecimalFixer = LifeBoatAPI.Tools.HexadecimalConverter:new()
+        text = hexadecimalFixer:fixHexademicals(text)
 
         -- reduce numbers
         if(this.params.shortenNumbers) then

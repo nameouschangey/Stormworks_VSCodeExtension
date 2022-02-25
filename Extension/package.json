@@ -1,296 +1,295 @@
 {
   	"name": "lifeboatapi",
-	"repository": "https://github.com/nameouschangey/STORMWORKS_VSCodeExtension",
-	"publisher": "NameousChangey",
-	"icon": "assets/images/icon.png",
-	"displayName": "Stormworks Lua with LifeBoatAPI",
-	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
-	"version": "0.0.12",
-	"os": ["win32-x64", "win32-ia32"],
-	"engines": {
-		"vscode": "^1.62.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"*",
-        "onCommand:lifeboatapi.build",
-		"onCommand:lifeboatapi.newMCProject",
-		"onCommand:lifeboatapi.newAddonProject"
-	],
-	"extensionPack": [
-		"sumneko.lua",
-		"actboy168.lua-debug"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"configuration":[
-			{
-				"title": "Stormworks Lua with Lifeboat API",
-				"properties":
-				{
-					"lifeboatapi.stormworks.user.authorName" : {
-						"type":"string",
-						"default": null,
-						"scope": "resource",
-						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
-					},
-					"lifeboatapi.stormworks.user.workshopLink" : {
-						"type":"string",
-						"default": null,
-						"scope": "resource",
-						"description": "Link to your steam workshop page"
-					},
-					"lifeboatapi.stormworks.user.githubLink" : {
-						"type":"string",
-						"default": null,
-						"scope": "resource",
-						"description": "Link to your github page"
-					},
-					"lifeboatapi.stormworks.user.extendedBoilerplate" : {
-						"type":"string",
-						"default": "",
-						"scope": "resource",
-						"description": "Any remaining boiletplate notice you wish to include at the top of the file."
-					},
-					"lifeboatapi.stormworks.nelo.overwriteNeloDocsPath" : {
-						"type":"boolean",
-						"default": false,
-						"scope": "resource",
-						"description": "True if you have a local copy of René Sackers Lua docs you'd prefer to use (sometimes this extension may become out of date, and René Sackers may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
-					},
-					"lifeboatapi.stormworks.nelo.neloMicrocontrollerDocPath" : {
-						"type":"string",
-						"default": "<use internal LifeBoatAPI copy>",
-						"scope": "resource",
-						"description": "Local location of your microcontroller René Sackers Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and René Sackers may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
-					},
-					"lifeboatapi.stormworks.nelo.neloAddonDocPath" : {
-						"type":"string",
-						"default": "<use internal LifeBoatAPI copy>",
-						"scope": "resource",
-						"description": "Local location of your addon René Sackers Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and René Sackers may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
-					},
-					"lifeboatapi.stormworks.libs.projectSpecificLibraryPaths": {
-						"type":"array",
-						"items": {
-							"type": "string"
-						},
-						"scope": "resource",
-						"default": [],
-						"description": "(Per-project) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths apply ONLY to this project."
-					},
-					"lifeboatapi.stormworks.libs.workspaceLibraryPaths": {
-						"type":"array",
-						"items": {
-							"type": "string"
-						},
-						"scope": "window",
-						"default": [],
-						"description": "(Shared within Workspace) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths are shared for all projects in this workspace, avoiding the need to set each project up specifically"
-					},
-					"lifeboatapi.stormworks.libs.globalLibraryPaths": {
-						"type":"array",
-						"items": {
-							"type": "string"
-						},
-						"scope": "application",
-						"default": [],
-						"description": "(Shared globally) Add absolute-paths to other projects or libraries, to use the lua from them.\n These paths are globally shared, for libraries you want to use every time without setting them up again."
-					},
-					"lifeboatapi.stormworks.libs.ignorePaths": {
-						"type":"array",
-						"items": {
-							"type": "string"
-						},
-						"scope": "resource",
-						"default": [],
-						"description": ".gitignore style path patterns to ignore from intellisense and build processes."
-					},
-					"lifeboatapi.stormworks.enableNewProjectContextMenu" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "Enable the Stormworks: New Project option in the Explorer context menu"
-					},
-					"lifeboatapi.stormworks.isMicrocontrollerProject" : {
-						"type":"boolean",
-						"default": false,
-						"scope": "resource",
-						"description": "(Recommended that you do not change this.) True if this project is a Stormworks Microcontroller project."
-					},
-					"lifeboatapi.stormworks.isAddonProject" : {
-						"type":"boolean",
-						"default": false,
-						"scope": "resource",
-						"description": "(Recommended that you do not change this.) True if this project is a Stormworks Addon project"
-					},
-					"lifeboatapi.stormworks.shouldOpenWorkspacesFound" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "application",
-						"description": "If enabled, when using Open Folder - presents the option to open any .code-workspace files found in sub folders; in separate windows. Apologies to any developer this annoys - but it should make VSCode more palatable for newcomers."
-					},
-					"lifeboatapi.stormworks.shouldDisableNonSWIntellisense" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "user",
-						"description": "Disable this is you want all Lua intellisense available. Otherwise, non-SW libraries are removed to help new users."
-					},
-					
-					"lifeboatapi.stormworks.minimizer.removeComments" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will strip out all comments"
-					},
-					"lifeboatapi.stormworks.minimizer.reduceAllWhitespace" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will remove all unnecessary spacing and punctuation"
-					},
-					"lifeboatapi.stormworks.minimizer.reduceNewlines" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended if not Reduce All Whitespace) Minimizer will remove double-newlines, but leave the file readable"
-					},
-					"lifeboatapi.stormworks.minimizer.removeRedundancies" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will remove ---@section code redundancies"
-					},
-					"lifeboatapi.stormworks.minimizer.shortenVariables" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will shorten variables where possible"
-					},
-					"lifeboatapi.stormworks.minimizer.shortenGlobals" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will shorten globals where possible, e.g. math, screen.drawRect etc."
-					},
-					"lifeboatapi.stormworks.minimizer.shortenNumbers" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will shorten numbers where possible"
-					},
-					"lifeboatapi.stormworks.minimizer.shortenStringDuplicates" : {
-						"type":"boolean",
-						"default": true,
-						"scope": "resource",
-						"description": "(Recommended) Minimizer will remove all duplicate strings and turn them into shared globals"
-					},
-					"lifeboatapi.stormworks.minimizer.forceNCBoilerplate" : {
-						"type":"boolean",
-						"default": false,
-						"scope": "resource",
-						"description": "(Off by default) Minimizer is forced to output the Nameous Changey boilerplate - even if the file goes over 4000 characters."
-					},
-					"lifeboatapi.stormworks.minimizer.forceBoilerplate" : {
-						"type":"boolean",
-						"default": false,
-						"scope": "resource",
-						"description": "(Off by default) Minimizer is forced to output the authors custom boilerplate - even if the file goes over 4000 characters."
-					},
-					"lifeboatapi.stormworks.minimizer.skipCombinedFileOutput" : {
-						"type":"boolean",
-						"default": false,
-						"scope": "resource",
-						"description": "(Off by default) Skips saving the combined file output when building with F7. May slightly speed up build process on some systems."
-					}
-					
-				}
-			}
-		],
-		"commands": [
-			{
-				"command": "lifeboatapi.build",
-				"title": "Stormworks: Build Project"
-			},
-			{
-				"command": "lifeboatapi.newMCProject",
-				"title": "Stormworks: New Microcontroller Project"
-			},
-			{
-				"command": "lifeboatapi.newAddonProject",
-				"title": "Stormworks: New Addon Project"
-			},
-			{
-				"command": "lifeboatapi.simulate",
-				"title": "Stormworks: Simulate Microcontroller"
-			}
-		],
-		"keybindings":[
-			{
-				"command": "lifeboatapi.simulate",
-				"key": "F6"
-			},
-			{
-				"command": "lifeboatapi.build",
-				"key": "F7"
-			}
-		],
-		"menus": {
-			"editor/title/run" : [
-				{
-					"command": "lifeboatapi.simulate",
-					"group": "0_stormworks",
-					"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject"
-				},
-				{
-					"command": "lifeboatapi.build",
-					"group": "0_stormworks",
-					"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
-				}
-			],
-			"explorer/context": [
-				{
-					"command": "lifeboatapi.newMCProject",
-					"group": "0_stormworks",
-					"when":"config.lifeboatapi.stormworks.enableNewProjectContextMenu"
-				},
-				{
-					"command": "lifeboatapi.newAddonProject",
-					"group": "0_stormworks",
-					"when":"config.lifeboatapi.stormworks.enableNewProjectContextMenu"
-				}
-			],
-			"file/newFile": [
-				{
-				"command": "lifeboatapi.newMCProject"
-				},
-				{
-				"command": "lifeboatapi.newAddonProject"
-				}
-			]
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.62.0",
-		"@types/glob": "^7.1.4",
-		"@types/mocha": "^9.0.0",
-		"@types/node": "14.x",
-		"@typescript-eslint/eslint-plugin": "^5.1.0",
-		"@typescript-eslint/parser": "^5.1.0",
-		"eslint": "^8.1.0",
-		"glob": "^7.1.7",
-		"mocha": "^9.1.3",
-		"typescript": "^4.4.4",
-		"@vscode/test-electron": "^1.6.2"
-	}
+  	"repository": "https://github.com/nameouschangey/STORMWORKS_VSCodeExtension",
+  	"publisher": "NameousChangey",
+  	"icon": "assets/images/icon.png",
+  	"displayName": "Stormworks Lua with LifeBoatAPI",
+  	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
+  	"version": "0.0.13",
+  	"engines": {
+  	  	"vscode": "^1.62.0"
+  	},
+  	"categories": [
+  	  	"Other"
+  	],
+  	"activationEvents": [
+  	  	"*",
+  	  	"onCommand:lifeboatapi.build",
+  	  	"onCommand:lifeboatapi.newMCProject",
+  	  	"onCommand:lifeboatapi.newAddonProject"
+  	],
+  	"dependencies": {
+  	  	"nanoid": "^3.3.1"
+  	},
+  	"extensionPack": [
+  	  	"sumneko.lua",
+  	  	"actboy168.lua-debug"
+  	],
+  	"main": "./out/extension.js",
+  	"contributes": {
+  	  	"configuration": [
+  	  	  	{
+  	  	  	  	"title": "Stormworks Lua with Lifeboat API",
+  	  	  	  	"properties": {
+  	  	  	  	  	"lifeboatapi.stormworks.user.authorName": {
+  	  	  	  	  	  	"type": "string",
+  	  	  	  	  	  	"default": null,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Enable the Stormworks: New Project option in the Explorer context menu"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.user.workshopLink": {
+  	  	  	  	  	  	"type": "string",
+  	  	  	  	  	  	"default": null,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Link to your steam workshop page"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.user.githubLink": {
+  	  	  	  	  	  	"type": "string",
+  	  	  	  	  	  	"default": null,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Link to your github page"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.user.extendedBoilerplate": {
+  	  	  	  	  	  	"type": "string",
+  	  	  	  	  	  	"default": "",
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Any remaining boiletplate notice you wish to include at the top of the file."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.nelo.overwriteNeloDocsPath": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": false,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "True if you have a local copy of René Sackers Lua docs you'd prefer to use (sometimes this extension may become out of date, and René Sackers may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.nelo.neloMicrocontrollerDocPath": {
+  	  	  	  	  	  	"type": "string",
+  	  	  	  	  	  	"default": "<use internal LifeBoatAPI copy>",
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Local location of your microcontroller René Sackers Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and René Sackers may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.nelo.neloAddonDocPath": {
+  	  	  	  	  	  	"type": "string",
+  	  	  	  	  	  	"default": "<use internal LifeBoatAPI copy>",
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Local location of your addon René Sackers Lua Docs file - (if overriding; otherwise the bundled version in this extension is used) - (sometimes this extension may become out of date, and René Sackers may update his docs sooner). See: https://github.com/Rene-Sackers/StormworksLuaDocsGen"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.libs.projectSpecificLibraryPaths": {
+  	  	  	  	  	  	"type": "array",
+  	  	  	  	  	  	"items": {
+  	  	  	  	  	  	  	"type": "string"
+  	  	  	  	  	  	},
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"default": [],
+  	  	  	  	  	  	"description": "(Per-project) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths apply ONLY to this project."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.libs.workspaceLibraryPaths": {
+  	  	  	  	  	  	"type": "array",
+  	  	  	  	  	  	"items": {
+  	  	  	  	  	  	  	"type": "string"
+  	  	  	  	  	  	},
+  	  	  	  	  	  	"scope": "window",
+  	  	  	  	  	  	"default": [],
+  	  	  	  	  	  	"description": "(Shared within Workspace) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths are shared for all projects in this workspace, avoiding the need to set each project up specifically"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.libs.globalLibraryPaths": {
+  	  	  	  	  	  	"type": "array",
+  	  	  	  	  	  	"items": {
+  	  	  	  	  	  	  	"type": "string"
+  	  	  	  	  	  	},
+  	  	  	  	  	  	"scope": "application",
+  	  	  	  	  	  	"default": [],
+  	  	  	  	  	  	"description": "(Shared globally) Add absolute-paths to other projects or libraries, to use the lua from them.\n These paths are globally shared, for libraries you want to use every time without setting them up again."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.libs.ignorePaths": {
+  	  	  	  	  	  	"type": "array",
+  	  	  	  	  	  	"items": {
+  	  	  	  	  	  	  	"type": "string"
+  	  	  	  	  	  	},
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"default": [],
+  	  	  	  	  	  	"description": ".gitignore style path patterns to ignore from intellisense and build processes."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.enableNewProjectContextMenu": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "Enable the Stormworks: New Project option in the Explorer context menu"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.isMicrocontrollerProject": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": false,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended that you do not change this.) True if this project is a Stormworks Microcontroller project."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.isAddonProject": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": false,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended that you do not change this.) True if this project is a Stormworks Addon project"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.shouldOpenWorkspacesFound": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "application",
+  	  	  	  	  	  	"description": "If enabled, when using Open Folder - presents the option to open any .code-workspace files found in sub folders; in separate windows. Apologies to any developer this annoys - but it should make VSCode more palatable for newcomers."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.shouldDisableNonSWIntellisense": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "user",
+  	  	  	  	  	  	"description": "Disable this is you want all Lua intellisense available. Otherwise, non-SW libraries are removed to help new users."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.removeComments": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will strip out all comments"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.reduceAllWhitespace": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will remove all unnecessary spacing and punctuation"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.reduceNewlines": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended if not Reduce All Whitespace) Minimizer will remove double-newlines, but leave the file readable"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.removeRedundancies": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will remove ---@section code redundancies"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.shortenVariables": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will shorten variables where possible"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.shortenGlobals": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will shorten globals where possible, e.g. math, screen.drawRect etc."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.shortenNumbers": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will shorten numbers where possible"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.shortenStringDuplicates": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Recommended) Minimizer will remove all duplicate strings and turn them into shared globals"
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.forceNCBoilerplate": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": false,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Off by default) Minimizer is forced to output the Nameous Changey boilerplate - even if the file goes over 4000 characters."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.forceBoilerplate": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": false,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Off by default) Minimizer is forced to output the authors custom boilerplate - even if the file goes over 4000 characters."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.minimizer.skipCombinedFileOutput": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": false,
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"description": "(Off by default) Skips saving the combined file output when building with F7. May slightly speed up build process on some systems."
+  	  	  	  	  	}
+  	  	  	  	}
+  	  	  	}
+  	  	],
+  	  	"commands": [
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.build",
+  	  	  	  	"title": "Stormworks: Build Project"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.newMCProject",
+  	  	  	  	"title": "Stormworks: New Microcontroller Project"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.newAddonProject",
+  	  	  	  	"title": "Stormworks: New Addon Project"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.simulate",
+  	  	  	  	"title": "Stormworks: Simulate Microcontroller"
+  	  	  	}
+  	  	],
+  	  	"keybindings": [
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.simulate",
+  	  	  	  	"key": "F6"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.build",
+  	  	  	  	"key": "F7"
+  	  	  	}
+  	  	],
+  	  	"menus": {
+  	  	  	"editor/title/run": [
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.simulate",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject"
+  	  	  	  	},
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.build",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	}
+  	  	  	],
+  	  	  	"explorer/context": [
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.newMCProject",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "config.lifeboatapi.stormworks.enableNewProjectContextMenu"
+  	  	  	  	},
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.newAddonProject",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "config.lifeboatapi.stormworks.enableNewProjectContextMenu"
+  	  	  	  	}
+  	  	  	],
+  	  	  	"file/newFile": [
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.newMCProject"
+  	  	  	  	},
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.newAddonProject"
+  	  	  	  	}
+  	  	  	]
+  	  	}
+  	},
+  	"scripts": {
+  	  	"vscode:prepublish": "npm run compile",
+  	  	"compile": "tsc -p ./",
+  	  	"watch": "tsc -watch -p ./",
+  	  	"pretest": "npm run compile && npm run lint",
+  	  	"lint": "eslint src --ext ts",
+  	  	"test": "node ./out/test/runTest.js"
+  	},
+  	"devDependencies": {
+  	  	"@types/glob": "^7.1.4",
+  	  	"@types/mocha": "^9.0.0",
+  	  	"@types/node": "14.x",
+  	  	"@types/vscode": "^1.62.0",
+  	  	"@typescript-eslint/eslint-plugin": "^5.1.0",
+  	  	"@typescript-eslint/parser": "^5.1.0",
+  	  	"@vscode/test-electron": "^1.6.2",
+  	  	"eslint": "^8.1.0",
+  	  	"glob": "^7.1.7",
+  	  	"mocha": "^9.1.3",
+  	  	"typescript": "^4.4.4"
+  	}
 }

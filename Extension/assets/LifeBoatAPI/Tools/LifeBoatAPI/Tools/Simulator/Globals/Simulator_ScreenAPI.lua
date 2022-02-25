@@ -65,6 +65,12 @@ screen = {
 
         if LifeBoatAPI.Tools.AreNumbersNan(r,g,b,a) then return end
 
+        -- wrap numbers to 0->255 range before correction
+        r = r % 256
+        g = g % 256
+        b = b % 256
+        a = a % 256
+        
         --- the game applies gamma - which we need to replicate
         --- makes all colours far more washed out.
         --- see: https://steamcommunity.com/sharedfiles/filedetails/?id=2273112890
@@ -399,7 +405,6 @@ map = {
     --- @return number worldX, number worldY
     screenToMap = function(...)
         if select("#", ...) < 7 then return end
-        screen._ensureIsRendering()
 
         local mapX          = LifeBoatAPI.Tools.SelectNumber(1,0, ...)
         local mapY          = LifeBoatAPI.Tools.SelectNumber(2,0, ...)
@@ -426,7 +431,6 @@ map = {
     --- @return number pixelX, number pixelY
     mapToScreen = function(...)
         if select("#", ...) < 7 then return end
-        screen._ensureIsRendering()
 
         local mapX          = LifeBoatAPI.Tools.SelectNumber(1,0, ...)
         local mapY          = LifeBoatAPI.Tools.SelectNumber(2,0, ...)

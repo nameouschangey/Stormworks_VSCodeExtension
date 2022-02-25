@@ -1,6 +1,18 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.13] - 25th February 2022
+**major**
+- Added hexadecimal support, as game does not support 0xAAA -> 0xFFF, converts to decimal
+- Fixed issue with spaces and other characters in filepaths, prevent Simulator working for some people
+- Fixed first-time opening issue, where intellisense doesn't immediately load
+- Updated addon api-docs, now correct to in-game
+**minor**
+- map functions no longer throw an error if used in onTick
+- screen.setColor wraps at 255 as the game does, instead of clamping
+- drawTextBox now respects \n newline characters as the game does
+
+
 #### [0.0.12] - 25th January 2022
 **minor**
 - _buildactions.lua fixed for addons lua, which was breaking build process (caused by 0.0.11, sorry!)

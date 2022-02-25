@@ -23,10 +23,12 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
     _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
     _mission_restricted_callbacks = {"onTick", "onCreate", "onDestroy", "onCustomCommand", "onChatMessage",
-                                     "onPlayerJoin", "onPlayerSit", "onCharacterSit", "onPlayerRespawn",
-                                     "onPlayerLeave", "onToggleMap", "onPlayerDie", "onVehicleSpawn", "onVehicleLoad", "onVehicleTeleport",
-                                     "onVehicleDespawn", "onSpawnAddonComponent", "onVehicleDamaged", "httpReply",
-                                     "onFireExtinguished","onVehicleUnload", "onForestFireSpawned", "onForestFireExtinguised"};
+                                     "onPlayerJoin", "onPlayerSit", "onPlayerUnsit", "onCharacterSit", "onCharacterUnsit", "onPlayerRespawn",
+                                     "onPlayerLeave", "onToggleMap", "onPlayerDie", "onVehicleSpawn", "onVehicleDespawn", "onVehicleLoad", "onVehicleUnload", 
+                                     "onVehicleTeleport", "onObjectLoad", "onObjectUnload", "onButtonPress",
+                                     "onSpawnAddonComponent", "onVehicleDamaged", "httpReply",
+                                     "onFireExtinguished", "onForestFireSpawned", "onForestFireExtinguised",
+                                     "onTornado", "onMeteor", "onTsunami", "onWhirlpool", "onVolcano"};
 
     ---@param cls ParsingConstantsLoader
     ---@return ParsingConstantsLoader

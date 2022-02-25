@@ -119,6 +119,7 @@
     <Compile Include="src\Logger.cs" />
     <Compile Include="src\PipedCommands\MapDrawingCommands.cs" />
     <Compile Include="src\PipedCommands\DrawingCommands.cs" />
+    <Compile Include="src\PipedCommands\SetColours.cs" />
     <Compile Include="src\PipedCommands\SimulationCommands.cs" />
     <Compile Include="src\PipedCommands\ScreenCommands.cs" />
     <Compile Include="src\PipedCommands\InputOutputCommands.cs" />

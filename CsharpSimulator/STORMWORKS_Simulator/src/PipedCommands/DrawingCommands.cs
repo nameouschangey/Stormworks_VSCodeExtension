@@ -231,24 +231,27 @@ namespace STORMWORKS_Simulator
             // wrap text into lines
             var charsPerLine = (int)Math.Max(1, width / 5);
             var lines = new List<string>();
-            var index = 0;
-
-            while (index < (text.Length - charsPerLine))
+            
+            var newLineSplits = text.Split('\n');
+            foreach (var split in newLineSplits)
             {
-                var nextIndex = text.LastIndexOf(" ", index + charsPerLine, charsPerLine+1) + 1;
-                if (nextIndex == 0
-                    || nextIndex > index + charsPerLine)
+                var index = 0;
+                while (index < (split.Length - charsPerLine))
                 {
-                    nextIndex = index + charsPerLine;
+                    // find the next space character
+                    var nextIndex = split.LastIndexOf(" ", index + charsPerLine, charsPerLine+1) + 1;
+                    if (nextIndex == 0 || nextIndex > index + charsPerLine)
+                    {
+                        nextIndex = index + charsPerLine;
+                    }
+
+                    lines.Add(split.Substring(index, nextIndex - index));
+                    index = nextIndex;
                 }
-
-                lines.Add(text.Substring(index, nextIndex - index));
-                index = nextIndex;
-            }
-
-            if (index < text.Length)
-            {
-                lines.Add(text.Substring(index));
+                if (index < split.Length)
+                {
+                    lines.Add(split.Substring(index));
+                }
             }
 
             var lineHeight = 6;
@@ -365,27 +368,6 @@ namespace STORMWORKS_Simulator
             };
 
             screen.DrawingCanvas.Canvas.DrawPath(path, paint);
-        }
-    }
-
-    [Export(typeof(IPipeCommandHandler))]
-    public class SetColour : IPipeCommandHandler
-    {
-        public string Command => "COLOUR";
-
-        public void Handle(MainVM vm, string[] commandParts)
-        {
-            if (commandParts.Length < 5)
-            {
-                return;
-            }
-
-            var r = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[1], CultureInfo.InvariantCulture))));
-            var g = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[2], CultureInfo.InvariantCulture))));
-            var b = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[3], CultureInfo.InvariantCulture))));
-            var a = Convert.ToByte(Math.Min(255, Math.Max(0, (int)float.Parse(commandParts[4], CultureInfo.InvariantCulture))));
-
-            vm.Color = new SkiaSharp.SKColor(r,g,b,a);
         }
     }
 
