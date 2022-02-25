@@ -15,6 +15,7 @@ import * as runBuild from "./runBuild";
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext)
 {
+	context.workspaceState.update("lifeboatapi.lastWorkspace", null); // clear previous "lastWorkspace" in case it persisted?
 	console.log('LifeBoatAPI for Stormworks Lua now active. Please contact Nameous Changey if you discover issues.');
 
 	// when folders change, check if there's any code-workspace files that could be opened
