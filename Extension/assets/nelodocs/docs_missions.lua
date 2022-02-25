@@ -10,7 +10,7 @@ server = {}
 property = {}
 matrix = {}
 debug = {}
-
+g_savedata = {}
 
 
 
