@@ -1,55 +1,14 @@
 {
-    "lifeboatapi.stormworks.isMicrocontrollerProject": true,
-    "lifeboatapi.stormworks.isAddonProject": false,
-    "Lua.diagnostics.disable": [
-        "lowercase-global",
-        "undefined-doc-name"
-    ],
-    "Lua.diagnostics.globals": [
-        "__simulator",
-        "print",
-        "simulator"
-    ],
-    "Lua.runtime.version": "Lua 5.3",
-    "Lua.runtime.builtin": {
-        "coroutine": "enable",
-        "bit32": "enable",
-        "bit": "enable",
-        "builtin": "enable",
-        "utf8": "enable",
-        "package": "enable",
-        "os": "enable",
-        "jit": "enable",
-        "io": "enable",
-        "ffi": "enable",
-        "debug": "enable",
-        "basic": "enable"
-    },
-    "Lua.workspace.ignoreDir": [
-        ".vscode",
-        "/out/",
-        "/_build/",
-        "/_examples_and_tutorials/"
-    ],
-    "lua.debug.settings.cpath": [
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/socket/core.dll",
-        "c:/Users/Gmckendrick/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/mime/core.dll",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/socket/core.dll",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/dll/mime/core.dll"
-    ],
-    "lua.debug.settings.path": [
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/luasocket/?.lua",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Microcontroller/?.lua",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Tools/?.lua"
-    ],
-    "Lua.workspace.library": [
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Microcontroller/",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.12//assets/LifeBoatAPI/Tools/"
-    ],
-    "lua.debug.settings.luaVersion": "5.3",
-    "lua.debug.settings.luaArch": "x86",
-    "Lua.IntelliSense.traceBeSetted": true,
-    "Lua.IntelliSense.traceFieldInject": true,
-    "Lua.IntelliSense.traceLocalSet": true,
-    "Lua.IntelliSense.traceReturn": true
+    "lifeboatapi.stormworks.isMicrocontrollerProject": false,
+    "lifeboatapi.stormworks.isAddonProject": true,
+    "lifeboatapi.stormworks.minimizer.removeComments": false,
+    "lifeboatapi.stormworks.minimizer.reduceAllWhitespace": false,
+    "lifeboatapi.stormworks.minimizer.reduceNewlines": true,
+    "lifeboatapi.stormworks.minimizer.removeRedundancies": true,
+    "lifeboatapi.stormworks.minimizer.shortenVariables": false,
+    "lifeboatapi.stormworks.minimizer.shortenGlobals": false,
+    "lifeboatapi.stormworks.minimizer.shortenNumbers": false,
+    "lifeboatapi.stormworks.minimizer.shortenStringDuplicates": false,
+    "lifeboatapi.stormworks.minimizer.forceNCBoilerplate": true,
+    "lifeboatapi.stormworks.minimizer.forceBoilerplate": true
 }
