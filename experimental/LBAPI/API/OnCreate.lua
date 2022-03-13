@@ -38,3 +38,5 @@ function onCreate(is_world_create)
         reload_scripts(addonName) --NOTE: This is typing the "?reload_scripts" command.
     end
 end
+
+
