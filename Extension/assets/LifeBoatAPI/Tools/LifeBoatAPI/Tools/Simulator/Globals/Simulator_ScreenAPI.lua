@@ -443,7 +443,7 @@ map = {
         if LifeBoatAPI.Tools.AreNumbersNan(mapX, mapY, zoom, screenWidth, screenHeight, worldX, worldY) then return end
 
         local pixelsPerMeter = screenWidth / (zoom * 1000)
-        return math.floor((screenWidth/2) + (pixelsPerMeter * (worldX - mapX))), math.floor((screenHeight/2) + (pixelsPerMeter * (worldX - mapX)))
+        return math.floor((screenWidth/2) + (pixelsPerMeter * (worldX - mapX))), math.floor((screenHeight/2) + (pixelsPerMeter * (worldY - mapY)))
     end;
 }
 
