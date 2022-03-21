@@ -1,24 +1,33 @@
-EventBase = {
+
+---@class LifeBoatAPI.IEventListener
+---@field disposable LifeBoatAPI.IDisposable
+---@field onTrigger function
+---@field countLeft number          number of times for this listener to be called, or -1 for indefinitely
+
+
+---@class Event
+---@field _listeners LifeBoatAPI.IEventListener[]
+Event = {
     new = function (this)
         this = LifeBoatAPI.instantiate(this, {
             _listeners = {},
         })
     end;
 
-    ---@param this EventBase
+    ---@param this Event
     ---@param listener IEventListener
     register = function (this, listener)
         this._listeners[#this._listeners + 1] = listener
     end;
 
-    ---@param this EventBase
+    ---@param this Event
     ---@param listener IEventListener
     registerOneShot = function (this, listener)
         listener.countLeft = 1
         this._listeners[#this._listeners + 1] = listener
     end;
 
-    ---@param this EventBase
+    ---@param this Event
     trigger = function (this, ...)
         local newListeners = {}
         for i = 1, #this._listeners do
@@ -39,6 +48,3 @@ EventBase = {
     end;
 }
 
----@class IEventListener : LifeBoatAPI.IDisposable
----@field onTrigger function
----@field countLeft number          number of times for this listener to be called, or -1 for indefinitely

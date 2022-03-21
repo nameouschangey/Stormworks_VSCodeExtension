@@ -1,0 +1,9 @@
+
+
+AwaitSpawnVehicle = {
+    new = function()
+        
+    end;
+
+
+}

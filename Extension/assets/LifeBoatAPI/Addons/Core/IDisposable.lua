@@ -1,0 +1,2 @@
+---@class LifeBoatAPI.IDisposable
+---@field isDisposed    boolean

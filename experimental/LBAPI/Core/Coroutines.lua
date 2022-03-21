@@ -22,11 +22,10 @@ LifeBoatAPI.Coroutine = {
     ---@param tickFrequency number how often to run the coroutine
     ---@param disposable LifeBoatAPI.IDisposable disposable, for determining when the coroutine ends naturally
     ---@return LifeBoatAPI.Coroutine
-    new = function (this, tickFrequency, disposable, delay)
+    new = function (this, tickFrequency, disposable)
         this = LifeBoatAPI.instantiate(this, {
             disposable = disposable or {},
             tickFrequency = tickFrequency or 1,
-            nextTick = LifeBoatAPI.Globals.TickManager.ticks + (delay or 0),
             stage = 1
         })
     end;
@@ -69,10 +68,12 @@ LifeBoatAPI.Coroutine = {
         end
     end;
 
+    ---@class LifeBoatAPI.Coroutine._OnAwaitCompleteListener : LifeBoatAPI.IEventListener
     _OnAwaitCompleteListener = {
         new = function(this, coroutine)
             return LifeBoatAPI.instantiate(this,{
-                _coroutine = coroutine;
+                coroutine = coroutine;
+                countLeft = 1;
             })
         end;
     

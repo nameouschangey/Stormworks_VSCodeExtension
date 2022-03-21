@@ -53,4 +53,4 @@ SafeCircularRef = {
     end;
 }
 
-SafeCircularRef:new()
+LifeBoatAPI.Classes:register("LifeBoatAPI.SafeCircularRef", LifeBoatAPI.SafeCircularRef)
