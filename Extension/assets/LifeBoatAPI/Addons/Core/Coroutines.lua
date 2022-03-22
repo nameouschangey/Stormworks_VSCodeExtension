@@ -21,14 +21,12 @@ LifeBoatAPI.Coroutine = {
     ---@param this LifeBoatAPI.Coroutine
     ---@param tickFrequency number how often to run the coroutine
     ---@param disposable LifeBoatAPI.IDisposable disposable, for determining when the coroutine ends naturally
-    ---@param routine LifeBoatAPI.IExecutable routine to run, logic in onTrigger
     ---@return LifeBoatAPI.Coroutine
-    new = function (this, tickFrequency, disposable, routine)
+    new = function (this, tickFrequency, disposable)
         this = LifeBoatAPI.instantiate(this, {
             disposable = disposable or {};
             tickFrequency = tickFrequency or 1;
             stage = 1;
-            routine = routine;
         })
 
         LifeBoatAPI.LifeBoatAPI.tickManager:add(this)
@@ -38,7 +36,7 @@ LifeBoatAPI.Coroutine = {
 
     onTick = function (this, ticks)
         -- if resultType is an awaitable, resultArg1 should be an LifeBoatAPI.Event, resultarg2 can be used in awaitgoto for the stage
-        local resultType, resultArg1, resultArg2 = this.routine:onExecute(this, this.stage, ticks)
+        local resultType, resultArg1, resultArg2 = this:onExecute(this.stage, ticks)
 
         if resultType == this.Yield then
             this.stage = this.stage + 1
@@ -71,6 +69,10 @@ LifeBoatAPI.Coroutine = {
         else 
             this.disposable = {isDisposed = true}
         end
+    end;
+
+    onExecute = function(this, stage, ticks)
+        -- overwrite this in children
     end;
 
     ---@class LifeBoatAPI.Coroutine._OnAwaitCompleteListener : LifeBoatAPI.IExecutable

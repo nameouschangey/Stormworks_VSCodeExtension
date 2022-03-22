@@ -1,56 +1,26 @@
-a = {}
-b = {}
-bb = {}
-
-for i=1, 100000 do
-    a[i] = i
-    b[tostring(i)] = i
-    bb[i] = tostring(i)
+function benchmark(f, ...)
+    local before = os.clock()
+    f(...)
+    local after = os.clock()
+    print(after - before)
 end
 
+benchmark(function()
+    t = {}
+    for i = 0, 9 do
+        for j = 0, 9 do
+            for k = 0, 9 do
+                for l = 0, 9 do
+                    for m = 0, 9 do
+                        t[i..' '..j..' '..k..' '..l..' '..m..' hello beautiful world!'] = true
+                    end
+                end
+            end
+        end
+    end
+end)
 
-mark = os.clock()
-for i=1, #a do
-    local b = a[i]
-end
-time = os.clock() - mark
-print("numerical: \t" .. tostring(time))
-
-mark = os.clock()
-for i=1, #bb do
-    local b = b[bb[i]]
-end
-time = os.clock() - mark
-print("numerical-b: \t" .. tostring(time))
-
-
-mark = os.clock()
-for k,v in ipairs(a) do
-    local b = k
-end
-time = os.clock() - mark
-print("ipairs: \t" .. time)
-
-
-
-mark = os.clock()
-for k,v in pairs(a) do
-    local b = k
-end
-time = os.clock() - mark
-print("pairs:  \t" .. tostring(time))
-
-
-mark = os.clock()
-for k,v in pairs(b) do
-    local b = k
-end
-time = os.clock() - mark
-print("pairsb:  \t" .. tostring(time))
-
-mark = os.clock()
-for k,v in pairs(a) do
-    local b = k
-end
-time = os.clock() - mark
-print("double-table:  \t" .. tostring(time))
+benchmark(function()
+    for k in pairs(t) do
+    end
+end)

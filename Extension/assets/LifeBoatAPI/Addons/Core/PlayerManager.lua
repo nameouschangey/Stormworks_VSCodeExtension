@@ -12,7 +12,7 @@
 
 ---@class LifeBoatAPI.DefaultPlayer : LifeBoatAPI.IPlayer
 LifeBoatAPI.DefaultPlayer = {
-    ---@param this LifeBoatAPI.DefaultVehicle
+    ---@param this LifeBoatAPI.Vehicle
     new = function (this, peerID, steamID, isAdmin, isAuth, name)
         LifeBoatAPI.Classes.instantiate(this, {
             peerID = peerID;

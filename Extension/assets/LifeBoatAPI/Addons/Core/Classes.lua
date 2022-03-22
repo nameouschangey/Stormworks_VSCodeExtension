@@ -16,6 +16,8 @@ LifeBoatAPI.Classes = {
     instantiate = function(class, obj)
         obj = obj or {}
 
+        obj.__classkeys = class.__classkeys
+        
         for i=1, #class.__classkeys do
             local key = class.__classkeys[i]
             if obj[key] == nil then

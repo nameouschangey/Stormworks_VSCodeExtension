@@ -1,29 +1,33 @@
 
----Basic interface for a vehicle
----@class LifeBoatAPI.IVehicle
----@field id number
----@field isLoaded boolean
----@field isAddonOwner boolean
----@field ownerPeerID number
----@field spawnCost number
----@field position LifeBoatAPI.Vector
----@field disposable LifeBoatAPI.IDisposable
----@field onLoad        fun(this)
----@field onDespawn     fun(this)
----@field onDamaged     fun(this)
----@field onButtonPress fun(this)
----@field onUnload      fun(this)
----@field onTeleport    fun(this)
-
 ---Factory for mapping vehicles in game to meaningful vehicle scripts
 ---Default (unmapped) vehicle type is nothing but a simple data container
 ---@class LifeBoatAPI.IVehicleFactory
----@field create fun(this, vehicle:LifeBoatAPI.DefaultVehicle):LifeBoatAPI.IVehicle
+---@field create fun(this, vehicle:LifeBoatAPI.Vehicle) : LifeBoatAPI.Vehicle
 
 
----@class LifeBoatAPI.DefaultVehicle : LifeBoatAPI.IVehicle
-LifeBoatAPI.DefaultVehicle = {
-    ---@param this LifeBoatAPI.DefaultVehicle
+---@class LifeBoatAPI.Vehicle
+---@field id                    number
+---@field isLoaded              boolean
+---@field isAddonOwner          boolean
+---@field ownerPeerID           number
+---@field spawnCost             number
+---@field position              LifeBoatAPI.Vector
+---@field disposable            LifeBoatAPI.IDisposable
+---@field onLoad                fun(this)
+---@field onDespawn             fun(this)
+---@field onDamaged             fun(this)
+---@field onButtonPress         fun(this)
+---@field onUnload              fun(this)
+---@field onTeleport            fun(this)
+---@field onLoadEvent           LifeBoatAPI.Event
+---@field onDespawnEvent        LifeBoatAPI.Event
+---@field onDamagedEvent        LifeBoatAPI.Event
+---@field onButtonPressEvent    LifeBoatAPI.Event
+---@field onUnloadEvent         LifeBoatAPI.Event
+---@field onTeleportEvent       LifeBoatAPI.Event
+LifeBoatAPI.Vehicle = {
+
+    ---@param this LifeBoatAPI.Vehicle
     new = function (this, vehicleID, isAddonOwner, peerID, x, y, z, cost)
         LifeBoatAPI.Classes.instantiate(this, {
             id = vehicleID;
@@ -32,17 +36,28 @@ LifeBoatAPI.DefaultVehicle = {
             spawnCost = cost;
             position = LifeBoatAPI.Vector:new(x,y,z);
             disposable = {};
+
+            -- event pass-through
+            onLoadEvent         = LifeBoatAPI.Event:new();
+            onDespawnEvent      = LifeBoatAPI.Event:new();
+            onDamagedEvent      = LifeBoatAPI.Event:new();
+            onButtonPressEvent  = LifeBoatAPI.Event:new();
+            onUnloadEvent       = LifeBoatAPI.Event:new();
+            onTeleportEvent     = LifeBoatAPI.Event:new();
         })
     end;
 }
 
 ---Handles all vehicles and vehicle events
 ---@class LifeBoatAPI.VehicleManager
----@field vehicles LifeBoatAPI.IVehicle[]
+---@field vehicles LifeBoatAPI.Vehicle[]
 ---@field vehiclesByID table<number,LifeBoatAPI.IVehicle>
 ---@field vehicleFactories LifeBoatAPI.IVehicleFactory[]
 ---@field onVehicleSpawnedEvent LifeBoatAPI.Event
+---@field awaitingVehicles int[]
 LifeBoatAPI.VehicleManager = {
+
+    ---@param this LifeBoatAPI.VehicleManager
     new = function(this)
         this = LifeBoatAPI.Classes.instantiate(this, {
             vehiclesByID = {};
@@ -50,10 +65,11 @@ LifeBoatAPI.VehicleManager = {
             onVehicleSpawnedEvent = LifeBoatAPI.Event:new();
             vehicleFactories = {};
             spawnAwaitables = {};
+            awaitingVehicles = {};
         })
 
         onVehicleSpawn = function (vehicleID, peerID, x, y, z, cost)
-            local vehicle = LifeBoatAPI.DefaultVehicle:new(vehicleID, this.awaitingVehicles[vehicleID] ~= nil, peerID, x, y, z, cost)
+            local vehicle = LifeBoatAPI.Vehicle:new(vehicleID, this.awaitingVehicles[vehicleID] ~= nil, peerID, x, y, z, cost)
             vehicle.isLoaded = false
             this.vehiclesByID[vehicleID] = vehicle
             this.vehicles[#this.vehicles + 1] = vehicle
@@ -76,6 +92,7 @@ LifeBoatAPI.VehicleManager = {
                         end
                     end
 
+                    this.onVehicleSpawnedEvent:trigger(vehicle)
                     -- trigger the awaitable if this was spawned from such a command
                     local awaitable = this.awaitingVehicles[vehicleID]
                     if awaitable then
@@ -87,6 +104,10 @@ LifeBoatAPI.VehicleManager = {
                 if vehicle.onLoad then
                     vehicle:onLoad()
                 end
+
+                if #vehicle.onLoadEvent.listeners > 0 then
+                    vehicle.onLoadEvent:trigger(vehicle)
+                end
             end
         end;
 
@@ -97,6 +118,10 @@ LifeBoatAPI.VehicleManager = {
 
                 if vehicle.onDespawn then
                     vehicle:onDespawn(peerID)
+                end
+
+                if #vehicle.onDespawnEvent.listeners > 0 then
+                    vehicle.onDespawnEvent:trigger(vehicle)
                 end
 
                 this.vehiclesByID[vehicleID] = nil
@@ -111,15 +136,26 @@ LifeBoatAPI.VehicleManager = {
     
         onVehicleDamaged = function (vehicleID, amount, voxelX, voxelY, voxelZ, bodyIndex)
             local vehicle = this.vehiclesByID[vehicleID]
-            if vehicle and vehicle.onDamaged then
-                vehicle:onDamaged(amount, voxelX, voxelY, voxelZ, bodyIndex)
+            if vehicle then
+                if vehicle.onDamaged then
+                    vehicle:onDamaged(amount, voxelX, voxelY, voxelZ, bodyIndex)
+                end
+
+                if #vehicle.onDamagedEvent.listeners > 0 then
+                    vehicle.onDamagedEvent:trigger(vehicle, amount, voxelX, voxelY, voxelZ, bodyIndex)
+                end
             end
         end;
     
         onButtonPress = function (vehicleID, peerID, buttonName)
             local vehicle = this.vehiclesByID[vehicleID]
-            if vehicle and vehicle.onButtonPress then
-                vehicle:onButtonPress(peerID, buttonName)
+            if vehicle then
+                if vehicle.onButtonPress then
+                    vehicle:onButtonPress(peerID, buttonName)
+                end
+                if #vehicle.onButtonPressEvent.listeners > 0 then
+                    vehicle.onButtonPressEvent:trigger(vehicle, peerID, buttonName)
+                end
             end
         end;
     
@@ -130,6 +166,9 @@ LifeBoatAPI.VehicleManager = {
 
                 if vehicle.onTeleport then
                     vehicle:onTeleport(peerID, x, y, z)
+                end
+                if #vehicle.onTeleportEvent.listeners > 0 then
+                    vehicle.onTeleportEvent:trigger(vehicle, peerID, x, y, z)
                 end
             end
         end;
@@ -173,7 +212,7 @@ LifeBoatAPI.VehicleFactory_ByDial = {
     end;
 
     ---@param this LifeBoatAPI.VehicleFactory_ByDial
-    ---@param vehicle LifeBoatAPI.DefaultVehicle
+    ---@param vehicle LifeBoatAPI.Vehicle
     create = function (this, vehicle)
         if not this.onlyOwnVehicles or vehicle.isAddonOwner then
             local dial, success = server.getVehicleDial(vehicle.id, this.dialName)

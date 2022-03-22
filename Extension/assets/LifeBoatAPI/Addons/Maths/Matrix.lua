@@ -7,12 +7,15 @@ Matrix = {
     IndexZ = 15,
 
     new = function(this, posX, posY, posZ, rotX, rotY, rotZ)
-        return LifeBoatAPI.instantiate(this, {
+        
+
+
+        return LifeBoatAPI.Classes.instantiate(this, {
             -- first 16 numerical values match what gets sent to the game
             1,0,0,0,
             0,1,0,0,
             0,0,1,0,
-            0,0,0,1
+            posX,posY,posZ,1
         })
     end;
 
@@ -25,7 +28,7 @@ Matrix = {
     end;
 
     newIdentity = function(this)
-        return LifeBoatAPI.instantiate(this, {
+        return LifeBoatAPI.Classes.instantiate(this, {
             -- first 16 numerical values match what gets sent to the game
             1,0,0,0,
             0,1,0,0,
@@ -34,35 +37,75 @@ Matrix = {
         })
     end;
 
-    multiplyMatrix = function(this, other)
+    multiplyMatrix = function(this, rhs)
+        local result = {}
+        for row=0, 3 do
+            for col=1,4 do
+                result[row * 4 + col] = (this[row*4+1] * rhs[0 + col])
+                                      + (this[row*4+2] * rhs[4 + col])
+                                      + (this[row*4+3] * rhs[8 + col])
+                                      + (this[row*4+4] * rhs[12 + col])
+            end
+        end
+        return LifeBoatAPI.Classes.instantiate(this, result)
     end;
 
     translateVector = function(this, vec)
         return LifeBoatAPI.Vector:new(vec.x + this[Matrix.IndexX], vec.y + this[Matrix.IndexY], vec.z + this[Matrix.IndexZ])
     end;
 
-    rotateVector = function(this, vec)
-        local w = vec.w
-        vec.w = 0
-        -- multiply without translation
-        local multiplied = this:multiplyVector(vec, true)
-        vec.w = w
-        return multiplied
+    translateVectorInPlace = function(this, vec)
+        vec.x = vec.x + this[Matrix.IndexX]
+        vec.y = vec.y + this[Matrix.IndexY]
+        vec.z = vec.z + this[Matrix.IndexZ]
+        return vec
     end;
 
-    multiplyVector = function(this, vec, skipNormalization)
+    rotateVector = function(this, vec)
+        return this:multiplyVector(vec, 0)
+    end;
+
+    rotateVectorInPlace = function(this, vec)
+        return this:multiplyVectorInPlace(vec, 0)
+    end;
+
+    multiplyVector = function(this, vec, w, skipNormalization)
+        w = w or 1
+
         local result = LifeBoatAPI.Vector:new(
             vec.x * this[1] + vec.y * this[5] + vec.z * this[9]  + vec.w * this[13],
             vec.x * this[2] + vec.y * this[6] + vec.z * this[10] + vec.w * this[14],
-            vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + vec.w * this[15],
-            vec.x * this[4] + vec.y * this[8] + vec.z * this[12] + vec.w * this[16]
-        )
+            vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + vec.w * this[15])
 
-        if not skipNormalization then
-            result:scale(1/result.w)
-            result.w = 1
+        w = vec.x * this[4] + vec.y * this[8] + vec.z * this[12] + w * this[16]
+
+        if w ~= 0 and not skipNormalization then
+            result.x = result.x / w
+            result.y = result.y / w
+            result.z = result.z / w
         end
-        return result
+
+        return result, w
+    end;
+
+    --- Mutable version of multiplyVector
+    --- Slightly improved performance characteristics, reduced function calls
+    multiplyVectorInPlace = function(this, vec, w, skipNormalization)
+        w = w or 1
+
+        vec.x = vec.x * this[1] + vec.y * this[5] + vec.z * this[9]  + vec.w * this[13]
+        vec.y = vec.x * this[2] + vec.y * this[6] + vec.z * this[10] + vec.w * this[14]
+        vec.z = vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + vec.w * this[15]
+
+        w = vec.x * this[4] + vec.y * this[8] + vec.z * this[12] + w * this[16]
+
+        if w ~= 0 and not skipNormalization then
+            vec.x = vec.x / w
+            vec.y = vec.y / w
+            vec.z = vec.z / w
+        end
+
+        return vec, w
     end;
 
     getRotationPart = function(this)
@@ -89,15 +132,18 @@ Matrix = {
         this[Matrix.IndexZ] = vector.z
     end;
 
-    invert = function ()
+    inverted = function (this)
         
     end;
 
-    transpose = function ()
-        
-    end;
-
-    getRotationToFaceXZ = function()
+    --- Flip column/row ordering
+    transposed = function (this)
+        return LifeBoatAPI.Classes.instantiate(this, {
+            this[1],    this[5],    this[9],    this[13],
+            this[2],    this[6],    this[10],   this[14],
+            this[3],    this[7],    this[11],   this[15],
+            this[4],    this[8],    this[12],   this[16]
+        })
     end;
 }
 LifeBoatAPI.Classes:register("LifeBoatAPI.Matrix", LifeBoatAPI.Matrix)
