@@ -7,6 +7,7 @@
 ---@endsection
 
 
+--- note: Provides mutable (m_) and immutable () variants of relevant functions for performance
 ---@class LifeBoatAPI.Vector
 ---@field x number conventionally: mapX axis
 ---@field y number conventionally: altitude
@@ -17,10 +18,11 @@ LifeBoatAPI.Vector = {
     ---@param x number x component
     ---@param y number y component; conventially represents the altitude
     ---@param z number z component
+    ---@param w number w "imaginary" component used for matrix maths, 0 => direction only, 1=> position vector
     ---@overload fun(cls:LifeBoatAPI.Vector, x:number, y:number):LifeBoatAPI.Vector creates a vector2 (z-component is 0)
     ---@overload fun(cls:LifeBoatAPI.Vector):LifeBoatAPI.Vector creates a new zero-initialized vector3
     ---@return LifeBoatAPI.Vector
-    new = function(this, x, y, z)
+    new = function(this, x, y, z, w)
         return LifeBoatAPI.Classes.instantiate(this, {
             x=x or 0,
             y=y or 0,
@@ -42,7 +44,12 @@ LifeBoatAPI.Vector = {
             distance * math.cos(elevation) * math.cos(azimuth))
     end;
 
-    set = function(this, x, y, z)
+    -- check two vectors are equal in contents
+    equals = function(this, other)
+        return this.x == other.x and this.y == other.y and this.z == other.z
+    end;
+
+    m_set = function(this, x, y, z)
         this.x = x or this.x
         this.y = y or this.y
         this.z = z or this.z
@@ -57,7 +64,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    add = function(this, rhs)
+    m_add = function(this, rhs)
         this.x = this.x + rhs.x
         this.y = this.y + rhs.y
         this.z = this.z + rhs.z
@@ -68,7 +75,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    added = function(this, rhs)
+    add = function(this, rhs)
         return this:new(this.x+rhs.x,this.y+rhs.y,this.z+rhs.z)
     end;
 
@@ -76,7 +83,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    sub = function (this, rhs)
+    m_sub = function (this, rhs)
         this.x = this.x - rhs.x
         this.y = this.y - rhs.y
         this.z = this.z - rhs.z
@@ -87,7 +94,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    subbed = function (this, rhs)
+    sub = function (this, rhs)
         return this:new(this.x-rhs.x, this.y-rhs.y, this.z-rhs.z)
     end;
 
@@ -96,7 +103,7 @@ LifeBoatAPI.Vector = {
     ---@param rhs LifeBoatAPI.Vector
     ---@param t number 0->1 expected
     ---@return LifeBoatAPI.Vector result
-    lerp = function (this, rhs, t)
+    m_lerp = function (this, rhs, t)
         oneMinusT = 1 - t
         this.x = oneMinusT*this.x + t*rhs.x
         this.y = oneMinusT*this.y + t*rhs.y
@@ -109,7 +116,7 @@ LifeBoatAPI.Vector = {
     ---@param rhs LifeBoatAPI.Vector
     ---@param t number 0->1 expected
     ---@return LifeBoatAPI.Vector result
-    lerped = function (this, rhs, t)
+    lerp = function (this, rhs, t)
         oneMinusT = 1 - t
         return this:new(oneMinusT*this.x + t*rhs.x,
                         oneMinusT*this.y + t*rhs.y,
@@ -120,7 +127,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    multiply = function (this, rhs)
+    m_multiply = function (this, rhs)
         this.x = this.x * rhs.x
         this.y = this.y * rhs.y
         this.z = this.z * rhs.z
@@ -131,7 +138,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    multiplied = function (this, rhs)
+    multiply = function (this, rhs)
         return this:new(this.x*rhs.x, this.y*rhs.y, this.z*rhs.z)
     end;
 
@@ -140,7 +147,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param scalar number factor to scale by
     ---@return LifeBoatAPI.Vector result
-    scale = function (this, scalar)
+    m_scale = function (this, scalar)
         this.x = this.x * scalar
         this.y = this.y * scalar
         this.z = this.z * scalar
@@ -152,7 +159,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param scalar number factor to scale by
     ---@return LifeBoatAPI.Vector result
-    scaled = function (this, scalar)
+    scale = function (this, scalar)
         return this:new(this.x*scalar, this.y*scalar, this.z*scalar)
     end;
 
@@ -206,7 +213,7 @@ LifeBoatAPI.Vector = {
     ---Ideal for directions; as they can then be multipled by a scalar distance to get a position
     ---@param this LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    normalize = function(this)
+    m_normalize = function(this)
         local length = math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z))
         local lengthReciprocal = length ~= 0 and 1/length or 0
         this.x = this.x * lengthReciprocal
@@ -218,7 +225,7 @@ LifeBoatAPI.Vector = {
     ---Ideal for directions; as they can then be multipled by a scalar distance to get a position
     ---@param this LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
-    normalized = function(this)
+    normalize = function(this)
         local length = math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z))
         local lengthReciprocal = length ~= 0 and 1/length or 0
         return this:new(this.x * lengthReciprocal, this.y * lengthReciprocal, this.z * lengthReciprocal)
@@ -229,7 +236,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector
-    cross = function(this, rhs)
+    m_cross = function(this, rhs)
         this.x = this.y*rhs.z - this.z*rhs.y
         this.y = this.z*rhs.x - this.x*rhs.z
         this.z = this.x*rhs.y - this.y*rhs.x
@@ -240,7 +247,7 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector
-    crossed = function(this, rhs)
+    cross = function(this, rhs)
         return this:new(this.y*rhs.z - this.z*rhs.y,
                         this.z*rhs.x - this.x*rhs.z,
                         this.x*rhs.y - this.y*rhs.x)
@@ -254,10 +261,9 @@ LifeBoatAPI.Vector = {
     reflected = function(this, normal)
         -- r=d−2(d⋅n)n where r is the reflection, d is the vector, v is the normal to reflect over
         -- normally expects rays to be like light, coming into the mirror and bouncing off. We negate the parts to make this work in our favour
-
-        normal = normal:normalized()
-        this = this:scaled(-1)
-        return this:sub(normal:scale(2 * this:dot(normal)))
+        normal = normal:normalize()
+        this = this:scale(-1)
+        return this:m_sub(normal:m_scale(2 * this:dot(normal)))
     end;
 
     ---Calculates the shortest angle between two vectors
@@ -277,9 +283,11 @@ LifeBoatAPI.Vector = {
     ---@param this LifeBoatAPI.Vector
     ---@return number,number,number components azimuth (North is 0), elevation (Horizon is 0), distance
     azimuthElevation= function(this)
-        normalized = this:normalized()
+        normalized = this:normalize()
         return  math.atan(normalized.x, normalized.y),
                 math.atan(normalized.z, math.sqrt(normalized.x*normalized.x + normalized.y*normalized.y)),
                 this:length()
     end;
 }
+LifeBoatAPI.Classes:register("LifeBoatAPI.Vector", LifeBoatAPI.Vector)
+

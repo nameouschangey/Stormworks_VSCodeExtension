@@ -16,8 +16,6 @@ LifeBoatAPI.Classes = {
     instantiate = function(class, obj)
         obj = obj or {}
 
-        obj.__classkeys = class.__classkeys
-        
         for i=1, #class.__classkeys do
             local key = class.__classkeys[i]
             if obj[key] == nil then
@@ -54,7 +52,7 @@ LifeBoatAPI.Classes = {
     end;
 
     register = function(this, uniqueID, cls, parent)
-        local keys = {}
+        local keys = this:newReferencableTable()
 
         -- inheritance
         if parent then
@@ -71,7 +69,7 @@ LifeBoatAPI.Classes = {
         end
         cls.__classkeys = keys
         cls.__classuid = uniqueID
-
+        
         this._classes[cls.__classuid] = cls
 
         return cls

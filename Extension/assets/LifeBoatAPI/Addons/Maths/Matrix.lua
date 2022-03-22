@@ -1,32 +1,44 @@
-
--- moving the matrix maths into lua gives a performance gain
--- as each call to the game is incredibly slow
-Matrix = {
+---@class LifeBoatAPI.Matrix
+LifeBoatAPI.Matrix = {
     IndexX = 13,
     IndexY = 14,
     IndexZ = 15,
 
-    new = function(this, posX, posY, posZ, rotX, rotY, rotZ)
-        
+    --(yaw, y)
+    --(roll, z)
+    --(pitch, x)
+    ---@overload fun(this, x: number, y:number, z:number, rotX:number, rotY:number, rotZ:number)
+    ---@return LifeBoatAPI.Matrix
+    new = function(this, posX, posY, posZ, pitch, yaw, roll)
+        yaw     = yaw or 0
+        pitch   = pitch or 0
+        roll    = roll or 0
 
+        -- Y - yaw, P - pitch, R - roll, in most diagrams that would be A-yaw, B-pitch, Y-roll
+        sinRoll = roll ~=0 and math.sin(-roll) or 0
+        cosRoll = roll ~=0 and math.cos(-roll) or 1
+
+        sinYaw = yaw ~= 0 and math.sin(-yaw) or 0
+        cosYaw = yaw ~= 0 and math.cos(-yaw) or 1
+
+        sinPitch = pitch ~= 0 and math.sin(-pitch) or 0
+        cosPitch = pitch ~= 0 and math.cos(-pitch) or 1
 
         return LifeBoatAPI.Classes.instantiate(this, {
             -- first 16 numerical values match what gets sent to the game
-            1,0,0,0,
-            0,1,0,0,
-            0,0,1,0,
-            posX,posY,posZ,1
+            cosRoll*cosYaw,  cosRoll*sinYaw*sinPitch - sinRoll*cosPitch, cosRoll*sinYaw*cosPitch + sinRoll*sinPitch,     0,
+            sinRoll*cosYaw,  sinRoll*sinYaw*sinPitch + cosRoll*cosPitch, sinRoll*sinYaw*cosPitch - cosRoll*sinPitch,     0,
+            -sinYaw,      cosYaw*sinPitch,                  cosYaw*cosPitch,                      0,
+            posX,       posY,                       posZ,                           1
         })
     end;
 
-    newTranslation = function(this, posX, posY, posZ)
-        return this:new(posX, posY, posZ, 0, 0, 0)
+    ---@return LifeBoatAPI.Matrix
+    newFromSWMatrix = function(this, swMatrix)
+        return LifeBoatAPI.Classes.instantiate(this, swMatrix)
     end;
 
-    newRotation = function(this, rotX, rotY, rotZ)
-        return this:new(0, 0, 0, rotX, rotY, rotZ)
-    end;
-
+    ---@return LifeBoatAPI.Matrix
     newIdentity = function(this)
         return LifeBoatAPI.Classes.instantiate(this, {
             -- first 16 numerical values match what gets sent to the game
@@ -37,107 +49,140 @@ Matrix = {
         })
     end;
 
+    -- check two matrices are equal, by checking their contents
+    equals = function(this, other)
+        for i=1,16 do
+            if other[i] ~= this[i] then
+                return false
+            end
+        end
+        return true
+    end;
+
+    -- Multiplies the COLUMNS of this matrix by the ROWS of the given matrix
+    -- this results in a matrix order of "affect RHS by the transformation in this"
+    --                                or, "do this, then RHS"
+    -- e.g. if this was a rotation matrix and rhs was a translation matrix
+    --          it'd mean "rotate first, then translate"
     multiplyMatrix = function(this, rhs)
         local result = {}
         for row=0, 3 do
             for col=1,4 do
-                result[row * 4 + col] = (this[row*4+1] * rhs[0 + col])
-                                      + (this[row*4+2] * rhs[4 + col])
-                                      + (this[row*4+3] * rhs[8 + col])
-                                      + (this[row*4+4] * rhs[12 + col])
+                result[row * 4 + col] = (rhs[row*4+1] * this[0 + col])
+                                      + (rhs[row*4+2] * this[4 + col])
+                                      + (rhs[row*4+3] * this[8 + col])
+                                      + (rhs[row*4+4] * this[12 + col])
             end
         end
         return LifeBoatAPI.Classes.instantiate(this, result)
     end;
 
-    translateVector = function(this, vec)
-        return LifeBoatAPI.Vector:new(vec.x + this[Matrix.IndexX], vec.y + this[Matrix.IndexY], vec.z + this[Matrix.IndexZ])
+    m_multiplyMatrix = function(this, rhs)
+        local result = {}
+        for row=0, 3 do
+            for col=1,4 do
+                result[row * 4 + col] = (rhs[row*4+1] * this[0 + col])
+                                      + (rhs[row*4+2] * this[4 + col])
+                                      + (rhs[row*4+3] * this[8 + col])
+                                      + (rhs[row*4+4] * this[12 + col])
+            end
+        end
+
+        for i=1,16 do
+            this[i] = result[i]
+        end
+        return result
     end;
 
-    translateVectorInPlace = function(this, vec)
-        vec.x = vec.x + this[Matrix.IndexX]
-        vec.y = vec.y + this[Matrix.IndexY]
-        vec.z = vec.z + this[Matrix.IndexZ]
-        return vec
-    end;
-
-    rotateVector = function(this, vec)
-        return this:multiplyVector(vec, 0)
-    end;
-
-    rotateVectorInPlace = function(this, vec)
-        return this:multiplyVectorInPlace(vec, 0)
-    end;
-
+    ---(Immutable) Multiplies the given vector, with assumed w=1 component (respects translations)
+    --- Returns a new vector, that has been transformed
+    --- Re-normalizes the w-component of the vector unless specified not to
+    ---@param this LifeBoatAPI.Matrix
+    ---@param vec LifeBoatAPI.Vector
+    ---@param w number optional, vector "w" component, 1 by default. 0 => direction only, 1 => position+direction
+    ---@param skipNormalization boolean optional, false by default. If true, doesn't normalize the components back to w=1.
+    ---@overload fun(this, vec:LifeBoatAPI.Vector) : LifeBoatAPI.Vector
+    ---@overload fun(this, vec:LifeBoatAPI.Vector, w: number) : LifeBoatAPI.Vector,number
+    ---@return LifeBoatAPI.Vector result,number w
     multiplyVector = function(this, vec, w, skipNormalization)
         w = w or 1
 
         local result = LifeBoatAPI.Vector:new(
-            vec.x * this[1] + vec.y * this[5] + vec.z * this[9]  + vec.w * this[13],
-            vec.x * this[2] + vec.y * this[6] + vec.z * this[10] + vec.w * this[14],
-            vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + vec.w * this[15])
+            vec.x * this[1] + vec.y * this[5] + vec.z * this[9]  + w * this[13],
+            vec.x * this[2] + vec.y * this[6] + vec.z * this[10] + w * this[14],
+            vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + w * this[15])
 
         w = vec.x * this[4] + vec.y * this[8] + vec.z * this[12] + w * this[16]
 
-        if w ~= 0 and not skipNormalization then
-            result.x = result.x / w
-            result.y = result.y / w
-            result.z = result.z / w
+        if w ~= 0 and w ~= 1 and not skipNormalization then
+            vec.x = vec.x / w
+            vec.y = vec.y / w
+            vec.z = vec.z / w
+            w = 1
         end
 
         return result, w
     end;
 
-    --- Mutable version of multiplyVector
-    --- Slightly improved performance characteristics, reduced function calls
-    multiplyVectorInPlace = function(this, vec, w, skipNormalization)
+    --- Multiplies the given vector, with assumed w=1 component (respects translations)
+    --- Modifies the given 'vec' param, saving the cost of a new instantiation
+    --- Re-normalizes the w-component of the vector unless specified not to
+    ---@param this LifeBoatAPI.Matrix
+    ---@param vec LifeBoatAPI.Vector
+    ---@param w number optional, vector "w" component, 1 by default. 0 => direction only, 1 => position+direction
+    ---@param skipNormalization boolean optional, false by default. If true, doesn't normalize the components back to w=1.
+    ---@overload fun(this, vec:LifeBoatAPI.Vector) : LifeBoatAPI.Vector
+    ---@overload fun(this, vec:LifeBoatAPI.Vector, w: number) : LifeBoatAPI.Vector,number
+    ---@return LifeBoatAPI.Vector result,number w
+    m_multiplyVector = function(this, vec, w, skipNormalization)
         w = w or 1
 
-        vec.x = vec.x * this[1] + vec.y * this[5] + vec.z * this[9]  + vec.w * this[13]
-        vec.y = vec.x * this[2] + vec.y * this[6] + vec.z * this[10] + vec.w * this[14]
-        vec.z = vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + vec.w * this[15]
+        vec.x = vec.x * this[1] + vec.y * this[5] + vec.z * this[9]  + w * this[13]
+        vec.y = vec.x * this[2] + vec.y * this[6] + vec.z * this[10] + w * this[14]
+        vec.z = vec.x * this[3] + vec.y * this[7] + vec.z * this[11] + w * this[15]
 
         w = vec.x * this[4] + vec.y * this[8] + vec.z * this[12] + w * this[16]
 
-        if w ~= 0 and not skipNormalization then
+        if w ~= 0 and w ~= 1 and not skipNormalization then
             vec.x = vec.x / w
             vec.y = vec.y / w
             vec.z = vec.z / w
+            w = 1
         end
-
         return vec, w
     end;
 
-    getRotationPart = function(this)
-        local newMatrix = Matrix:newIdentity()
-        for i=1, 12 do
-            newMatrix[i] = this[i]
-        end
-        return newMatrix
+    --- Gets the "true" position, applying the full transform represented by this matrix
+    --- If this matrix was built from a combination of multiple other matrices this gets the accurate 
+    position = function(this)
+        return this:multiplyVectorInPlace(LifeBoatAPI.Vector:new(0,0,0))
     end;
 
-    setRotationPart = function(this, other)
-        for i=1, 12 do
-            this[i] = other[i]
-        end
+    --- Faster alternative to position(), only applicable to very simple rotation+translation matrices
+    --- Provided as the majority of matrices from the game will be "simple" and this may provide a performance benefit
+    --- Note, it will be inaccurate if scaling or multiple rotation/translation steps have been applied one after another
+    quickPosition = function(this)
+        return LifeBoatAPI.Vector:new(this[this.IndexX], this[this.IndexY], this[this.IndexZ])
     end;
 
-    getTranslationPart = function(this)
-        return LifeBoatAPI.Vector:new(this[Matrix.IndexX], this[Matrix.IndexY], this[Matrix.IndexZ])
+
+    --- Gets the current "forward" vector from the orientation this matrix represents, useful for vehicle/object maths
+    forward = function(this)
+        return this:multiplyVectorInPlace(LifeBoatAPI.Vector:new(0,0,1),0)
     end;
 
-    setTranslationPart = function(this, vector)
-        this[Matrix.IndexX] = vector.x
-        this[Matrix.IndexY] = vector.y
-        this[Matrix.IndexZ] = vector.z
+    --- Gets the current "up" vector from the orientation this matrix represents, useful for vehicle/object maths
+    up = function(this)
+        return this:multiplyVectorInPlace(LifeBoatAPI.Vector:new(0,1,0),0)
     end;
 
-    inverted = function (this)
-        
+    --- Gets the current "left" vector from the orientation this matrix represents, useful for vehicle/object maths
+    left = function(this)
+        return this:multiplyVectorInPlace(LifeBoatAPI.Vector:new(1,0,0),0)
     end;
 
-    --- Flip column/row ordering
-    transposed = function (this)
+    --- swap rows with columns
+    transpose = function (this)
         return LifeBoatAPI.Classes.instantiate(this, {
             this[1],    this[5],    this[9],    this[13],
             this[2],    this[6],    this[10],   this[14],
@@ -145,59 +190,51 @@ Matrix = {
             this[4],    this[8],    this[12],   this[16]
         })
     end;
+
+    -- mutable transpose, saves an instantiation
+    m_transpose = function (this)
+        local result = {
+            this[1],    this[5],    this[9],    this[13],
+            this[2],    this[6],    this[10],   this[14],
+            this[3],    this[7],    this[11],   this[15],
+            this[4],    this[8],    this[12],   this[16]
+        }
+        for i=1,16 do
+            this[i] = result[i]
+        end
+        return result
+    end;
+
+    --- gets the inverse of this Matrix; which "undoes" the transformation done by this Matrix
+    --- extremely rare that you'd want this
+    --- very slow, calls the game matrix functions
+    invert = function (this)
+        return LifeBoatAPI.Matrix:newFromSWMatrix(matrix.invert(this))
+    end;
+
+    --- for simple/rotation matrices the inverse is just the transpose of the rotation part
+    --- and then inverting the translation part
+    quickInvert = function(this)
+        return LifeBoatAPI.Classes.instantiate(this, {
+            this[1],        this[5],        this[9],    this[4],
+            this[2],        this[6],        this[10],   this[8],
+            this[3],        this[7],        this[11],   this[12],
+            -this[13],     -this[14],      -this[15],   this[16]
+        })
+    end;
+
+    -- mutable quickInvert, saves an instantiation
+    m_quickInvert = function(this)
+        local result = {
+            this[1],        this[5],        this[9],    this[4],
+            this[2],        this[6],        this[10],   this[8],
+            this[3],        this[7],        this[11],   this[12],
+            -this[13],     -this[14],      -this[15],   this[16]
+        }
+        for i=1, 16 do
+            this[i] = result[i]
+        end
+        return this;
+    end;
 }
 LifeBoatAPI.Classes:register("LifeBoatAPI.Matrix", LifeBoatAPI.Matrix)
-
---[[
-     Matrix Manipulation    
-     Stormworks provides a limited set of matrix functions that are useful for transforming positions of objects in scripts:
-    
-	Multiply two matrices together. 
-	out_matrix = matrix.multiply(matrix1, matrix2)  
-	
-	Invert a matrix.  
-	out_matrix = matrix.invert(matrix1) 
-	
-	Transpose a matrix. 
-	out_matrix = matrix.transpose(matrix1)  
-	
-	Return an identity matrix.  
-	out_matrix = matrix.identity()  
-	
-	Return a rotation matrix rotated in the X axis. 
-	out_matrix = matrix.rotationX(radians)  
-	
-	Return a rotation matrix rotated in the Y axis. 
-	out_matrix = matrix.rotationY(radians)  
-	
-	Return a rotation matrix rotated in the Z axis. 
-	out_matrix = matrix.rotationZ(radians)
-	
-	Return a translation matrix translated by x,y,z.
-	out_matrix = matrix.translation(x,y,z)  
-	
-	Get the x,y,z position from a matrix.   
-	x,y,z = matrix.position(matrix1)    
-	
-	Find the distance between two matrices
-	dist = matrix.distance(matrix1, matrix2)
-	
-	Multiplies a matrix by a vec 4.
-	out_x, out_y, out_z, out_w = matrix.multiplyXYZW(matrix1, x, y, z, w)   
-	
-	Returns the rotation required to face an X Z vector 
-	out_rotation = matrix.rotationToFaceXZ(x, z)
-    
-	Most API functions take a matrix as a parameter so users that do not wish to use matrices directly can convert between matrices and coordinates as follows:     
-	-- Teleport peer_1 10m up
-	peer_1_pos, is_success = server.getPlayerPos(1)
-	if is_success then
-		local x, y, z = matrix.position(peer_1_pos)
-		y = y + 10
-		server.setPlayerPos(1, matrix.translation(x,y,z))
-	end
-
-
-
-
-]]
