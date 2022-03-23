@@ -6,7 +6,6 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 ---@endsection
 
-
 --- note: Provides mutable (m_) and immutable () variants of relevant functions for performance
 ---@class LifeBoatAPI.Vector
 ---@field x number conventionally: mapX axis
@@ -18,11 +17,10 @@ LifeBoatAPI.Vector = {
     ---@param x number x component
     ---@param y number y component; conventially represents the altitude
     ---@param z number z component
-    ---@param w number w "imaginary" component used for matrix maths, 0 => direction only, 1=> position vector
     ---@overload fun(cls:LifeBoatAPI.Vector, x:number, y:number):LifeBoatAPI.Vector creates a vector2 (z-component is 0)
     ---@overload fun(cls:LifeBoatAPI.Vector):LifeBoatAPI.Vector creates a new zero-initialized vector3
     ---@return LifeBoatAPI.Vector
-    new = function(this, x, y, z, w)
+    new = function(this, x, y, z)
         return LifeBoatAPI.Classes.instantiate(this, {
             x=x or 0,
             y=y or 0,
@@ -45,10 +43,16 @@ LifeBoatAPI.Vector = {
     end;
 
     -- check two vectors are equal in contents
+    ---@param this LifeBoatAPI.Vector
+    ---@param other LifeBoatAPI.Vector
+    ---@return boolean areEqual
     equals = function(this, other)
         return this.x == other.x and this.y == other.y and this.z == other.z
     end;
 
+    ---(Mutable) sets the components of this vector directly
+    ---@param this LifeBoatAPI.Vector
+    ---@return LifeBoatAPI.Vector this chainable
     m_set = function(this, x, y, z)
         this.x = x or this.x
         this.y = y or this.y
@@ -56,11 +60,14 @@ LifeBoatAPI.Vector = {
         return this
     end;
 
+    ---Unpacks the values of this vector for use in other functions parameter lists, etc.
+    ---@param this LifeBoatAPI.Vector
+    ---@return number x,number y,number z
     unpack = function(this)
         return this.x, this.y, this.z
     end;
 
-    ---Adds the two vectors together
+    ---(Mutable) Adds the two vectors together
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -71,7 +78,7 @@ LifeBoatAPI.Vector = {
         return this
     end;
 
-    ---(Immutable) Adds the two vectors together
+    ---Adds the two vectors together
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -79,7 +86,7 @@ LifeBoatAPI.Vector = {
         return this:new(this.x+rhs.x,this.y+rhs.y,this.z+rhs.z)
     end;
 
-    ---Subtracts the given vector from this one
+    ---(Mutable) Subtracts the given vector from this one
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -90,7 +97,7 @@ LifeBoatAPI.Vector = {
         return this
     end;
 
-    ---(Immutable) Subtracts the given vector from this one
+    ---Subtracts the given vector from this one
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -98,7 +105,7 @@ LifeBoatAPI.Vector = {
         return this:new(this.x-rhs.x, this.y-rhs.y, this.z-rhs.z)
     end;
 
-    ---Lerp (linear interpolation) between the this vector and the given vector
+    ---(Mutable) Lerp (linear interpolation) between the this vector and the given vector
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@param t number 0->1 expected
@@ -111,7 +118,7 @@ LifeBoatAPI.Vector = {
         return this
     end;
 
-    --- (Immutable) Lerp (linear interpolation) between the this vector and the given vector
+    --- Lerp (linear interpolation) between the this vector and the given vector
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@param t number 0->1 expected
@@ -123,7 +130,7 @@ LifeBoatAPI.Vector = {
                         oneMinusT*this.z + t*rhs.z)
     end;
 
-    ---Multiplies the components of each vector together
+    ---(Mutable) Multiplies the components of each vector together
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -134,7 +141,7 @@ LifeBoatAPI.Vector = {
         return this
     end;
 
-    ---(Immutable) Multiplies the components of each vector together
+    ---Multiplies the components of each vector together
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -142,7 +149,7 @@ LifeBoatAPI.Vector = {
         return this:new(this.x*rhs.x, this.y*rhs.y, this.z*rhs.z)
     end;
 
-    ---Scales each component of this vector by the given quantity
+    ---(Mutable)Scales each component of this vector by the given quantity
     ---If you take a normalized LifeBoatAPI.Vector3 as a direction, and scale it by a distance; you'll have a position
     ---@param this LifeBoatAPI.Vector
     ---@param scalar number factor to scale by
@@ -186,6 +193,11 @@ LifeBoatAPI.Vector = {
         return math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z))
     end;
 
+    ---Gets the length SQUARED (magnitude) of this vector
+    ---i.e. gets the squared distance from this point; to the origin
+    ---Useful for collision detection/distance comparisons
+    ---@param this LifeBoatAPI.Vector
+    ---@return number lengthSquared
     length2 = function (this)
         return (this.x * this.x) + (this.y * this.y) + (this.z * this.z)
     end;
@@ -201,7 +213,11 @@ LifeBoatAPI.Vector = {
         return math.sqrt((x * x) + (y * y) + (z * z))
     end;
 
-
+    ---Gets the SQUARED distance between two points represented as Vecs
+    ---Useful for collision detection/distance comparisons
+    ---@param this LifeBoatAPI.Vector
+    ---@param rhs LifeBoatAPI.Vector
+    ---@return number distanceSquared
     distance2 = function(this, rhs)
         local x = this.x - rhs.x
         local y = this.y - rhs.y
@@ -209,7 +225,7 @@ LifeBoatAPI.Vector = {
         return (x * x) + (y * y) + (z * z)
     end;
 
-    ---Normalizes the vector so the magnitude is 1
+    ---(Mutable)Normalizes the vector so the magnitude is 1
     ---Ideal for directions; as they can then be multipled by a scalar distance to get a position
     ---@param this LifeBoatAPI.Vector
     ---@return LifeBoatAPI.Vector result
@@ -231,7 +247,7 @@ LifeBoatAPI.Vector = {
         return this:new(this.x * lengthReciprocal, this.y * lengthReciprocal, this.z * lengthReciprocal)
     end;
 
-    --- Cross product of two 3d vectors
+    ---(Mutable)Cross product of two 3d vectors
     --- Direction determined by left-hand-rule; thumb is result, middle finger is "lhs", index finger is "rhs"
     ---@param this LifeBoatAPI.Vector
     ---@param rhs LifeBoatAPI.Vector
@@ -290,4 +306,3 @@ LifeBoatAPI.Vector = {
     end;
 }
 LifeBoatAPI.Classes:register("LifeBoatAPI.Vector", LifeBoatAPI.Vector)
-
