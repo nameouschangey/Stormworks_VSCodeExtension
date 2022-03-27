@@ -105,4 +105,29 @@ LifeBoatAPI.Tools.StringUtils = {
 
         return found
     end;
+
+    ---@return string
+    replaceIndex = function(text, startIndex, endIndex, replacement)
+        local textBefore = text:sub(1,startIndex)
+        local textAfter = text:sub(endIndex)
+        return textBefore .. (replacement or "") .. textAfter
+    end;
+
+    ---@return string
+    getNextOccurenceOf = function(text, startIndex, step, ...)
+        local characters = {...}
+        local endIndex = step > 0 and #text or 1
+
+        for i=startIndex, endIndex, step do
+            local c = text[i]
+            for charIndex=1,#characters do
+                if characters[charIndex] == c then
+                    return i
+                end
+            end
+        end
+
+        -- not found 
+        return nil
+    end;
 }

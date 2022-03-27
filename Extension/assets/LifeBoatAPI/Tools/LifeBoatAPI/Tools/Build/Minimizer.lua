@@ -7,13 +7,18 @@
 require("LifeBoatAPI.Tools.Utils.StringUtils")
 require("LifeBoatAPI.Tools.Utils.Filepath")
 require("LifeBoatAPI.Tools.Utils.FileSystemUtils")
-require("LifeBoatAPI.Tools.Build.RedundancyRemover")
+require("LifeBoatAPI.Tools.Build.SyntaxExtensions.Section_RedundancyRemover")
 require("LifeBoatAPI.Tools.Build.StringCommentsParser")
 require("LifeBoatAPI.Tools.Build.VariableShortener")
 require("LifeBoatAPI.Tools.Build.GlobalVariableReducer")
 require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 require("LifeBoatAPI.Tools.Build.NumberLiteralReducer")
 require("LifeBoatAPI.Tools.Build.HexadecimalConverter")
+
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Macro")
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Redundancy")
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_CompilerFunc")
 
 ---@class MinimizerParams
 ---@field reduceAllWhitespace   boolean if true, shortens all whitespace duplicates where possible
@@ -84,15 +89,23 @@ LifeBoatAPI.Tools.Minimizer = {
         local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
         text = parser:removeStringsAndComments(text,
                                                 function(i,text)
-                                                    return text:sub(i, i+10) == "---@section" or
-                                                           text:sub(i, i+13) == "---@endsection"
+                                                    return text:sub(i, i+6) == "---@lb"
                                                 end)
 
-        -- remove all redudant code sections (will become exponentially slower as the codebase gets bigger)
+        
+        -- run pre-processor (including redundancy removal)
+        local preprocessor = LifeBoatAPI.Tools.PreProcessor:new()
         if(this.params.removeRedundancies) then
-            local remover = LifeBoatAPI.Tools.RedundancyRemover:new()
-            text = remover:removeRedundantCode(text)
+            preprocessor:register("redundancy", LifeBoatAPI.Tools.Preprocessor_Redundancy:new())
         end
+        preprocessor:register("macro", LifeBoatAPI.Tools.Preprocessor_Macro:new())
+        preprocessor:register("compilerfunc", LifeBoatAPI.Tools.Preprocessor_CompilerFunc:new())
+
+        local noMinify = LifeBoatAPI.Tools.Preprocessor_NoMinify:new()
+        preprocessor:register("nominify", noMinify)
+
+        text = preprocessor:process(text)
+
 
         -- re-parse to remove all code-section comments now we're done with them
         text = parser:removeStringsAndComments(text)
@@ -129,6 +142,8 @@ LifeBoatAPI.Tools.Minimizer = {
         end
 
         -- repopulate the original string data now it's safe
+        text = noMinify:repopulateStrings(text)
+
         text = parser:repopulateStrings(text, this.params.shortenStringDuplicates)
 
         local sizeWithoutBoilerplate = #text
