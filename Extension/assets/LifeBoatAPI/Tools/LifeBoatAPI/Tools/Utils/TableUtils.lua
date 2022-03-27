@@ -9,6 +9,33 @@ require("LifeBoatAPI.Tools.Utils.Base")
 ---@class TableUtils
 LifeBoatAPI.Tools.TableUtils = {
 
+    tostring = function(tbl)
+        local valToString = function(val)
+            return type(val) == "table" and LifeBoatAPI.Tools.TableUtils.tostring(val) or tostring(val)
+        end
+
+        local seen = {}
+        local result = "{"
+
+        for i=1,#tbl do
+            result = result .. valToString(tbl[i]) .. ";"
+            seen[i] = true
+        end
+        
+        for k,v in pairs(tbl) do
+            if not seen[k] then
+                local val = valToString(v)
+                seen[k] = true
+                if type(k) == "string" then
+                    result = result .. k .. "=" .. val .. ";"
+                else
+                    result = result .. "[" .. tostring(k) .. "]=" .. val .. ";"
+                end
+            end
+        end
+        return result .. "}"
+    end;
+
     --- Returns whether this collection contains the given value or not
     ---@param tbl table
     ---@param value any value to check for

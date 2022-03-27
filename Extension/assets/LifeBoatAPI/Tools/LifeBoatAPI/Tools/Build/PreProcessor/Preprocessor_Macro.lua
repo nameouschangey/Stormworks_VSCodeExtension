@@ -51,6 +51,13 @@ LifeBoatAPI.Tools.Preprocessor_Macro = {
                 end
             end
         end
+
+        tag.cleanup = function(tag, text)
+            local name = tag.args[1]
+            local closingTag = processor:getNextTagWhere(tag.index, function(t) return t.type == "end" and name == t.args[1] end)
+            return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, tag.startIndex, closingTag and closingTag.endIndex or tag.endIndex)
+        end;
+
     end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Preprocessor_Macro)

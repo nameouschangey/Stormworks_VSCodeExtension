@@ -28,6 +28,14 @@ LifeBoatAPI.Tools.PreProcessor = {
     end;
 
     process = function(this, text)
+        return this:run(text, function(tag, text) return tag:process(text) end)
+    end;
+
+    cleanup = function(this, text)
+        return this:run(text, function(tag, text) return tag:cleanup(text) end)
+    end;
+
+    run = function(this, text, processFunction)
         local changesMade = false
         local iterations = 0
         repeat
@@ -37,7 +45,7 @@ LifeBoatAPI.Tools.PreProcessor = {
             this.tags = this:_findAndInitializeTags(text)
             for i=1, #this.tags do
                 local tag = this.tags[i]
-                local newText = tag:process(text)
+                local newText = processFunction(tag, text)
                 
                 if newText then
                     text = newText
@@ -77,10 +85,12 @@ LifeBoatAPI.Tools.PreProcessor = {
         return tag -- no additional rules found, use default mapping
     end;
 
+    ---@return ProcessorTag
     getTag = function(this, index)
         return this.tags[index]
     end;
 
+    ---@return ProcessorTag
     getNextTagWhere = function(this, startIndex, predicate)
         if startIndex < #this.tags then
             for i=startIndex, #this.tags do
@@ -124,5 +134,11 @@ LifeBoatAPI.Tools.ProcessorTag = {
     end;
 
     process = function() end;
+
+    cleanup = function(tag, text)
+        tag.cleanup = function(tag, text)
+            return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, tag.startIndex, tag.endIndex)
+        end;
+    end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.ProcessorTag)

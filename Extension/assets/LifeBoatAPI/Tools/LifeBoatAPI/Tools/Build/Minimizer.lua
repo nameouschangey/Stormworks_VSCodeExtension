@@ -19,6 +19,7 @@ require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Macro")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Redundancy")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_CompilerFunc")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_NoMinify")
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Remove")
 
 ---@class MinimizerParams
 ---@field reduceAllWhitespace   boolean if true, shortens all whitespace duplicates where possible
@@ -101,11 +102,13 @@ LifeBoatAPI.Tools.Minimizer = {
         end
         preprocessor:register("macro", LifeBoatAPI.Tools.Preprocessor_Macro:new())
         preprocessor:register("compilerfunc", LifeBoatAPI.Tools.Preprocessor_CompilerFunc:new())
+        preprocessor:register("remove", LifeBoatAPI.Tools.Preprocessor_Remove:new())
 
         local noMinify = LifeBoatAPI.Tools.Preprocessor_NoMinify:new()
         preprocessor:register("nominify", noMinify)
 
         text = preprocessor:process(text)
+        text = preprocessor:cleanup(text)
 
 
         -- re-parse to remove all code-section comments now we're done with them

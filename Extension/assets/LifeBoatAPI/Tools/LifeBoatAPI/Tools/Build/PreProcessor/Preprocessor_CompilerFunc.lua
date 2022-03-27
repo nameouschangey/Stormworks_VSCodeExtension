@@ -38,32 +38,43 @@ LifeBoatAPI.Tools.Preprocessor_CompilerFunc = {
                 for i=1,#macroUses do
                     local macroUse = macroUses[i]
                     local parameterisedContent = " " .. innerContent .. " "
+
+                    local env = {}
                     for i=1,7 do
-                        if macroUse.captures[i] ~= nil then
-                            -- given our block of content, replace all the parameters used in it (e.g. x, y, z) with the values given in the ACTUAL use
+                        if macroUse.captures[i] ~= "" then
                             local param = tag.args[i+2]
-                            parameterisedContent:gsub(LifeBoatAPI.Tools.StringUtils.escape("[^%a%d_]" .. param.. "[^%a%d_]"),
-                                                      LifeBoatAPI.Tools.StringUtils.escapeSub(macroUse.captures[i]))
-                            local env = {}
-                            local contentFunction, err = load(parameterisedContent, "", "t", env)
-                            if not contentFunction then
-                                error("code generation error. given compilerfunc tag [" .. tag.macroname .. "] doesnt produce valid lua: " .. err)
-                            end
-
-                            local generatedCode = tostring(contentFunction())
-
-                            -- simply replace the use of the content with the content (e.g. a(1,2,3) => the actual macro content)
-                            LifeBoatAPI.Tools.StringUtils.replaceIndex(text, macroUse.startIndex, macroUse.endIndex, generatedCode) -- replace the actual macro part
+                            env[param] = macroUse.captures[i]
                         end
                     end
-                end
 
-                if #macroUses > 0 then
-                    return text
+                    local success, contentFunction, err = pcall(load, parameterisedContent, "", "t", env)
+                    if not contentFunction then
+                        error("[" .. tostring(tag.macroname) .. "] code generation error. given compilerfunc tag doesnt produce valid lua: " .. err)
+                    end
+
+                    local generatedResult = contentFunction()
+                    local generatedType = type(generatedResult)
+                    local generatedCode = ""
+                    if generatedType == "number" or generatedType == "boolean" or generatedType == "nil" then
+                        generatedCode = tostring(generatedResult)
+                    elseif generatedType == "table" then
+                        generatedCode = LifeBoatAPI.Tools.TableUtils.tostring(generatedResult)
+                    elseif generatedType == "function" then
+                        error("[" .. tostring(tag.macroname) .. "] compilerfunc cannot return a function, you may have meant to return a string with the name of the function instead.")
+                    end
+                    
+                    return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, macroUse.startIndex, macroUse.endIndex, generatedCode) -- replace the actual macro part
                 end
             end
-        end;
+        end
 
+        tag.cleanup = function(tag, text)
+            local name = tag.args[1]
+            local closingTag = processor:getNextTagWhere(tag.index, function(t) return t.type == "end" and name == t.args[1] end)
+            return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, tag.startIndex, closingTag and closingTag.endIndex or tag.endIndex)
+        end
     end;
+
+    
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Preprocessor_CompilerFunc)

@@ -11,11 +11,11 @@ require("LifeBoatAPI.Tools.Utils.StringUtils")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
 
 -- example useage
----@lb(redundancy,tagName,someIdentifier,instancesNeededor2,isExactMatch)
-    --function someIdentifier(x,y,z)
-    --   return x+y+z
-    --end
----@lb(end,tagName)
+-----@lb(redundancy,tagName,someIdentifier,instancesNeededor2,isExactMatch)
+--    --function someIdentifier(x,y,z)
+--    --   return x+y+z
+--    --end
+-----@lb(end,tagName)
 
 ---@class Preprocessor_Redundancy : BaseClass
 ---@field priority number
@@ -53,7 +53,7 @@ LifeBoatAPI.Tools.Preprocessor_Redundancy = {
                 -- remove tag and contents
                 return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, tag.startIndex, closingTag.endIndex, "")
             end
-        end;
+        end
     end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Preprocessor_Redundancy)
