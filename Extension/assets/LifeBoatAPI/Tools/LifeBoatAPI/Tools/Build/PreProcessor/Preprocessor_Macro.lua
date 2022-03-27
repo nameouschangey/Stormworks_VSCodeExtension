@@ -34,30 +34,23 @@ LifeBoatAPI.Tools.Preprocessor_Macro = {
 
             if closingTag and macroname ~= "" then
                 local innerContent = text:sub(tag.endIndex+1, closingTag.startIndex-1)
-                local macroUses = LifeBoatAPI.Tools.StringUtils.find(text, macroname .. "%(([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*)%)")
+                local macroUses = LifeBoatAPI.Tools.StringUtils.find(text, macroname .. "%(([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*)%)")
                 
                 for i=1,#macroUses do
                     local macroUse = macroUses[i]
                     local parameterisedContent = " " .. innerContent .. " "
                     for i=1,7 do
-                        if macroUse.captures[i] ~= nil then
+                        if macroUse.captures[i] ~= "" then
                             -- given our block of content, replace all the parameters used in it (e.g. x, y, z) with the values given in the ACTUAL use
                             local param = tag.args[i+2]
-                            parameterisedContent:gsub(LifeBoatAPI.Tools.StringUtils.escape("[^%a%d_]" .. param.. "[^%a%d_]"),
-                                                      LifeBoatAPI.Tools.StringUtils.escapeSub(macroUse.captures[i]))
-
-                            -- simply replace the use of the content with the content (e.g. a(1,2,3) => the actual macro content)
-                            LifeBoatAPI.Tools.StringUtils.replaceIndex(text, macroUse.startIndex, macroUse.endIndex, parameterisedContent) -- replace the actual macro part
+                            parameterisedContent = parameterisedContent:gsub("([^%a%d_])" .. LifeBoatAPI.Tools.StringUtils.escape(param) .. "([^%a%d_])",
+                                                                             "%1" .. LifeBoatAPI.Tools.StringUtils.escape(macroUse.captures[i]) .. "%2")
                         end
                     end
-                end
-
-                if #macroUses > 0 then
-                    return text
+                    return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, macroUse.startIndex, macroUse.endIndex, parameterisedContent) -- replace the actual macro part
                 end
             end
-        end;
-
+        end
     end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Preprocessor_Macro)

@@ -13,13 +13,14 @@ require("LifeBoatAPI.Tools.Utils.StringUtils")
 
 ---@class PreProcessor : BaseClass
 LifeBoatAPI.Tools.PreProcessor = {
-    TagPattern = "%-%-%-@lb%(([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*)%)[^\n]*\n";
+    TagPattern = "%-%-%-@lb%(([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^),]*),?([^,)]*)%)[^\n]*\n";
 
     new = function (cls)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
         this.tagFactories = {}
         this.tags = {}
         this.maxIterations = 10000
+        return this
     end;
 
     register = function(this, name, factory)
@@ -36,7 +37,7 @@ LifeBoatAPI.Tools.PreProcessor = {
             this.tags = this:_findAndInitializeTags(text)
             for i=1, #this.tags do
                 local tag = this.tags[i]
-                local newText = tag:process(this, text)
+                local newText = tag:process(text)
                 
                 if newText then
                     text = newText
@@ -62,7 +63,7 @@ LifeBoatAPI.Tools.PreProcessor = {
         for i=1, #tagMatches do
             local match = tagMatches[i]
             local tag = LifeBoatAPI.Tools.ProcessorTag:new(i, match)
-            local mappedTag = this:mapTag(tag)
+            local mappedTag = this:_mapTag(tag)
             tags[#tags+1] = mappedTag
         end
 
@@ -71,7 +72,7 @@ LifeBoatAPI.Tools.PreProcessor = {
 
     _mapTag = function(this, tag)
         if this.tagFactories[tag.type] then
-            return this.tagFactories[tag.type]:create(tag) or tag
+            return this.tagFactories[tag.type]:create(this,tag) or tag
         end
         return tag -- no additional rules found, use default mapping
     end;
@@ -111,9 +112,10 @@ LifeBoatAPI.Tools.ProcessorTag = {
         this.priorty = 0; -- lowest priority
         this.type = match.captures[1]
         this.index = i
+        this.args = {}
 
         for i=2, #match.captures do
-            this.args[#this.args+1] = match.captures[i] ~= "" and match.captures[i] or nil
+            this.args[i-1] = match.captures[i] ~= "" and match.captures[i] or nil
         end
 
         this.startIndex = match.startIndex
@@ -122,13 +124,5 @@ LifeBoatAPI.Tools.ProcessorTag = {
     end;
 
     process = function() end;
-
-    remove = function(this,text)
-        return this:replace(text, "")
-    end;
-
-    replace = function(this, text, replacement)
-        return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, this.startIndex, this.endIndex, replacement)
-    end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.ProcessorTag)

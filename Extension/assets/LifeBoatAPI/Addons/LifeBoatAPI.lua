@@ -4,6 +4,8 @@
 
 -----------------------------
 
+LifeBoatAPI = LifeBoatAPI or {}
+
 --- Core LifeBoatAPI instance which handles all other logic
 --- Note, because this isn't loaded from g_savedata, this is the ONLY place where lambdas can be used
 --- All other code must implement functors as specific objects

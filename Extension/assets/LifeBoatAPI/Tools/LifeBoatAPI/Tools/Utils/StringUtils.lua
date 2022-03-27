@@ -106,10 +106,13 @@ LifeBoatAPI.Tools.StringUtils = {
         return found
     end;
 
+    ---The index specified (e.g. startIndex) is the FIRST character to be replaced, vice versa for endIndex
+    ---That is: text[startIndex] and text[endIndex] are both going to be replaced
+    ---"hello world", start=1, end=3 -> "xxxlo world"
     ---@return string
     replaceIndex = function(text, startIndex, endIndex, replacement)
-        local textBefore = text:sub(1,startIndex)
-        local textAfter = text:sub(endIndex)
+        local textBefore = text:sub(1,startIndex-1)
+        local textAfter = text:sub(endIndex+1)
         return textBefore .. (replacement or "") .. textAfter
     end;
 

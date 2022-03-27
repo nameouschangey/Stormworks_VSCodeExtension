@@ -24,13 +24,20 @@ LifeBoatAPI.Tools.Preprocessor_NoMinify = {
     ---@field redundancyIdentifier string
     ---@field nextReplacementID number
 
+    new = function(cls)
+        this = LifeBoatAPI.Tools.BaseClass.new(cls)
+        this.replacements = {}
+        return this
+    end;
+    
     ---@param this Preprocessor_NoMinify
     ---@param text string
     ---@return string
     repopulateStrings = function(this, text)
         for replacementID, replacement in pairs(this.replacements) do
-            return LifeBoatAPI.Tools.StringUtils.subAll(text,LifeBoatAPI.Tools.StringUtils.escape(replacementID), LifeBoatAPI.Tools.StringUtils.escapeSub(replacement))
+            text = LifeBoatAPI.Tools.StringUtils.subAll(text,LifeBoatAPI.Tools.StringUtils.escape(replacementID), LifeBoatAPI.Tools.StringUtils.escapeSub(replacement))
         end
+        return text
     end;
 
     ---@param this Preprocessor_NoMinify

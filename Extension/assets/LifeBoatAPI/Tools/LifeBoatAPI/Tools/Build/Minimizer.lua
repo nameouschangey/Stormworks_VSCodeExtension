@@ -7,7 +7,6 @@
 require("LifeBoatAPI.Tools.Utils.StringUtils")
 require("LifeBoatAPI.Tools.Utils.Filepath")
 require("LifeBoatAPI.Tools.Utils.FileSystemUtils")
-require("LifeBoatAPI.Tools.Build.SyntaxExtensions.Section_RedundancyRemover")
 require("LifeBoatAPI.Tools.Build.StringCommentsParser")
 require("LifeBoatAPI.Tools.Build.VariableShortener")
 require("LifeBoatAPI.Tools.Build.GlobalVariableReducer")
@@ -19,6 +18,7 @@ require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Macro")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Redundancy")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_CompilerFunc")
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_NoMinify")
 
 ---@class MinimizerParams
 ---@field reduceAllWhitespace   boolean if true, shortens all whitespace duplicates where possible
@@ -89,7 +89,8 @@ LifeBoatAPI.Tools.Minimizer = {
         local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
         text = parser:removeStringsAndComments(text,
                                                 function(i,text)
-                                                    return text:sub(i, i+6) == "---@lb"
+                                                    local sub = text:sub(i, i+5)
+                                                    return sub == "---@lb"
                                                 end)
 
         
