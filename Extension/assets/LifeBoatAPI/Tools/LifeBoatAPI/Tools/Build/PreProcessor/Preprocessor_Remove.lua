@@ -10,7 +10,7 @@ require("LifeBoatAPI.Tools.Utils.StringBuilder")
 require("LifeBoatAPI.Tools.Utils.StringUtils")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
 
----@class Preprocessor_Redundancy : BaseClass
+---@class Preprocessor_RemoveIf : BaseClass
 ---@field priority number
 LifeBoatAPI.Tools.Preprocessor_Remove = {
 

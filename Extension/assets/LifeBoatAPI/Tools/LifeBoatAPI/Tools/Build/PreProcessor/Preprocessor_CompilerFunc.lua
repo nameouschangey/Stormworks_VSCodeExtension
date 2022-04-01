@@ -31,7 +31,7 @@ LifeBoatAPI.Tools.Preprocessor_CompilerFunc = {
             local closingTag = processor:getNextTagWhere(tag.index, function(t) return t.type == "end" and name == t.args[1] end)
             
 
-            if closingTag and macroname ~= "" then
+            if closingTag and macroname and macroname ~= "" then
                 local innerContent = text:sub(tag.endIndex+1, closingTag.startIndex-1)
                 local macroUses = LifeBoatAPI.Tools.StringUtils.find(text, macroname .. "%(([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*)%)")
                 

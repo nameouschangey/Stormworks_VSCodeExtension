@@ -12,8 +12,10 @@ require("LifeBoatAPI.Tools.Utils.StringUtils")
 
 
 ---@class PreProcessor : BaseClass
+---@field tags ProcessorTag[]
 LifeBoatAPI.Tools.PreProcessor = {
-    TagPattern = "%-%-%-@lb%(([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^),]*),?([^,)]*)%)[^\n]*\n";
+    _TagPattern = "%-%-%-@lb%(([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^,)]*),?([^),]*),?([^,)]*)%)[^\n]*\n";
+    TagPattern = "%-%-%-@lb%(([^\n]*)%)[^\n]*\n";
 
     new = function (cls)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
@@ -70,12 +72,51 @@ LifeBoatAPI.Tools.PreProcessor = {
 
         for i=1, #tagMatches do
             local match = tagMatches[i]
+
+            -- parse the captures manually, so we can have nested brackets
+            local captures = this:_parseCaptures(match.captures[1])
+
+            
+            match.captures = captures
+
             local tag = LifeBoatAPI.Tools.ProcessorTag:new(i, match)
             local mappedTag = this:_mapTag(tag)
             tags[#tags+1] = mappedTag
         end
 
         return tags
+    end;
+
+    _parseCaptures = function(this, captureString)
+        local captures = {}
+        local brackets = 0
+        local currentCapture = ""
+        for j=1, #captureString do
+            local c = captureString:sub(j,j)
+            if brackets == 0 and c == "," then
+                captures[#captures+1] = currentCapture
+                currentCapture = ""
+            elseif c == ")" then
+                brackets = brackets - 1
+                currentCapture = currentCapture .. c
+                if brackets == -1 then
+                    error("Format error, too many closing brackets in tag: " .. captureString)
+                end
+            elseif c == "(" then
+                brackets = brackets + 1
+                currentCapture = currentCapture .. c
+            else
+                currentCapture = currentCapture .. c
+            end
+        end
+
+        captures[#captures+1] = currentCapture
+
+        if brackets > 0 then
+            error("Format error, missing closing bracket in tag: " .. captureString)
+        end
+
+        return captures
     end;
 
     _mapTag = function(this, tag)
@@ -120,7 +161,7 @@ LifeBoatAPI.Tools.ProcessorTag = {
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
 
         this.priorty = 0; -- lowest priority
-        this.type = match.captures[1]
+        this.type = (match.captures[1] or ""):lower()
         this.index = i
         this.args = {}
 

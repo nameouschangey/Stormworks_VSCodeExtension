@@ -17,46 +17,65 @@ require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
 --    --end
 -----@lb(end,tagName)
 
----@class Preprocessor_Redundancy : BaseClass
----@field priority number
-LifeBoatAPI.Tools.Preprocessor_Redundancy = {
-    ---@class ProcessorTag_Redundancy : ProcessorTag
-    ---@field redundancyIdentifier string
-
-    ---@param this Preprocessor_Redundancy
+---@class Preprocessor_RemoveIf : BaseClass
+LifeBoatAPI.Tools.Preprocessor_RemoveIf = {
+    ---@param this Preprocessor_RemoveIf
     ---@param processor PreProcessor
     ---@param tag ProcessorTag
-    ---@return ProcessorTag_Redundancy
+    ---@return ProcessorTag
     create = function(this, processor, tag)
-        ---@param tag ProcessorTag_Redundancy
+
         tag.process = function(tag, text)
-            local name = tag.args[1]
-            local identifier = tag.args[2]
-            local instancesNeeded = tonumber(tag.args[3]) or 2
-            local isExactMatch = tag.args[4] == "partial" or tag.args[4] == "false"
-            
+            tag.name            = tag.args[1]
+            tag.identifier      = tag.args[2]
+            tag.instancesNeeded = tonumber(tag.args[3]) or 2
+            tag.isExactMatch    = tag.args[5] == "partial" or tag.args[5] == "false"
+
+            local comparisonTypes = {
+                ["<"] =     {comparer = function(found, wanted) return found < wanted end,  runInCleanup = false},
+                ["~="] =    {comparer = function(found, wanted) return found ~= wanted end, runInCleanup = true},
+                ["=="] =    {comparer = function(found, wanted) return found == wanted end, runInCleanup = true},
+                ["="] =     {comparer = function(found, wanted) return found == wanted end, runInCleanup = true},
+                ["<="] =    {comparer = function(found, wanted) return found <= wanted end, runInCleanup = false},
+                [">="] =    {comparer = function(found, wanted) return found >= wanted end, runInCleanup = true},
+                [">"] =     {comparer = function(found, wanted) return found > wanted end,  runInCleanup = true}
+            };
+            tag.comparison = comparisonTypes[tag.args[4]] or comparisonTypes["<"]
+
             -- not a valid redundancy section without the identifier part
-            if not identifier then
+            if not tag.identifier then
                 return
             end
 
-            if isExactMatch then
+            if not tag.comparison.runInCleanup then
+                tag:run(text)
+            end
+        end
+
+        tag.cleanup = function(tag, text)
+            if tag.comparison.runInCleanup then
+                tag:run(text)
+            end
+        end
+
+        tag.run = function(tag, text)
+            if tag.isExactMatch then
                 identifier = "[^%a%d_]" .. LifeBoatAPI.Tools.StringUtils.escape(identifier) .. "[^%a%d_]"
             else
                 identifier = LifeBoatAPI.Tools.StringUtils.escape(identifier)
             end
 
             -- find inner tags
-            local closingTag = processor:getNextTagWhere(tag.index, function(nextTag) return nextTag.type == "end" and name == nextTag.args[1] end)
+            local closingTag = processor:getNextTagWhere(tag.index, function(nextTag) return nextTag.type == "end" and tag.name == nextTag.args[1] end)
             
-            if closingTag and #LifeBoatAPI.Tools.StringUtils.find(text, identifier) < instancesNeeded then
+            if closingTag and tag.comparison.comparer(#LifeBoatAPI.Tools.StringUtils.find(text, identifier), tag.instancesNeeded)then
                 -- remove tag and contents
                 return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, tag.startIndex, closingTag.endIndex, "")
             end
         end
     end;
 }
-LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Preprocessor_Redundancy)
+LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.Preprocessor_RemoveIf)
 
 
 
