@@ -15,7 +15,7 @@ getTextUntil = function(text, searchStart, ...)
         end
     end
 
-    return shortestIndex+1, text:sub(searchStart, shortestIndex)
+    return shortestIndex-1, text:sub(searchStart, shortestIndex-1)
 end;
 
 getTextIncluding = function(text, searchStart, ...)
@@ -44,16 +44,16 @@ parse = function(text)
 
     local nextText = ""
     local i = 1
-    while i <= #text do
-        if nextSectionIs(text, i, '"') then
+    while i+1 <= #text do
+        if nextSectionIs(text, i, '[^\\]"') then
             -- quote (")
             i, nextText = getTextIncluding(text, i+1, '[^\\]"')
-            content[#content+1] = {type = "string", raw = '"' .. nextText}
+            content[#content+1] = {type = "string", raw = nextText}
 
-        elseif nextSectionIs(text, i, "'") then
+        elseif nextSectionIs(text, i, "[^\\]'") then
             -- quote (')
             i, nextText = getTextIncluding(text, i+1, "[^\\]'")
-            content[#content+1] = {type = "string", raw = "'" .. nextText}
+            content[#content+1] = {type = "string", raw = nextText}
 
         elseif nextSectionIs(text, i, "%[%[") then
             -- quote ([[ ]])
@@ -63,7 +63,7 @@ parse = function(text)
         elseif nextSectionIs(text, i, "%-%-%-@lb") then
             -- preprocessor tag
             i, nextText = getTextIncluding(text, i, "\n")
-            content[#content+1] = {type = "tag", raw = nextText}
+            content[#content+1] = newTag(nextText)
 
         elseif nextSectionIs(text, i, "%-%-%[%[") then
             -- multi-line comment
@@ -73,15 +73,57 @@ parse = function(text)
         elseif nextSectionIs(text, i, "%-%-") then
             -- single-line comment
             i, nextText = getTextIncluding(text, i, "\n")
-            content[#content+1] = {type = "comment", raw = nextText, children={}}
+            content[#content+1] = {type = "comment", raw = nextText}
         else
             -- regular/lua text
+            local textAt = text:sub(i,i+5)
             i, nextText = getTextUntil(text, i, "%-%-", '[^\\]"', "[^\\]'", "%[%[")
+            i = i + 1
             content[#content+1] = {type = "lua", raw = nextText}
         end
     end
 
     return content
+end
+
+newTag = function(tagtext)
+    local contentIndex, startText = getTextUntil(tagtext, 1, "%(")
+    local _, content = getTextUntil(tagtext, contentIndex+2, "%)[^%)]-\n")
+
+    local captures = {}
+    local brackets = 0
+    local currentCapture = ""
+    for i=1, #content do
+        local c = content:sub(i,i)
+        if brackets == 0 and c == "," then
+            captures[#captures+1] = currentCapture
+            currentCapture = ""
+        elseif c == ")" then
+            brackets = brackets - 1
+            currentCapture = currentCapture .. c
+            if brackets == -1 then
+                error("Format error, too many closing brackets in tag: " .. tagtext)
+            end
+        elseif c == "(" then
+            brackets = brackets + 1
+            currentCapture = currentCapture .. c
+        else
+            currentCapture = currentCapture .. c
+        end
+    end
+
+    captures[#captures+1] = currentCapture
+
+    if brackets > 0 then
+        error("Format error, missing closing bracket in tag: " .. tagtext)
+    end
+
+    return {
+        type = "tag",
+        tag = captures[1] or "none",
+        raw = tagtext,
+        captures = captures,
+    }
 end
 
 parseToTree = function(text, contentList)
@@ -97,6 +139,10 @@ parseToTree = function(text, contentList)
         if content.type == "tag" then
             if content.tag == "end" then
                 tree.endTag = content
+
+                if not tree.parent then
+                    error("Too many ---@lb(end) tags")
+                end
                 tree = tree.parent
             else
                 tree.content[#tree.content+1] = content
@@ -107,14 +153,28 @@ parseToTree = function(text, contentList)
             tree.content[#tree.content+1] = content
         end
     end
+
+    if tree.parent then
+        error("Missing ---@lb(end) tag")
+    end
+
     return tree
 end
 
-
+getTagTrees = function(tree)
+    local tagTrees = {}
+    for i=1,#tree.content do
+        local content = tree.content[i]
+        if content.type == "tag" then
+            tagTrees[#tagTrees+1] = content
+        end
+    end
+    return tagTrees
+end;
 
 text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\Sandbox\testst\MyMicrocontroller.lua]]))
 
 local contentList = parse(text)
 local contentTree = parseToTree(text, contentList)
-
+local tagTrees = getTagTrees(contentTree)
 a = 1 + 1
