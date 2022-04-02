@@ -16,6 +16,10 @@ require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
 ---@class Preprocessor_CompilerFunc : BaseClass
 ---@field priority number
 LifeBoatAPI.Tools.Preprocessor_CompilerFunc = {
+    new = function(cls, stringReplacer, commentReplacer)
+    end;
+    
+
     ---@class ProcessorTag_CompilerFunc : ProcessorTag
     ---@field macroname string
 
@@ -33,6 +37,9 @@ LifeBoatAPI.Tools.Preprocessor_CompilerFunc = {
 
             if closingTag and macroname and macroname ~= "" then
                 local innerContent = text:sub(tag.endIndex+1, closingTag.startIndex-1)
+                -- replace comments and strings back in
+
+
                 local macroUses = LifeBoatAPI.Tools.StringUtils.find(text, macroname .. "%(([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*),?([^,]*)%)")
                 
                 for i=1,#macroUses do

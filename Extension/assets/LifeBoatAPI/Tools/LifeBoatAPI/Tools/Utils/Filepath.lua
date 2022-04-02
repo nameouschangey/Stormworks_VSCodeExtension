@@ -13,6 +13,8 @@ require("LifeBoatAPI.Tools.Utils.StringUtils")
 ---@field caseSensitive boolean whether this path is case sensitive or not (true by default)
 LifeBoatAPI.Tools.Filepath = {
 
+    ---@param caseSensitive boolean
+    ---@param path string
     ---@param cls Filepath
     new = function(cls, path, caseSensitive)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)

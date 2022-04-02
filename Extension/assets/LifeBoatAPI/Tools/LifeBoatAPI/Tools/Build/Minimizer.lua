@@ -16,7 +16,7 @@ require("LifeBoatAPI.Tools.Build.HexadecimalConverter")
 
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Macro")
-require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Redundancy")
+require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_RemoveIf")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_CompilerFunc")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_NoMinify")
 require("LifeBoatAPI.Tools.Build.PreProcessor.Preprocessor_Remove")
@@ -84,21 +84,10 @@ LifeBoatAPI.Tools.Minimizer = {
         -- insert space at the start prevents issues where the very first character in the file, is part of a variable name
         text = " " .. text .. "\n\n"
 
-        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
-
-        -- remove all redundant strings and comments, avoid these confusing the parse
-        local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
-        text = parser:removeStringsAndComments(text,
-                                                function(i,text)
-                                                    local sub = text:sub(i, i+5)
-                                                    return sub == "---@lb"
-                                                end)
-
-        
         -- run pre-processor (including redundancy removal)
         local preprocessor = LifeBoatAPI.Tools.PreProcessor:new()
         if(this.params.removeRedundancies) then
-            preprocessor:register("redundancy", LifeBoatAPI.Tools.Preprocessor_Redundancy:new())
+            preprocessor:register("removeif", LifeBoatAPI.Tools.Preprocessor_RemoveIf:new())
         end
         preprocessor:register("macro", LifeBoatAPI.Tools.Preprocessor_Macro:new())
         preprocessor:register("compilerfunc", LifeBoatAPI.Tools.Preprocessor_CompilerFunc:new())
@@ -110,8 +99,11 @@ LifeBoatAPI.Tools.Minimizer = {
         text = preprocessor:process(text)
         text = preprocessor:cleanup(text)
 
+                
+        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
 
-        -- re-parse to remove all code-section comments now we're done with them
+        -- remove all redundant strings and comments, avoid these confusing the parse
+        local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
         text = parser:removeStringsAndComments(text)
 
         -- rename variables as short as we can get

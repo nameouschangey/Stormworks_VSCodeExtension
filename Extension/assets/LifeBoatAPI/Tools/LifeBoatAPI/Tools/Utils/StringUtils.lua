@@ -77,7 +77,7 @@ LifeBoatAPI.Tools.StringUtils = {
         separatorPattern = separatorPattern or "%s"
         local result = {}
         for value in str:gmatch("([^"..separatorPattern.."]+)") do
-            LifeBoatAPI.Tools.TableUtils.add(result, value)
+            result[#result + 1] = value
         end
         return result
     end;
