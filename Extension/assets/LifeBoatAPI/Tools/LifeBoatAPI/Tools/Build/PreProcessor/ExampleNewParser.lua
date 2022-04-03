@@ -3,20 +3,6 @@ nextSectionIs = function(text, i, pattern)
     return startIndex == i
 end;
 
-getTextUntil = function(text, searchStart, ...)
-    local patterns = {...}
-
-    local shortestIndex = #text
-    for i=1,#patterns do
-        local pattern = patterns[i]
-        local startIndex, endIndex, captures = text:find(pattern, searchStart)
-        if startIndex and startIndex < shortestIndex then
-            shortestIndex = startIndex
-        end
-    end
-
-    return shortestIndex-1, text:sub(searchStart, shortestIndex-1)
-end;
 
 getTextIncluding = function(text, searchStart, ...)
     local patterns = {...}
@@ -33,36 +19,52 @@ getTextIncluding = function(text, searchStart, ...)
     return shortestIndex+1, text:sub(searchStart, shortestIndex)
 end;
 
----Goes through the data of a code file, and removes all comments and replaces all strings with constants
----This allows for safe working on the file without destroying string data which may contain code-like phrases
----Strings can be re-added later using gsub, or another parse
----Comments are discarded as this is designed for use in a Minimizer
----@param text string text to parse
----@return string text without the strings and comments
+getTextUntil = function(text, searchStart, ...)
+    local patterns = {...}
+
+    local shortestIndex = #text+1
+    for i=1,#patterns do
+        local pattern = patterns[i]
+        if type(pattern) == "table" then
+            local startIndex, endIndex, captures = text:find(pattern.p, searchStart)
+            if startIndex and (startIndex + pattern.o) < shortestIndex then
+                shortestIndex = (startIndex + pattern.o)
+            end
+        else
+            local startIndex, endIndex, captures = text:find(pattern, searchStart)
+            if startIndex and (startIndex) < shortestIndex then
+                shortestIndex = (startIndex)
+            end
+        end
+    end
+
+    return shortestIndex, text:sub(searchStart, shortestIndex-1)
+end;
+
 parse = function(text)
     local content = {}
 
     local nextText = ""
     local i = 1
-    while i+1 <= #text do
-        if nextSectionIs(text, i, '[^\\]"') then
+    while i <= #text do
+        if nextSectionIs(text, i-1, '[^\\]"') then
             -- quote (")
-            i, nextText = getTextIncluding(text, i+1, '[^\\]"')
-            content[#content+1] = {type = "string", raw = nextText}
+            i, nextText = getTextIncluding(text, i, '[^\\]"')
+            content[#content+1] = {type = "string", raw = nextText, stringContent = nextText:sub(2,-2)}
 
-        elseif nextSectionIs(text, i, "[^\\]'") then
+        elseif nextSectionIs(text, i-1, "[^\\]'") then
             -- quote (')
-            i, nextText = getTextIncluding(text, i+1, "[^\\]'")
-            content[#content+1] = {type = "string", raw = nextText}
+            i, nextText = getTextIncluding(text, i, "[^\\]'")
+            content[#content+1] = {type = "string", raw = nextText, stringContent = nextText:sub(2,-2)}
 
         elseif nextSectionIs(text, i, "%[%[") then
             -- quote ([[ ]])
             i, nextText = getTextIncluding(text, i, "%]%]")
-            content[#content+1] = {type = "string", raw = nextText}          
+            content[#content+1] = {type = "string", raw = nextText, stringContent = nextText:sub(3,-3)}          
 
         elseif nextSectionIs(text, i, "%-%-%-@lb") then
             -- preprocessor tag
-            i, nextText = getTextIncluding(text, i, "\n")
+            i, nextText = getTextUntil(text, i, "\n")
             content[#content+1] = newTag(nextText)
 
         elseif nextSectionIs(text, i, "%-%-%[%[") then
@@ -72,13 +74,12 @@ parse = function(text)
 
         elseif nextSectionIs(text, i, "%-%-") then
             -- single-line comment
-            i, nextText = getTextIncluding(text, i, "\n")
+            i, nextText = getTextUntil(text, i, "\n")
             content[#content+1] = {type = "comment", raw = nextText}
         else
             -- regular/lua text
             local textAt = text:sub(i,i+5)
-            i, nextText = getTextUntil(text, i, "%-%-", '[^\\]"', "[^\\]'", "%[%[")
-            i = i + 1
+            i, nextText = getTextUntil(text, i, "%-%-", {p='[^\\]"',o=1}, {p="[^\\]'",o=1}, "%[%[")
             content[#content+1] = {type = "lua", raw = nextText}
         end
     end
@@ -88,7 +89,7 @@ end
 
 newTag = function(tagtext)
     local contentIndex, startText = getTextUntil(tagtext, 1, "%(")
-    local _, content = getTextUntil(tagtext, contentIndex+2, "%)[^%)]-\n")
+    local _, content = getTextUntil(tagtext, contentIndex+1, "%)[^%)]-$")
 
     local captures = {}
     local brackets = 0
@@ -129,12 +130,10 @@ end
 parseToTree = function(text, contentList)
     local tree = {
         type="program",
-        raw = text,
-        content={}
-        }
+        raw = text }
     for i = 1, #contentList do
         local content = contentList[i]
-        content.content = content.content or {}
+        content = content or {}
 
         if content.type == "tag" then
             if content.tag == "end" then
@@ -145,12 +144,12 @@ parseToTree = function(text, contentList)
                 end
                 tree = tree.parent
             else
-                tree.content[#tree.content+1] = content
+                tree[#tree+1] = content
                 content.parent = tree
                 tree = content
             end
         else
-            tree.content[#tree.content+1] = content
+            tree[#tree+1] = content
         end
     end
 
@@ -163,8 +162,8 @@ end
 
 getTagTrees = function(tree)
     local tagTrees = {}
-    for i=1,#tree.content do
-        local content = tree.content[i]
+    for i=1,#tree do
+        local content = tree[i]
         if content.type == "tag" then
             tagTrees[#tagTrees+1] = content
         end
@@ -172,9 +171,164 @@ getTagTrees = function(tree)
     return tagTrees
 end;
 
+forEach = function(tree, applyToType, func)
+    for i=1,#tree do
+        local content = tree[i]
+        if not applyToType or content.type == applyToType then
+            func(tree, content)
+        end
+        forEach(content, applyToType, func)
+    end
+    return tree
+end;
+
+shallowCopyTreeNode = function(node)
+    local copy = {}
+    for k,v in pairs(node) do
+        copy[k] = v
+    end
+    return copy
+end;
+
+deepCopyTree = function(tree, func)
+    local result = shallowCopyTreeNode(tree)
+    result = {}
+
+    for i=1,#tree do
+        local content = tree[i]
+        if not func or func(tree, content) then
+            result[#result+1] = deepCopyTree(content, func)
+        end
+    end
+    return result
+end;
+
+treeToString = function(tree)
+    local result = {}
+    for i=1,#tree do
+        local content = tree[i]
+        result[#result+1] = content.raw
+        if #content then
+            result[#result+1] = treeToString(content)
+            if content.type == "tag" and content.endTag then
+                result[#result+1] = content.endTag.raw
+            end
+        end
+    end
+    return table.concat(result)
+end;
+
+
+splitLuaIdentifiers = function(tree)
+    local replacements = {}
+    for i=#tree,1,-1 do -- reverse for deletion
+        local content = tree[i]
+        if content.type == "lua" then
+            local contentReplacements = {}
+            local variables = LifeBoatAPI.Tools.StringUtils.find(content.raw, "([%a_][%w_]*)")
+            local lastEnd = 1
+            for varIndex=1, #variables do
+                local var = variables[varIndex]
+
+                contentReplacements[#contentReplacements+1] = {type="lua", raw=content.raw:sub(lastEnd, var.startIndex+1)}              
+                newNode = {type="indentifer", raw=var.captures[1]}
+                table.insert(tree, i+1, newNode)
+            end
+        else
+            splitLuaIdentifiers(content)
+        end
+    end
+    return tree
+end;
+
+combineConsecutiveLuaNodes = function(tree)
+    local lastContent = {type="none"}
+    for i=#tree,1,-1 do -- reverse for deletion
+        local content = tree[i]
+        if content.type == "lua" and lastContent.type == "lua" then
+            content.raw = content.raw .. lastContent.raw
+            table.remove(tree, i+1)
+        else
+            combineConsecutiveLuaNodes(content)
+        end
+        lastContent = content
+    end
+    return tree
+end;
+
+
+
+VariableNamer = {
+    count = 1,
+    next = function(this)
+        this.count = this.count + 1
+        return "LB" .. this.count
+    end;
+}
+
+insert = function(tree, index, contentList)
+    for i=#contentList, 1, -1 do
+        table.insert(tree, index, contentList[i])
+    end
+    return tree
+end;
+
+replace = function(tree, index, contentList)
+    table.remove(tree, index)
+    insert(table, index, contentList)
+end;
+
+removeStringDuplicates = function(variableNamer, tree)
+    local stringsFound = {}
+    forEach(tree, "string",
+    function(t,c)
+        stringsFound[c.stringContent] = (stringsFound[c.stringContent] or 0) + 1
+    end)
+    
+    for k,v in pairs(stringsFound) do
+        if v > 1 then
+            stringsFound[k] = variableNamer:next()
+        else
+            stringsFound[k] = nil
+        end
+    end
+
+    forEach(tree, "string",
+    function(t,c)
+        if stringsFound[c.stringContent] then
+            c.type = "lua"
+            c.raw = stringsFound[c.stringContent] -- replace with variable
+        end
+    end)
+
+    -- generate a new block of code and insert it
+    for k,v in pairs(stringsFound) do
+        insert(tree, 1, parse(v .. '="'..k..'"\n'))
+    end
+
+    return tree
+end;
+
+
 text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\Sandbox\testst\MyMicrocontroller.lua]]))
 
 local contentList = parse(text)
+
 local contentTree = parseToTree(text, contentList)
 local tagTrees = getTagTrees(contentTree)
+
+local textAgain = treeToString(contentTree)
+
+
+local noComments = deepCopyTree(contentTree, function(tree,content) return content.type ~= "comment" end)
+
+local combined = combineConsecutiveLuaNodes(deepCopyTree(noComments))
+
+
+--print(treeToString(noComments))
+local areSame = tostring(text == textAgain)
+
+print(treeToString(removeStringDuplicates(VariableNamer, contentTree)))
 a = 1 + 1
+
+

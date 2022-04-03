@@ -96,7 +96,7 @@ LifeBoatAPI.Tools.StringUtils = {
         while index < #text and searching do
             local match = LifeBoatAPI.Tools.StringMatch:new(text:find(pattern, index))
             if(match.startIndex) then
-                index = match.endIndex
+                index = match.endIndex + 1
                 LifeBoatAPI.Tools.TableUtils.add(found, match)
             else
                 searching = false
