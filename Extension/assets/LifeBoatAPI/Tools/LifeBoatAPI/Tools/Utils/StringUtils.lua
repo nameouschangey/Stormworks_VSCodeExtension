@@ -133,4 +133,50 @@ LifeBoatAPI.Tools.StringUtils = {
         -- not found 
         return nil
     end;
+
+    --- Whether the two sections match
+    ---@return boolean
+    nextSectionIs = function(text, i, pattern)
+        local startIndex, endIndex, captures = text:find(pattern, i)
+        return startIndex == i
+    end;
+    
+    ---@return number, string
+    getTextIncluding = function(text, searchStart, ...)
+        local patterns = {...}
+    
+        local shortestIndex = #text
+        for i=1,#patterns do
+            local pattern = patterns[i]
+            local startIndex, endIndex, captures = text:find(pattern, searchStart)
+            if endIndex and endIndex < shortestIndex then
+                shortestIndex = endIndex
+            end
+        end
+    
+        return shortestIndex+1, text:sub(searchStart, shortestIndex)
+    end;
+    
+    ---@return number, string
+    getTextUntil = function(text, searchStart, ...)
+        local patterns = {...}
+    
+        local shortestIndex = #text+1
+        for i=1,#patterns do
+            local pattern = patterns[i]
+            if type(pattern) == "table" then
+                local startIndex, endIndex, captures = text:find(pattern.p, searchStart)
+                if startIndex and (startIndex + pattern.o) < shortestIndex then
+                    shortestIndex = (startIndex + pattern.o)
+                end
+            else
+                local startIndex, endIndex, captures = text:find(pattern, searchStart)
+                if startIndex and (startIndex) < shortestIndex then
+                    shortestIndex = (startIndex)
+                end
+            end
+        end
+    
+        return shortestIndex, text:sub(searchStart, shortestIndex-1)
+    end;
 }
