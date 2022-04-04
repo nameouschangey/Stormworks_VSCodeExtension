@@ -268,8 +268,9 @@ function server.getLocationData(addon_index, location_index) end
 --- @return SWComponentData component_data, boolean is_success
 function server.getLocationComponentData(addon_index, location_index, component_index) end
 
-
-
+--- Checks if the server has the weapons DLC enabled and if the player has the weapons DLC
+--- @return boolean is_enabled returns true if the server has the weapons DLC enabled, otherwise returns false
+function server.dlcWeapons() end
 
 
 
