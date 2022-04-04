@@ -60,15 +60,15 @@ LifeBoatAPI.Tools.Preprocessor_RemoveIf = {
 
         tag.run = function(tag, text)
             if tag.isExactMatch then
-                identifier = "[^%a%d_]" .. LifeBoatAPI.Tools.StringUtils.escape(identifier) .. "[^%a%d_]"
+                c = "[^%a%d_]" .. LifeBoatAPI.Tools.StringUtils.escape(c) .. "[^%a%d_]"
             else
-                identifier = LifeBoatAPI.Tools.StringUtils.escape(identifier)
+                c = LifeBoatAPI.Tools.StringUtils.escape(c)
             end
 
             -- find inner tags
             local closingTag = processor:getNextTagWhere(tag.index, function(nextTag) return nextTag.type == "end" and tag.name == nextTag.args[1] end)
             
-            if closingTag and tag.comparison.comparer(#LifeBoatAPI.Tools.StringUtils.find(text, identifier), tag.instancesNeeded)then
+            if closingTag and tag.comparison.comparer(#LifeBoatAPI.Tools.StringUtils.find(text, c), tag.instancesNeeded)then
                 -- remove tag and contents
                 return LifeBoatAPI.Tools.StringUtils.replaceIndex(text, tag.startIndex, closingTag.endIndex, "")
             end
