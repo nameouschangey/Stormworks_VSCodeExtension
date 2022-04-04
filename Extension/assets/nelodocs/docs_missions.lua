@@ -170,7 +170,7 @@ function matrix.rotationToFaceXZ(x, z) end
 --- @class SWAddonData
 --- @field name             string The name of the addon
 --- @field path_id          string 
---- @field file_store       string 
+--- @field file_store       boolean True if the data is in appdata or not
 --- @field location_count   number The number of locations in the addon
 
 --- @class SWLocationData

@@ -46,14 +46,31 @@ LifeBoatAPI.Tools.LuaParser = {
                 content[#content+1] = LBTree:new("comment", nextText)
 
             elseif LBStr.nextSectionIs(text, i, "%(") then
+                -- regular brackets
                 i, content[#content+1] = this._parseBrackets(text, i, "(", ")", ",")
 
             elseif LBStr.nextSectionIs(text, i, "%[") then 
+                -- indexing brackets
                 i, content[#content+1] = this._parseBrackets(text, i, "[", "]", nil)
 
+            elseif LBStr.nextSectionIs(text, i, "%.%.%.") then
+                -- varargs
+                i, nextText = LBStr.getTextIncluding(text, i, "%.%.%.")
+                content[#content+1] = LBTree:new("varargs", nextText) 
+
+            elseif LBStr.nextSectionIs(text, i, "%.%.") then
+                -- concat
+                i, nextText = LBStr.getTextIncluding(text, i, "%.%.")
+                content[#content+1] = LBTree:new("concat", nextText) 
+
+            elseif LBStr.nextSectionIs(text, i, "[%.:]") then
+                -- chain access
+                i, nextText = LBStr.getTextIncluding(text, i, "[%.:]")
+                content[#content+1] = LBTree:new("accessor", nextText) 
+
             elseif LBStr.nextSectionIs(text, i, "[%a_][%w_]*") then
+                -- identifier
                 i, nextText = LBStr.getTextIncluding(text, i, "[%a_][%w_]*")
-                
                 content[#content+1] = LBTree:new("identifier", nextText) 
 
             elseif LBStr.nextSectionIs(text, i, "%s+") then
@@ -61,28 +78,34 @@ LifeBoatAPI.Tools.LuaParser = {
                 i, nextText = LBStr.getTextIncluding(text, i, "%s*")
                 content[#content+1] = LBTree:new("whitespace", nextText)
 
-            elseif LBStr.nextSectionIs(text, i, "0x%x+") then 
+            elseif LBStr.nextSectionIs(text, i, "0x%x+") then
+                -- hex 
                 i, nextText = LBStr.getTextIncluding(text, i, "0x%x+")
                 content[#content+1] = LBTree:new("hex", nextText)
 
-            elseif LBStr.nextSectionIs(text, i, "%x+") then 
-                i, nextText = LBStr.getTextIncluding(text, i, "%x+")
+            elseif LBStr.nextSectionIs(text, i, "%x*%.?%x+") then 
+                -- number
+                i, nextText = LBStr.getTextIncluding(text, i, "%x*%.?%x+")
                 content[#content+1] = LBTree:new("number", nextText)
 
             else
                 -- regular/lua text
-                i, nextText = LBStr.getTextUntil(text, i, "\\", "%s+", "[%a_][%w_]*", "%-%-", '"', "'", "%[%[")
+                i, nextText = LBStr.getTextUntil(text, i, "%x*%.?%x+", "0x%x+", "\\", "%s+", "[%a_][%w_]*", "%-%-", '"', "'", "%[%[")
                 content[#content+1] = LBTree:new("lua", nextText)
             end
         end
 
-        return this._toTree(content, tag or "program")
+        local tree = this._buildTagTree(content, tag or "program")
+
+
+        return tree
     end;
 
-    _toTree = function(contentList, tag)
+    _buildTagTree = function(contentList, tag)
         -- can we also add "chain" to this
         -- can we also make function a type: identifier + brackets?
         -- how does merging work?
+
 
         local tree = LifeBoatAPI.Tools.LuaTree:new(tag, "")
 
