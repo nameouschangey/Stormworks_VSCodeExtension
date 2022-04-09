@@ -7,6 +7,9 @@
 require("LifeBoatAPI.Tools.Utils.Base")
 require("LifeBoatAPI.Tools.Utils.TableUtils")
 
+a.next.b = 123
+
+
 ---@class ParsingConstantsLoader : BaseClass
 ---@field restrictedKeywords table<string,boolean>
 ---@field baseNames table<string,boolean>
@@ -20,6 +23,7 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
         ,"repeat"    ,"return"    ,"then"      ,"until"
         ,"while"
     };
+    
     _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
     _mission_restricted_callbacks = {"onTick", "onCreate", "onDestroy", "onCustomCommand", "onChatMessage",

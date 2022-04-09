@@ -1,8 +1,33 @@
+LifeBoatAPI.Tools.LuaParseTypes = {
+    lua = "lua",
+    string = "string",
+    comment = "comment",
+    brackets = "brackets",
+    index = "index",
+    table = "table",
+    accessor = "accessor",
+    varargs = "varargs",
+    concat = "concat",
+    assignment = "assignment",
+    whitespace = "whitespace",
+    identifier = "identifier",
+    hex = "hex",
+    number = "number",
+    possibleMacroCall = "functioncall",
+    keyword = "keyword",
+    typeconstant = "typeconstant",
+    param = "param",
+    tag = "tag",
+    identifierchain = "identifierchain"
+}
+
+
 LifeBoatAPI.Tools.LuaParser = {
     parse = function(text, tag)
         local this = LifeBoatAPI.Tools.LuaParser
         local LBStr = LifeBoatAPI.Tools.StringUtils
         local LBTree = LifeBoatAPI.Tools.LuaTree
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
         local content = {}
 
         local nextText = ""
@@ -11,24 +36,24 @@ LifeBoatAPI.Tools.LuaParser = {
         while i <= #text do
             if LBStr.nextSectionIs(text, i, "\\") then
                 i, nextText = i+1, text:sub(i,i+1)
-                content[#content+1] = LBTree:new("lua", nextText)
+                content[#content+1] = LBTree:new(LBTypes.lua, nextText)
 
             elseif LBStr.nextSectionIs(text, i, '"') then
                 -- quote (")
                 i, nextText = LBStr.getTextIncluding(text, i+1, '"')
                 nextText = '"' .. nextText
-                content[#content+1] = LBTree:new("string", nextText, {stringContent = nextText:sub(2,-2)})
+                content[#content+1] = LBTree:new(LBTypes.string, nextText, {stringContent = nextText:sub(2,-2)})
 
             elseif LBStr.nextSectionIs(text, i, "'") then
                 -- quote (')
                 i, nextText = LBStr.getTextIncluding(text, i+1, "'")
                 nextText = "'" .. nextText
-                content[#content+1] = LBTree:new("string", nextText, {stringContent = nextText:sub(2,-2)})
+                content[#content+1] = LBTree:new(LBTypes.string, nextText, {stringContent = nextText:sub(2,-2)})
 
             elseif LBStr.nextSectionIs(text, i, "%[%[") then
                 -- quote ([[ ]])
                 i, nextText = this:getTextIncluding(text, i, "%]%]")
-                content[#content+1] = LBTree:new("string", nextText, {stringContent = nextText:sub(3,-3)})       
+                content[#content+1] = LBTree:new(LBTypes.string, nextText, {stringContent = nextText:sub(3,-3)})       
 
             elseif LBStr.nextSectionIs(text, i, "%-%-%-@lb") then
                 -- preprocessor tag
@@ -38,82 +63,118 @@ LifeBoatAPI.Tools.LuaParser = {
             elseif LBStr.nextSectionIs(text, i, "%-%-%[%[") then
                 -- multi-line comment
                 i, nextText = LBStr.getTextIncluding(text, i, "%]%]")
-                content[#content+1] = LBTree:new("comment", nextText)
+                content[#content+1] = LBTree:new(LBTypes.comment, nextText)
 
             elseif LBStr.nextSectionIs(text, i, "%-%-") then
                 -- single-line comment
                 i, nextText = LBStr.getTextUntil(text, i, "\n")
-                content[#content+1] = LBTree:new("comment", nextText)
+                content[#content+1] = LBTree:new(LBTypes.comment, nextText)
 
             elseif LBStr.nextSectionIs(text, i, "%(") then
                 -- regular brackets
-                i, content[#content+1] = this._parseBrackets(text, i, "(", ")", ",")
+                i, content[#content+1] = this._parseBrackets(LBTypes.brackets, text, i, "(", ")", ",")
 
             elseif LBStr.nextSectionIs(text, i, "%[") then 
                 -- indexing brackets
-                i, content[#content+1] = this._parseBrackets(text, i, "[", "]", nil)
+                i, content[#content+1] = this._parseBrackets(LBTypes.index, text, i, "[", "]", nil)
+
+            elseif LBStr.nextSectionIs(text, i, "%{") then 
+                -- table
+                i, content[#content+1] = this._parseBrackets(LBTypes.table, text, i, "{", "}", {",",";"})
 
             elseif LBStr.nextSectionIs(text, i, "%.%.%.") then
                 -- varargs
                 i, nextText = LBStr.getTextIncluding(text, i, "%.%.%.")
-                content[#content+1] = LBTree:new("varargs", nextText) 
+                content[#content+1] = LBTree:new(LBTypes.varargs, nextText) 
 
             elseif LBStr.nextSectionIs(text, i, "%.%.") then
                 -- concat
                 i, nextText = LBStr.getTextIncluding(text, i, "%.%.")
-                content[#content+1] = LBTree:new("concat", nextText) 
+                content[#content+1] = LBTree:new(LBTypes.concat, nextText) 
+
+            elseif LBStr.nextSectionIs(text, i, "[><=~]=") then
+                -- comparison
+                i, nextText = LBStr.getTextIncluding(text, i, "[><=~]=")
+                content[#content+1] = LBTree:new(LBTypes.comparison, nextText) 
+
+            elseif LBStr.nextSectionIs(text, i, "=") then
+                -- assignment
+                i, nextText = LBStr.getTextIncluding(text, i, "=")
+                content[#content+1] = LBTree:new(LBTypes.assignment, nextText) 
 
             elseif LBStr.nextSectionIs(text, i, "[%.:]") then
                 -- chain access
                 i, nextText = LBStr.getTextIncluding(text, i, "[%.:]")
-                content[#content+1] = LBTree:new("accessor", nextText) 
+                content[#content+1] = LBTree:new(LBTypes.accessor, nextText) 
 
             elseif LBStr.nextSectionIs(text, i, "[%a_][%w_]*") then
-                -- identifier
+                -- keywords & identifier
                 i, nextText = LBStr.getTextIncluding(text, i, "[%a_][%w_]*")
-                content[#content+1] = LBTree:new("identifier", nextText) 
+                if this._isKeyword(nextText) then
+                    content[#content+1] = LBTree:new(LBTypes.keyword, nextText) 
+                elseif this._isTypeConstant(nextText) then
+                    content[#content+1] = LBTree:new(LBTypes.typeconstant, nextText) 
+                else
+                    content[#content+1] = LBTree:new(LBTypes.identifier, nextText) 
+                end
 
             elseif LBStr.nextSectionIs(text, i, "%s+") then
                 -- whitespace
                 i, nextText = LBStr.getTextIncluding(text, i, "%s*")
-                content[#content+1] = LBTree:new("whitespace", nextText)
+                content[#content+1] = LBTree:new(LBTypes.whitespace, nextText)
 
             elseif LBStr.nextSectionIs(text, i, "0x%x+") then
                 -- hex 
                 i, nextText = LBStr.getTextIncluding(text, i, "0x%x+")
-                content[#content+1] = LBTree:new("hex", nextText)
+                content[#content+1] = LBTree:new(LBTypes.hex, nextText)
 
             elseif LBStr.nextSectionIs(text, i, "%x*%.?%x+") then 
                 -- number
                 i, nextText = LBStr.getTextIncluding(text, i, "%x*%.?%x+")
-                content[#content+1] = LBTree:new("number", nextText)
+                content[#content+1] = LBTree:new(LBTypes.number, nextText)
 
             else
                 -- regular/lua text
-                i, nextText = LBStr.getTextUntil(text, i, "%x*%.?%x+", "0x%x+", "\\", "%s+", "[%a_][%w_]*", "%-%-", '"', "'", "%[%[")
-                content[#content+1] = LBTree:new("lua", nextText)
+                i, nextText = LBStr.getTextUntil(text, i, 
+                "=", "[><=~]=",
+                "[%(%{%[]",
+                "[%.:]",
+                "%x*%.?%x+", "0x%x+",
+                "\\",
+                "%s+",
+                "[%a_][%w_]*",
+                "%-%-",
+                '"', "'",
+                "%[%[")
+                content[#content+1] = LBTree:new(LBTypes.lua, nextText)
             end
         end
 
-        local tree = this._buildTagTree(content, tag or "program")
-
+        local tree = content
+        this.collapseLuaNodes(tree)
+        this.groupIdentifiers(tree)
+        tree = this._buildTagTree(content, tag or "program")
+        this._groupPotentialMacroCalls(tree)
 
         return tree
     end;
 
     _buildTagTree = function(contentList, tag)
-        -- can we also add "chain" to this
-        -- can we also make function a type: identifier + brackets?
-        -- how does merging work?
-
-
-        local tree = LifeBoatAPI.Tools.LuaTree:new(tag, "")
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
+        local tree = LifeBoatAPI.Tools.LuaTree:new(tag)
 
         for i = 1, #contentList do
-            local content = contentList[i]
-            content = content or {}
+            local content = contentList[i] or {}
     
-            if content.type == "tag" then
+            if content.type == LBTypes.tag then
+                local firstIdentifier = content.brackets:child(LBTypes.param):child(LBTypes.identifierchain)
+                local firstKeyword = content.brackets:child(LBTypes.param):child(LBTypes.keyword)
+                content.tag = (firstIdentifier and firstIdentifier.identifierFull) or (firstKeyword and firstKeyword.raw)
+
+                if not content.tag then
+                    error("Parse rule error - tag missing first param")
+                end
+
                 if content.tag == "end" then
                     tree.endTag = content
     
@@ -138,10 +199,21 @@ LifeBoatAPI.Tools.LuaParser = {
         return tree
     end;
 
-    _parseBrackets = function(text, startIndex, openCharacter, closeCharacter, separator)
+    _parseBrackets = function(tag, text, startIndex, openCharacter, closeCharacter, separators)
         local LBStr = LifeBoatAPI.Tools.StringUtils
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
         local LBTree = LifeBoatAPI.Tools.LuaTree
         local this = LifeBoatAPI.Tools.LuaParser
+
+        separators = (type(separators) == LBTypes.table and separators) or {separators}
+        isSeparator = function(c)
+            for i=1,#separators do
+                if c == separators[i] then
+                    return true
+                end
+            end
+            return false
+        end;
 
         local children = {}
         local brackets = 0
@@ -150,9 +222,9 @@ LifeBoatAPI.Tools.LuaParser = {
         for i=startIndex, #text do
             endIndex = i
             local c = text:sub(i,i)
-            if brackets == 1 and c == separator then
-                children[#children+1] = this.parse(currentCapture, "param")
-                children[#children+1] = LBTree:new("lua", separator)
+            if brackets == 1 and isSeparator(c) then
+                children[#children+1] = this.parse(currentCapture, LBTypes.param)
+                children[#children+1] = LBTree:new(LBTypes.lua, c)
                 currentCapture = ""
             elseif c == closeCharacter then
                 -- close )
@@ -160,9 +232,9 @@ LifeBoatAPI.Tools.LuaParser = {
                 
                 if brackets == 0 then
                     if #currentCapture > 0 then
-                        children[#children+1] = this.parse(currentCapture, "param")
+                        children[#children+1] = this.parse(currentCapture, LBTypes.param)
                     end
-                    children[#children+1] = LBTree:new("lua", closeCharacter)
+                    children[#children+1] = LBTree:new(LBTypes.lua, closeCharacter)
                     break;
                 else
                     currentCapture = currentCapture .. c
@@ -171,7 +243,7 @@ LifeBoatAPI.Tools.LuaParser = {
                 -- open (
                 brackets = brackets + 1
                 if brackets == 1 then
-                    children[#children+1] = LBTree:new("lua", openCharacter)
+                    children[#children+1] = LBTree:new(LBTypes.lua, openCharacter)
                 else
                     currentCapture = currentCapture .. c
                 end
@@ -185,30 +257,211 @@ LifeBoatAPI.Tools.LuaParser = {
         end
     
         -- quick-access list, not modifyable
-        local tree = LifeBoatAPI.Tools.LuaTree:new("brackets", "", children)
+        local tree = LifeBoatAPI.Tools.LuaTree:new(tag or LBTypes.brackets, nil, children)
 
 
         return endIndex+1, tree
     end;
 
+
+
     _newTag = function(tagtext)
         local LBStr = LifeBoatAPI.Tools.StringUtils
         local this = LifeBoatAPI.Tools.LuaParser
         local LBTree = LifeBoatAPI.Tools.LuaTree
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
+
+        local tag = LBTree:new(LBTypes.tag)
 
         local contentIndex, startText = LBStr.getTextUntil(tagtext, 1, "%(")
+        tag.startText = startText
 
-        local endIndex, bracketParse = this._parseBrackets(tagtext, contentIndex, "(", ")", ",")
-        bracketParse.type = "tag"
-        bracketParse.raw = startText
-        bracketParse.tag = bracketParse:child("param"):child("identifier").raw
-
+        local endIndex, bracketParse = this._parseBrackets(LBTypes.tag, tagtext, contentIndex, "(", ")", ",")
         local trailingText = tagtext:sub(endIndex)
         if #trailingText > 0 then
-            bracketParse[#bracketParse + 1] = LBTree:new("lua", trailingText)
+            bracketParse[#bracketParse + 1] = LBTree:new(LBTypes.lua, trailingText)
         end
 
-        return bracketParse
+        tag.brackets = bracketParse
+        tag.outputRaw = true
+        tag.toString = function(this)
+            local result = {}
+
+            if this.outputRaw then
+                result[#result+1] = this.startText
+                result[#result+1] = this.brackets:toString()    
+            end
+
+            for i=1,#this do
+                result[#result+1] = this[i]:toString()
+            end
+
+            if this.outputRaw and this.endTag then
+                result[#result+1] = this.endTag:toString()   
+            end
+
+            return table.concat(result)
+        end
+
+        return tag
+    end;
+    
+    _keywords = {
+        ["and"]     = 1 ,["break"] = 1 ,["do"]       = 1 ,["else"]  = 1 ,["elseif"] = 1
+        ,["end"]    = 1 ,["for"]   = 1 ,["function"] = 1 ,["goto"]  = 1 ,["if"]     = 1
+        ,["in"]     = 1 ,["local"] = 1 ,["not"]      = 1 ,["or"]    = 1 ,["repeat"] = 1
+        ,["return"] = 1 ,["then"]  = 1 ,["until"]    = 1 ,["while"] = 1
+    };
+
+    _isKeyword = function(text)
+        return LifeBoatAPI.Tools.LuaParser._keywords[text]
+    end;
+
+    _typeconstants = {
+        ["nil"] = 1, ["true"] = 1, ["false"] = 1
+    };
+
+    _isTypeConstant = function(text)
+        return LifeBoatAPI.Tools.LuaParser._typeconstants[text]
+    end;
+
+    ---@param tree LuaTree
+    groupIdentifiers = function(tree)
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
+
+        local i = 0
+        while i < #tree do
+            i = i + 1
+            local node = tree[i]
+            
+            -- go through all nodes that are identifiers,
+            -- chain all subsequent identifiers together (all identifiers become identifier-chain -> child identifiers + accessors)
+            if node.type == LBTypes.identifier then
+                local newNode = LifeBoatAPI.Tools.LuaTree:new(LBTypes.identifierchain)
+                newNode.identifierFull = node.raw
+                newNode.identifierBase = node.raw
+                newNode[#newNode+1] = node
+
+                local lastChainIndex = i
+                local queuedNodes = {} -- nodes that could be in the chain, if a closer (e.g. identifier/accessor/etc.) is found. Normally whitespace
+                local j = i
+                while j < #tree do
+                    j=j+1
+                    local chained = tree[j]
+                    if chained.type == LBTypes.identifier or chained.type == LBTypes.accessor then
+                        -- identifiers and separators combine to the shortened name, e.g. a.b.c.d
+                        for queuedIndex=1,#queuedNodes do
+                            newNode[#newNode+1] = queuedNodes[queuedIndex]
+                        end
+                        queuedNodes = {}
+                        newNode.identifierFull = newNode.identifierFull .. chained.raw
+                        newNode[#newNode+1] = chained
+                        lastChainIndex = j
+
+                    elseif chained.type == LBTypes.whitespace then
+                        -- whitespace ignored but kept
+                        queuedNodes[#queuedNodes+1] = chained
+
+                    else
+                        -- end of "stuff that can go into an identifier chain"
+                        break;
+                    end
+                end
+
+                -- replace the parts of the tree we're grouping
+                -- i+1 should now be the next node we've not checked
+                tree[i] = newNode
+                for removalIndex=lastChainIndex,i+1,-1 do
+                    table.remove(tree, removalIndex)
+                end
+            elseif node.type ~= LBTypes.identifierchain then
+                LifeBoatAPI.Tools.LuaParser.groupIdentifiers(node);
+            end
+        end
+        return tree
+    end;
+
+    ---@param tree LuaTree
+    _groupPotentialMacroCalls = function(tree)
+        -- we only really want this, for handling macro expansion
+        -- so we only care about plain identifier.chain(a,b,c) and not e.g. ident.chain.abc[123](a,b,c)(d,e,f) as is of course possible
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
+
+        local lastKeywordWasFunction = false
+        local i = 0
+        while i < #tree do
+            i = i + 1
+            local node = tree[i]
+            
+            -- check that we're not picking up a function definition instead (function abc.def(a,b,c) ... end)
+            if node.type == LBTypes.keyword and node.raw == "function" then
+                lastKeywordWasFunction = true
+            elseif node.type ~= LBTypes.whitespace
+                    and node.type ~= LBTypes.identifierchain
+                    and node.type ~= LBTypes.identifier then
+                lastKeywordWasFunction = false
+            end
+
+            -- go through all nodes that are identifiers,
+            -- chain all subsequent identifiers together (all identifiers become identifier-chain -> child identifiers + accessors)
+            if node.type == LBTypes.identifierchain and not lastKeywordWasFunction then
+                local newNode = LifeBoatAPI.Tools.LuaTree:new(LBTypes.possibleMacroCall)
+                newNode.identifier = node
+
+                newNode.toString = function(this)
+                    local result = {
+                        this.identifier:toString()
+                    }
+                    for a=1,#this do
+                        result[#result+1] = this[a]:toString()
+                    end
+                    result[#result+1] = this.brackets:toString()
+                    return table.concat(result)
+                end
+
+                local lastChainIndex = nil
+
+                if tree[i+1] and tree[i+1].type == LBTypes.brackets then
+                    newNode.brackets = tree[i+1]
+                    lastChainIndex=i+1
+                elseif tree[i+2] and tree[i+1].type == LBTypes.whitespace and tree[i+2].type == LBTypes.brackets then
+                    newNode[#newNode+1] = tree[i+1]
+                    newNode.brackets = tree[i+2]
+                    lastChainIndex=i+2
+                end
+
+                -- replace the parts of the tree we're grouping
+                -- i+1 should now be the next node we've not checked
+                if lastChainIndex then
+                    tree[i] = newNode
+                    for removalIndex=lastChainIndex,i+1,-1 do
+                        table.remove(tree, removalIndex)
+                    end
+                end
+            elseif node.type ~= LBTypes.possibleMacroCall then
+                LifeBoatAPI.Tools.LuaParser._groupPotentialMacroCalls(node);
+            end
+        end
+        return tree
+    end;
+
+    ---@param tree LuaTree
+    ---@return LuaTree
+    collapseLuaNodes = function(tree)
+        local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
+
+        local lastContent = {type="none"}
+        for i=#tree,1,-1 do -- reverse for deletion
+            local content = tree[i]
+            if content.type == LBTypes.lua and lastContent.type == LBTypes.lua then
+                content.raw = content.raw .. lastContent.raw
+                table.remove(tree, i+1)
+            else
+                LifeBoatAPI.Tools.LuaParser.collapseLuaNodes(content)
+            end
+            lastContent = content
+        end
+        return tree
     end;
 }
 
@@ -246,11 +499,11 @@ LifeBoatAPI.Tools.LuaTree = {
             if this[i].type == typeName then
                 found = found + 1
                 if found == index then
-                    return this[i]
+                    return this[i], i
                 end
             end
         end
-        return nil
+        return nil, nil
     end; 
 
 
@@ -298,16 +551,9 @@ LifeBoatAPI.Tools.LuaTree = {
     ---@param this LuaTree
     ---@return string
     toString = function(this)
-        local result = {}
+        local result = {this.raw}
         for i=1,#this do
-            local content = this[i]
-            result[#result+1] = content.raw
-            if #content then
-                result[#result+1] = content:toString()
-                if content.type == "tag" and content.endTag then
-                    result[#result+1] = content.endTag.raw
-                end
-            end
+            result[#result+1] = this[i]:toString()
         end
         return table.concat(result)
     end;
@@ -350,154 +596,15 @@ LifeBoatAPI.Tools.LuaTree = {
 
 
 
+-- probably want to extend this for each type of thing, e.g. tag/function call
+-- we need function-calls to be separate, so we can find them for macro use
 
-
-
-
-
-
-
-LifeBoatAPI.Tools.LuaTreeUtils = {
-    ---@param tree LuaTree
-    ---@param applyToType string
-    ---@param replacementGenerator fun(tree:LuaTree, i:number, content:LuaTree) : LuaTree[]
-    replaceWhere = function(tree, applyToType, replacementGenerator, avoidCopy)
-
-        if not avoidCopy then
-            tree = tree:deepCopy()
-        end
-
-        local replacements = {}
-        tree:forEach(applyToType, function(tree, i, content)
-                local replacement = replacementGenerator(tree, i, content)
-                if replacement then
-                    replacements[#replacements+1] = {i=i, r=replacement}
-                end
-            end)
-        
-        for i=1, #replacements do
-            tree:replace(replacements[i].i, replacements[i].r)
-        end
-
-        tree:forEach(applyToType, function(tree, i, content)
-                LifeBoatAPI.Tools.LuaTreeUtils.replaceWhere(content, applyToType, replacementGenerator, true)
-            end)
-
-        return tree
-    end;
-
-    ---@return LuaTree
-    splitFunc = function(searchFunc)
-        local LBTree = LifeBoatAPI.Tools.LuaTree
-        return function(t, i, c)
-                local contentReplacements = {}
-                local foundTrees = searchFunc(t, i, c)
-                local lastEnd = 1
-                for varIndex=1, #foundTrees do
-                    local newTree = foundTrees[varIndex]
-    
-                    -- handle the text between each variable
-                    local startText = c.raw:sub(lastEnd, newTree.startIndex-1)
-                    if #startText > 0 then
-                        contentReplacements[#contentReplacements+1] = LBTree:new(c.type, startText)
-                    end
-    
-                    local varText = c.raw:sub(newTree.startIndex, newTree.endIndex)
-                    contentReplacements[#contentReplacements+1] = newTree
-                    lastEnd = newTree.endIndex + 1
-                end
-    
-                -- any remaining non-variable text on the end
-                local endText = c.raw:sub(lastEnd, -1)
-                if #endText > 0 then
-                    contentReplacements[#contentReplacements+1] = LBTree:new(c.type, endText)
-                end
-
-                return contentReplacements
-        end
-    end;
-
-    ---@param tree LuaTree
-    ---@return LuaTree
-    split = function(tree, applyToType, applyTo, searchFunc, avoidCopy)
-        offset = offset or 0
-        
-        if not avoidCopy then
-            tree = tree:deepCopy()
-        end
-
-        applyToType = applyToType or "lua"
-        newType = newType or "split"
-
-        local this = LifeBoatAPI.Tools.LuaTreeUtils
-        local LBTree = LifeBoatAPI.Tools.LuaTree
-        local replacements = {}
-        for i=1,#tree do
-            local content = tree[i]
-            if content.type == applyToType then
-                local contentReplacements = {}
-                local variables = searchFunc(tree, i, content)
-                local lastEnd = 1
-                for varIndex=1, #variables do
-                    local var = variables[varIndex]
-    
-                    -- handle the text between each variable
-                    local startText = content.raw:sub(lastEnd, var.startIndex-1)
-                    if #startText > 0 then
-                        contentReplacements[#contentReplacements+1] = LBTree:new(applyToType, startText)
-                    end
-    
-                    local varText = content.raw:sub(var.startIndex, var.endIndex)
-                    contentReplacements[#contentReplacements+1] = LBTree:new(varText, {captures=var.captures})
-                    lastEnd = var.endIndex + 1
-                end
-    
-                -- any remaining non-variable text on the end
-                local endText = content.raw:sub(lastEnd, -1)
-                if #endText > 0 then
-                    contentReplacements[#contentReplacements+1] = LBTree:new(applyToType, endText)
-                end
-    
-                replacements[#replacements+1] = {i=i, replacements = contentReplacements}
-            else
-                this.split(content, applyToType, searchFunc)
-            end
-        end
-    
-        -- replace the content with the split versions
-        for i=#replacements,1,-1 do
-            tree:replace(replacements[i].i, replacements[i].replacements)
-        end
-    
-        return tree
-    end;
-
-    ---@param tree LuaTree
-    ---@return LuaTree
-    collapseLuaNodes = function(tree, avoidCopy)
-        if not avoidCopy then
-            tree = tree:deepCopy()
-        end
-
-        local lastContent = {type="none"}
-        for i=#tree,1,-1 do -- reverse for deletion
-            local content = tree[i]
-            if content.type == "lua" and lastContent.type == "lua" then
-                content.raw = content.raw .. lastContent.raw
-                table.remove(tree, i+1)
-            else
-                content:combineConsecutiveLuaNodes()
-            end
-            lastContent = content
-        end
-        return tree
-    end;
-}
-
-
-
-
-
+-- otherwise we don't really care too much I don't think?
+-- the rest are all pretty well just raw text, so nothing special there
+-- it's just grouping function calls we want
+-- and tags
+-- tags behave a little differently, because we may want to simply remove the tag part, but leave the rest
+-- and want that to be done easily
 
 
 ---@param this LuaTree_MinifyStringDuplicates
@@ -578,76 +685,11 @@ end;
 
 
 
-
-simplePatternGenerator = function(newType, pattern, startOffset, endOffset)
-    return function(t, i, c)
-        local result = {}
-        local v = LifeBoatAPI.Tools.StringUtils.find(c.raw, pattern, 1, startOffset, endOffset)
-        for i=1, #v do
-            result[#result+1] = LifeBoatAPI.Tools.LuaTree:new(newType, c.raw:sub(v[i].startIndex, v[i].endIndex), v[i])
-        end
-        return result
-    end
-end;
-
-
--- GlobalVariableReducer x
--- HexadecimalConverter x
--- NumberLiteralReducer x
--- StringCommentsParser?
--- StringReplace?
-
-
---[[ shortening identifiers safely
-and not this.constants.baseNames[v.captures[1] ]
-and not this.constants.fullNames[v.captures[1] ]
-and not this.constants.restrictedKeywords[v.captures[1] ] end)
-
-]]
-
---[[
-    ---@param this GlobalVariableReducer
-    shortenGlobals = function(this, text)
-        text = this:_shorten(text, "[^%w_]([%a_][%w_%.]-)[^%w_%.]", this.constants.fullNames)
-        text = "\n" .. text -- ensure newly added variables work
-        text = this:_shorten(text, "[^%w_]([%a_][%w_]-)[^%w_]", this.constants.baseNames)
-        return text
-    end;
-
-    ---@param this GlobalVariableReducer
-    _shorten = function(this, text, pattern, acceptableList)
-        -- variables shortened are not keywords, and not global names (because those are a pita)
-        local variables = LifeBoatAPI.Tools.StringUtils.find(text, pattern)
-
-        -- filter down to ONLY the externalGlobals list
-        variables = LifeBoatAPI.Tools.TableUtils.iwhere(variables, function(v) return v.captures[1]
-                                                                and not v.captures[1]:find("STRING%d%d%d%d%d%d%dREPLACEMENT")
-                                                                and acceptableList[v.captures[1] ]
-                                                                and not this.constants.restrictedKeywords[v.captures[1] ] end)
-                                                                -- only change globals where they're used at least twice, or it's a cost
-]]
-
---[[
-
-    ---@param this HexadecimalConverter
-    fixHexademicals = function(this, text)
-        local stringUtils = LifeBoatAPI.Tools.StringUtils;
-
-        -- variables shortened are not keywords, and not global names (because those are a pita)
-        local hexValues = stringUtils.find(text, "[^%w_](0x%x+)")
-        for i=1, #hexValues do
-            local hexVal = hexValues[i]
-            local hexAsNum = tonumber(hexVal.captures[1])
-    
-            text = stringUtils.subAll(text, "([^%w_])" .. stringUtils.escape(hexVal.captures[1]), "%1" .. tostring(hexAsNum))
-        end
-    
-        return text
-    end;
-]]
-
 text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\Sandbox\testst\MyMicrocontroller.lua]]))
 
 local contentTree = LifeBoatAPI.Tools.LuaParser.parse(text)
+LifeBoatAPI.Tools.FileSystemUtils.writeAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\Sandbox\testst\generated1.lua]]), contentTree:toString())
 
 local a = 1
+
+__simulator:exit()
