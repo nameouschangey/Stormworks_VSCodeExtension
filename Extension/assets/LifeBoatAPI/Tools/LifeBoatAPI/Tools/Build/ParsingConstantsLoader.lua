@@ -7,9 +7,6 @@
 require("LifeBoatAPI.Tools.Utils.Base")
 require("LifeBoatAPI.Tools.Utils.TableUtils")
 
-a.next.b = 123
-
-
 ---@class ParsingConstantsLoader : BaseClass
 ---@field restrictedKeywords table<string,boolean>
 ---@field baseNames table<string,boolean>

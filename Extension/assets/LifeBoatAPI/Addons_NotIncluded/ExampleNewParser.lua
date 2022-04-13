@@ -1,3 +1,7 @@
+LifeBoatAPI = LifeBoatAPI or {}
+LifeBoatAPI.Tools = LifeBoatAPI.Tools or {}
+
+---@class LuaParseTypes
 LifeBoatAPI.Tools.LuaParseTypes = {
     lua = "lua",
     string = "string",
@@ -18,12 +22,15 @@ LifeBoatAPI.Tools.LuaParseTypes = {
     typeconstant = "typeconstant",
     param = "param",
     tag = "tag",
-    identifierchain = "identifierchain"
+    identifierchain = "identifierchain",
+    comparison = "comparison"
 }
 
 
+---@class LuaParser
 LifeBoatAPI.Tools.LuaParser = {
     parse = function(text, tag)
+        
         local this = LifeBoatAPI.Tools.LuaParser
         local LBStr = LifeBoatAPI.Tools.StringUtils
         local LBTree = LifeBoatAPI.Tools.LuaTree
@@ -33,6 +40,7 @@ LifeBoatAPI.Tools.LuaParser = {
         local nextText = ""
         local i = 1
 
+        --lex
         while i <= #text do
             if LBStr.nextSectionIs(text, i, "\\") then
                 i, nextText = i+1, text:sub(i,i+1)
@@ -52,7 +60,7 @@ LifeBoatAPI.Tools.LuaParser = {
 
             elseif LBStr.nextSectionIs(text, i, "%[%[") then
                 -- quote ([[ ]])
-                i, nextText = this:getTextIncluding(text, i, "%]%]")
+                i, nextText = LBStr.getTextIncluding(text, i, "%]%]")
                 content[#content+1] = LBTree:new(LBTypes.string, nextText, {stringContent = nextText:sub(3,-3)})       
 
             elseif LBStr.nextSectionIs(text, i, "%-%-%-@lb") then
@@ -150,10 +158,10 @@ LifeBoatAPI.Tools.LuaParser = {
             end
         end
 
+        -- parse
         local tree = content
-        this.collapseLuaNodes(tree)
-        this.groupIdentifiers(tree)
-        tree = this._buildTagTree(content, tag or "program")
+        this._groupIdentifiers(tree)
+        tree = this._buildTagTree(tree, tag or "program")
         this._groupPotentialMacroCalls(tree)
 
         return tree
@@ -263,8 +271,6 @@ LifeBoatAPI.Tools.LuaParser = {
         return endIndex+1, tree
     end;
 
-
-
     _newTag = function(tagtext)
         local LBStr = LifeBoatAPI.Tools.StringUtils
         local this = LifeBoatAPI.Tools.LuaParser
@@ -326,7 +332,7 @@ LifeBoatAPI.Tools.LuaParser = {
     end;
 
     ---@param tree LuaTree
-    groupIdentifiers = function(tree)
+    _groupIdentifiers = function(tree)
         local LBTypes = LifeBoatAPI.Tools.LuaParseTypes
 
         local i = 0
@@ -375,7 +381,7 @@ LifeBoatAPI.Tools.LuaParser = {
                     table.remove(tree, removalIndex)
                 end
             elseif node.type ~= LBTypes.identifierchain then
-                LifeBoatAPI.Tools.LuaParser.groupIdentifiers(node);
+                LifeBoatAPI.Tools.LuaParser._groupIdentifiers(node);
             end
         end
         return tree
@@ -469,19 +475,22 @@ LifeBoatAPI.Tools.LuaParser = {
 ---@class LuaTree
 ---@field type string
 ---@field raw string
+---@field parent any (optional)
 LifeBoatAPI.Tools.LuaTree = {
+
+    ---@param this LuaTree
     ---@return LuaTree
     new = function(this, type, raw, other)
         this = LifeBoatAPI.Tools.BaseClass.new(this)
         this.type = type
         this.raw = raw
-        this.filter = this.deepCopy;
         for k,v in pairs(other or {}) do
             this[k] = v
         end
         return this
     end;
     
+    ---@param this LuaTree
     children = function (this, typeName)
         local children = {}
         for i=1,#this do
@@ -492,6 +501,7 @@ LifeBoatAPI.Tools.LuaTree = {
         return children
     end;
 
+    ---@param this LuaTree
     child = function (this, typeName, index)
         index = index or 1
         local found = 0
@@ -505,7 +515,6 @@ LifeBoatAPI.Tools.LuaTree = {
         end
         return nil, nil
     end; 
-
 
     ---@param this LuaTree
     ---@param applyToType string
@@ -536,7 +545,7 @@ LifeBoatAPI.Tools.LuaTree = {
     ---@param shouldCopyPredicate fun(tree:LuaTree, i:number, content:LuaTree) : boolean
     ---@return LuaTree
     deepCopy = function(this, shouldCopyPredicate)
-        local result = this:shallowCopy(this)
+        local result = LifeBoatAPI.Tools.LuaTree:shallowCopy(this)
         result = {}
     
         for i=1,#this do
@@ -596,25 +605,15 @@ LifeBoatAPI.Tools.LuaTree = {
 
 
 
--- probably want to extend this for each type of thing, e.g. tag/function call
--- we need function-calls to be separate, so we can find them for macro use
 
--- otherwise we don't really care too much I don't think?
--- the rest are all pretty well just raw text, so nothing special there
--- it's just grouping function calls we want
--- and tags
--- tags behave a little differently, because we may want to simply remove the tag part, but leave the rest
--- and want that to be done easily
+
 
 
 ---@param this LuaTree_MinifyStringDuplicates
 ---@param variableNamer VariableRenamer
 ---@param tree LuaTree
 ---@return LuaTree
-removeStringDuplicates = function(this, variableNamer, tree, avoidCopy)
-    if not avoidCopy then
-        tree = tree:deepCopy()
-    end
+removeStringDuplicates = function(this, variableNamer, tree)
 
     local stringsFound = {}
     tree:forEach("string",
@@ -645,11 +644,7 @@ end;
 
 ---@param tree LuaTree
 ---@param variableRenamer VariableRenamer
-minifyIdentifiers = function(this, variableRenamer, tree, avoidCopy)
-    if not avoidCopy then
-        tree = tree:deepCopy()
-    end
-
+minifyIdentifiers = function(this, variableRenamer, tree)
     LifeBoatAPI.Tools.LuaTreeUtils.split(tree, "[^%w_]([%a_][%w_]*)", "lua", "identifier", true)
 
     local identifiersSeen = {}
@@ -666,11 +661,7 @@ end;
 
 ---@param tree LuaTree
 ---@param variableRenamer VariableRenamer
-covertHexToNumber = function(this, variableRenamer, tree, avoidCopy)
-    if not avoidCopy then
-        tree = tree:deepCopy()
-    end
-
+covertHexToNumber = function(this, variableRenamer, tree)
     LifeBoatAPI.Tools.LuaTreeUtils.split(tree, "[^%w_](0x%x+)", "lua", "hex", true)
     
     tree:forEach("hex",
