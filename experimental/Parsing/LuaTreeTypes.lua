@@ -96,7 +96,7 @@ LifeBoatAPI.Tools.LuaTree_Brackets = {
         local LBTree = LifeBoatAPI.Tools.LuaTree
         local LBParse = LifeBoatAPI.Tools.LuaParser
 
-        separators = (type(separators) == LBTypes.table and separators) or {separators}
+        separators = (type(separators) == "table" and separators) or {separators}
         local isSeparator = function(c)
             for i=1,#separators do
                 if c == separators[i] then

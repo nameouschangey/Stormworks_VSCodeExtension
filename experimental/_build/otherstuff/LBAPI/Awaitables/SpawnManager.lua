@@ -1,9 +1,0 @@
-
-
-AwaitSpawnVehicle = {
-    new = function()
-        
-    end;
-
-
-}

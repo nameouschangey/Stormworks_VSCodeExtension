@@ -2,6 +2,10 @@ require("Parsing.LuaTree")
 require("Parsing.LuaTreeTypes")
 
 
+-- this just feels like such a mess of rules
+-- and not really anything study
+-- we're already finding we can't handle certain grammar because it's too much pain
+-- but what do we do when we really need to
 
 ---@class LuaParser
 LifeBoatAPI.Tools.LuaParser = {
@@ -54,6 +58,10 @@ LifeBoatAPI.Tools.LuaParser = {
                 i, nextText = LBStr.getTextUntil(text, i, "\n")
                 content[#content+1] = LBTree:new(LBTypes.comment, nextText)
 
+            elseif LBStr.nextSectionIs(text, i, ',') then
+                -- this is getting more and more complex
+                -- and yet, the benefits are less and less apparent
+
             elseif LBStr.nextSectionIs(text, i, "%(") then
                 -- regular brackets
                 i, content[#content+1] = LifeBoatAPI.Tools.LuaTree_Brackets:new(text, i, "(", ")", ",")
@@ -65,7 +73,7 @@ LifeBoatAPI.Tools.LuaParser = {
 
             elseif LBStr.nextSectionIs(text, i, "%{") then 
                 -- table
-                i, content[#content+1] = LifeBoatAPI.Tools.LuaTree_Brackets:new(text, i, "{", "}", {",",";"})
+                i, content[#content+1] = LifeBoatAPI.Tools.LuaTree_Brackets:new(text, i, "{", "}", nil)
                 content[#content].type = LBTypes.table
 
             elseif LBStr.nextSectionIs(text, i, "%.%.%.") then
@@ -97,7 +105,12 @@ LifeBoatAPI.Tools.LuaParser = {
                 -- keywords & identifier
                 i, nextText = LBStr.getTextIncluding(text, i, "[%a_][%w_]*")
                 if this._isKeyword(nextText) then
-                    content[#content+1] = LBTree:new(LBTypes.keyword, nextText) 
+                    if nextText == "function" then
+                        content[#content+1] = LBTree:new(LBTypes.keyword, nextText)
+                    else
+                        content[#content+1] = LBTree:new(LBTypes.keyword, nextText) 
+                    end
+                    
                 elseif this._isTypeConstant(nextText) then
                     content[#content+1] = LBTree:new(LBTypes.typeconstant, nextText) 
                 else
