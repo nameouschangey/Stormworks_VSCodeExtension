@@ -1,0 +1,1 @@
+---@lb(macro)f=1abc={}fff=function(a)endabc.def(1,2,3,fff("test"))---@lb(end)a={def=function(this,a)returnaend;ghi=function(this,b)returnbend}
