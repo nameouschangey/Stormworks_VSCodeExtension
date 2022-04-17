@@ -41,10 +41,11 @@ LBTokenTypes = {
     COMMA           = "COMMA",
     SEMICOLON       = "SEMICOLON",
     COMPARISON      = "COMPARISON",
-    CONCAT          = "CONCAT",
-    ASSIGNMENT      = "ASSIGNMENT",
+    BINARY_OP       = "BINARY_OP",
+    MIXED_OP        = "MIXED_OP",
+    UNARY_OP        = "UNARY_OP",
+    ASSIGN          = "ASSIGN",
     ACCESSOR        = "ACCESSOR",
-    MATHOP          = "MATHOP",
     IDENTIFIER      = "IDENTIFIER",
     TYPECONSTANT    = "TYPECONSTANT",
     NUMBER          = "NUMBER",
@@ -76,25 +77,9 @@ LBTokenTypes = {
     SOF = "SOF",
     EOF = "EOF"}
 
-LBSymbolTypes = {
-    TOKEN               = true,
-    STRING              = true,
-    FUNCTIONDEF         = true,
-    FUNCTIONCALL        = true,
-    TABLEDEF            = true,
-    IDENTIFIER_CHAIN    = true,
-    LBTAG               = true,
-    WHILE_LOOP          = true,
-    FOR_LOOP            = true,
-    DO_END              = true,
-    REPEAT_UNTIL        = true,
-    SQUARE_BRACKETS     = true,
-    PARAMLIST           = true,
-    PARAM               = true
-    }
-
 local T = LBTokenTypes
-local S = LBSymbolTypes
+
+
 
 tokenizekeyword = function(keyword)
     if keyword == keyword:lower() then  -- ensure keyword is lowercase
@@ -185,26 +170,16 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.CLOSECURLY, nextToken)
 
-
-        elseif LBStr.nextSectionIs(text, iText, "//") then
-            -- floor (one math op not two)
-            iText, nextToken = iText+1, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.MATHOP, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "[%*/%+%-%%]") then
-            -- all other math ops
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.MATHOP, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "%.%.%.") then
-            -- varargs
-            iText, nextToken = iText+3, text:sub(iText, iText+2)
-            tokens[#tokens+1] = LBSymbol:new(T.VARARGS, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "%.%.") then
-            -- concat
+        elseif LBStr.nextSectionIs(text, iText, ">>") then
+            -- comparison
             iText, nextToken = iText+2, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.CONCAT, nextToken)
+            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+
+        elseif LBStr.nextSectionIs(text, iText, "<<") then
+            -- comparison
+            iText, nextToken = iText+2, text:sub(iText, iText+1)
+            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+
 
         elseif LBStr.nextSectionIs(text, iText, "[><=~]=") then
             -- comparison
@@ -216,10 +191,43 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
 
+        elseif LBStr.nextSectionIs(text, iText, "//") then
+            -- floor (one math op not two)
+            iText, nextToken = iText+1, text:sub(iText, iText+1)
+            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+
+        elseif LBStr.nextSectionIs(text, iText, "#") then
+            -- all other math ops
+            iText, nextToken = iText+1, text:sub(iText, iText)
+            tokens[#tokens+1] = LBSymbol:new(T.UNARY_OP, nextToken)
+        
+        elseif LBStr.nextSectionIs(text, iText, "~%-") then
+            -- all other math ops
+            iText, nextToken = iText+1, text:sub(iText, iText)
+            tokens[#tokens+1] = LBSymbol:new(T.MIXED_OP, nextToken)
+
+        elseif LBStr.nextSectionIs(text, iText, "[%*/%+%%%^&|]") then
+            -- all other math ops
+            iText, nextToken = iText+1, text:sub(iText, iText)
+            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+            b = !1 + !asd
+
+        elseif LBStr.nextSectionIs(text, iText, "%.%.%.") then
+            -- varargs
+            iText, nextToken = iText+3, text:sub(iText, iText+2)
+            tokens[#tokens+1] = LBSymbol:new(T.VARARGS, nextToken)
+
+        elseif LBStr.nextSectionIs(text, iText, "%.%.") then
+            -- concat
+            iText, nextToken = iText+2, text:sub(iText, iText+1)
+            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+
+
+
         elseif LBStr.nextSectionIs(text, iText, "=") then
             -- assignment
             iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.ASSIGNMENT, nextToken)
+            tokens[#tokens+1] = LBSymbol:new(T.ASSIGN, nextToken)
 
         elseif LBStr.nextSectionIs(text, iText, "[%a_][%w_]*") then
             -- keywords & identifier
@@ -368,6 +376,7 @@ Parse = {
     tryConsume = function(this, ...)
         if is(this.tokens[this.i].type, ...) then
             this.symbol[#this.symbol+1] = this.tokens[this.i]
+            this.i = this.i + 1
             return true
         else
             return false
@@ -394,6 +403,30 @@ Parse = {
     end;
 }
 
+
+LBSymbolTypes = {
+    TOKEN               = "TOKEN",
+    STRING              = "STRING",
+    FUNCTIONDEF         = "FUNCTIONDEF",
+    FUNCTIONCALL        = "FUNCTIONCALL",
+    TABLEDEF            = "TABLEDEF",
+    IDENTIFIER_CHAIN    = "IDENTIFIER_CHAIN",
+    LBTAG               = "LBTAG",
+    WHILE_LOOP          = "WHILE_LOOP",
+    FOR_LOOP            = "FOR_LOOP",
+    DO_END              = "DO_END",
+    REPEAT_UNTIL        = "REPEAT_UNTIL",
+    SQUARE_BRACKETS     = "SQUARE_BRACKETS",
+    PARAMLIST           = "PARAMLIST",
+    PARAM               = "PARAM",
+    IF_STATEMENT        = "IF_STATEMENT",
+    ASSIGNMENT          = "ASSIGNMENT",
+    PROGRAM             = "PROGRAM",
+    PARENTHESIS         = "PARENTHESIS",
+    EXPCHAIN            = "EXPCHAIN",
+    OPERATORCHAIN           = "BINARYEXP"
+    }
+local S = LBSymbolTypes
 
 
 ---@param parse Parse
@@ -455,64 +488,81 @@ end;
 
 ---@param parse Parse
 AccessChain = function(parse)
-    return (parse:tryConsume(T.ACCESSOR) and parse:tryConsume(T.IDENTIFIER))
-             or parse:tryConsume(SquareBracketsIndex)
+    parse = parse:branch(S.ACCESSCHAIN)
+    if (parse:tryConsume(T.ACCESSOR) and parse:tryConsume(T.IDENTIFIER)) or parse:tryConsume(SquareBracketsIndex) then
+        return parse:commit()
+    end
+end;
+
+
+
+
+
+TableDef = function(parse)
+    parse = parse:branch(S.TABLEDEF)
+
+    if parse:tryConsume(T.OPENCURLY) then
+        
+        while parse:tryConsumeRules(TableValueInitialization) do end
+        
+        if parse:tryConsume(T.CLOSECURLY) then
+            return parse:commit()
+        end
+    end
+end;
+
+FunctionParenthesis = function(parse)
+end;
+
+---@param parse Parse
+AnonymousFunctionDef = function(parse)
+    parse = parse:branch(S.FUNCTIONDEF)
+
+    if parse:tryConsume(T.FUNCTION) 
+    and parse:tryConsumeRules(FunctionParenthesis) then
+
+        parse.isFunctionScope = true;
+        while parse:consumeRules(Statement) do end
+
+        if parse:tryConsume(T.END) then
+            return parse:commit()
+        end
+    end
 end;
 
 ---@param parse Parse
 BinaryExpression = function(parse)
-    return parse:tryConsumeRules(SingleExpression)
-        and parse:tryConsume(T.AND, T.OR, T.CONCAT, T.MATHOP)
-        and parse:tryConsume(Expression)
+    parse = parse:branch(S.OPERATORCHAIN)
+    if parse:tryConsumeRules(SingleExpression)
+        and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP, T.COMPARISON)
+        and parse:tryConsumeRules(Expression) then
+
+        return parse:commit()
+    end
 end;
 
 ---@param parse Parse
 ExpressionChainedOperator = function(parse)
     -- a = (1+2)()()[1].123 param,func,func,accesschain,accesschain
     -- singleExpressions can chain into infinite function calls, etc.
-
+    parse = parse:branch(S.EXPCHAIN)
     if parse:tryConsume(T.IDENTIFIER) or parse:tryConsumeRules(ParenthesisExpression) then
-        while parse:tryConsumeRules(AccessChain,
-                                    FunctionCall) do end
-            return true;
+
+        while parse:tryConsumeRules(AccessChain, FunctionCall) do end
+
+        return parse:commit();
     end
 end
 
-TableDef = function()
-    parse = parse:branch(S.TABLEDEF)
-
-    if parse:tryConsume(T.OPENCURLY)
-        and parse:tryConsumeRules(Expression)
-        and parse:tryConsume(T.CLOSECURLY) then
-
-        return parse:commit()
-    end
-end;
-
-AnonymousFunctionDef = function(parse)
-    parse = parse:branch(S.EXPRESSION)
-
-    -- clear any unary operators from the front
-    while parse:tryConsume(T.UNARY_OP) do end
-
-    if parse:tryConsumeRules(
-        ExpressionChainedOperator, -- (exp.index.index.index[index][index](func)(func)(func))
-        TableDef,
-        AnonymousFunctionDef) 
-        or parse:tryConsume(T.STRING, T.NUMBER, T.HEX, T.TRUE, T.FALSE, T.NIL)  -- hard-coded value
-        then
-        return parse:commit()
-    end
-end;
-
 SingleExpression = function(parse)
     -- single expression, not lined by binary, e.g. a string, an identifier-chain, etc.
-    parse = parse:branch(S.EXPRESSION)
+    parse = parse:branch()
 
     -- clear any unary operators from the front
-    while parse:tryConsume(T.UNARY_OP) do end
+    while parse:tryConsume(T.UNARY_OP, T.MIXED_OP) do end
 
     if parse:tryConsumeRules(
+        ParenthesisExpression,
         ExpressionChainedOperator, -- (exp.index.index.index[index][index](func)(func)(func))
         TableDef,
         AnonymousFunctionDef) 
@@ -527,13 +577,13 @@ Expression = function(parse)
     -- identifier.access
     -- expression mathop|concat expression chain
     -- parenthesis -> expression
-    parse = parse:branch(S.EXPRESSION)
+    parse = parse:branch()
 
     if parse:tryConsumeRules(
         BinaryExpression, -- (exp op exp) (infinite chain-> single_exp op (exp op exp)) etc.
         SingleExpression
     ) then
-        return true
+        return parse:commit()
     end
 end;
 
@@ -541,7 +591,7 @@ end;
 
 ---@param parse Parse
 IfStatement = function(parse)
-    parse = parse:branch(S.IFSTATEMENT)
+    parse = parse:branch(S.IF_STATEMENT)
     if parse:tryConsume(T.IF)
         and parse:tryConsumeRules(Expression)
         and parse:tryConsume(T.THEN) then
@@ -606,6 +656,8 @@ ParseProgram = function(tokens)
 
     while parse:consumeRules(Statement) do end
 
+    parse:tryConsume(T.EOF) -- optional end-of-file token for trailing whitespace
+
     return parse
 end;
 
@@ -620,16 +672,46 @@ toString = function(tokens)
     return table.concat(result)
 end;
 
+---@param tree LBSymbol
+simplify = function(tree)
+    local i = 1   
+    while i <= #tree do
+        local child = tree[i]
 
+        if not child.type or (tree.type == child.type) then
+            
+            if child[1] then
+                tree[i] = child[1]
+            end
+            for ichild=2, #child do
+                table.insert(tree, i+ichild-1, child[ichild])
+            end
+        else
+            simplify(tree[i])
+            i = i + 1
+        end 
+    end
+
+    return tree
+end;
 
 testParse = function(parseFunc, text)
     local tokens = tokenize(text)
     local parser = Parse:new("TEST", tokens, 1)
     local result = parseFunc(parser)
-    return result, parser.symbol
+    return parser.symbol
 end;
 
-testParse(SquareBracketsIndex,[[ [123] ]])
+local squareBrackets = testParse(IfStatement,[[
+
+    if (123 + 123 + 555 + 444) then
+    end
+
+]])
+
+local simplified = simplify(squareBrackets)
+
+local a = 1
 -- text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
 -- 
 -- local tokensList = tokenize(text)
@@ -643,4 +725,4 @@ testParse(SquareBracketsIndex,[[ [123] ]])
 -- 
 -- 
 -- 
--- __simulator:exit()
+ __simulator:exit()
