@@ -45,7 +45,8 @@ LBTokenTypes = {
     MIXED_OP        = "MIXED_OP",
     UNARY_OP        = "UNARY_OP",
     ASSIGN          = "ASSIGN",
-    ACCESSOR        = "ACCESSOR",
+    DOTACCESS       = "DOTACCESS",
+    COLONACCESS     = "COLONACCESS",
     IDENTIFIER      = "IDENTIFIER",
     TYPECONSTANT    = "TYPECONSTANT",
     NUMBER          = "NUMBER",
@@ -210,7 +211,6 @@ tokenize = function(text)
             -- all other math ops
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-            b = !1 + !asd
 
         elseif LBStr.nextSectionIs(text, iText, "%.%.%.") then
             -- varargs
@@ -254,10 +254,15 @@ tokenize = function(text)
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%x*%.?%x+")
             tokens[#tokens+1] = LBSymbol:new(T.NUMBER, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "[%.:]") then
+        elseif LBStr.nextSectionIs(text, iText, "%.") then
             -- chain access
             iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.ACCESSOR, nextToken)
+            tokens[#tokens+1] = LBSymbol:new(T.DOTACCESS, nextToken)
+
+        elseif LBStr.nextSectionIs(text, iText, "%:") then
+            -- chain access
+            iText, nextToken = iText+1, text:sub(iText, iText)
+            tokens[#tokens+1] = LBSymbol:new(T.COLONACCESS, nextToken)
 
         else
             error("unexpected text " .. nextToken .. " at " .. iText)
@@ -451,18 +456,16 @@ Statement = function(parse)
     -- Goto (bleh)
 end;
 
+
+
 ExpressionList = function(parse)
     -- a,b,c,d,e comma separated items
 end;
 
-
-
-
-
-
 FunctionCall = function(parse)
-    parse = parse:branch(S.FUNCTIONCALL)
 end;
+
+
 
 SquareBracketsIndex = function(parse)
     parse = parse:branch(S.SQUARE_BRACKETS)
@@ -487,15 +490,12 @@ ParenthesisExpression = function(parse)
 end;
 
 ---@param parse Parse
-AccessChain = function(parse)
-    parse = parse:branch(S.ACCESSCHAIN)
-    if (parse:tryConsume(T.ACCESSOR) and parse:tryConsume(T.IDENTIFIER)) or parse:tryConsume(SquareBracketsIndex) then
-        return parse:commit()
-    end
-end;
-
-
-
+--AccessChain = function(parse)
+--    parse = parse:branch(S.ACCESSCHAIN)
+--    if (parse:tryConsume(T.DOTACCESS) and parse:tryConsume(T.IDENTIFIER)) or parse:tryConsume(SquareBracketsIndex) then
+--        return parse:commit()
+--    end
+--end;
 
 
 TableDef = function(parse)
@@ -511,15 +511,13 @@ TableDef = function(parse)
     end
 end;
 
-FunctionParenthesis = function(parse)
-end;
 
 ---@param parse Parse
 AnonymousFunctionDef = function(parse)
     parse = parse:branch(S.FUNCTIONDEF)
 
     if parse:tryConsume(T.FUNCTION) 
-    and parse:tryConsumeRules(FunctionParenthesis) then
+    and parse:tryConsumeRules(FunctionDefParenthesis) then
 
         parse.isFunctionScope = true;
         while parse:consumeRules(Statement) do end
@@ -529,6 +527,26 @@ AnonymousFunctionDef = function(parse)
         end
     end
 end;
+
+FunctionDefParenthesis = function(parse)
+end;
+
+NamedFunctionDefinition = function(parse)
+    parse = parse:branch(S.FUNCTIONDEF)
+
+    if parse:tryConsume(T.FUNCTION) 
+    and parse:tryConsumeRules(IdentifierChain)
+    and parse:tryConsumeRules(FunctionDefParenthesis) then
+
+        parse.isFunctionScope = true;
+        while parse:consumeRules(Statement) do end
+
+        if parse:tryConsume(T.END) then
+            return parse:commit()
+        end
+    end
+end;
+
 
 ---@param parse Parse
 BinaryExpression = function(parse)
@@ -636,8 +654,7 @@ Assignment = function(parse)
     parse:tryConsume()
 end;
 
-NamedFunctionDefinition = function(parse)
-end;
+
 
 LocalWithoutAssignment = function(parse)
 end;
