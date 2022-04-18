@@ -3,11 +3,11 @@
 ---@field raw string
 LBSymbol = {
     new = function(this, type, raw, lineinfo)
-        this = LifeBoatAPI.Tools.BaseClass.new(this)
-        this.type = type
-        this.raw = raw
-        this.lineInfo = lineinfo
-        return this
+        return {
+            type = type,
+            raw = raw,
+            lineInfo = lineinfo
+        }
     end;
 
     fromToken = function(this, token)
@@ -166,7 +166,7 @@ tokenize = function(text)
             iText, nextToken = getString(lineInfo, text, iText, "'")
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%[=*%[") then
+        elseif LBStr.nextSectionEquals(text, iText, "[") and LBStr.nextSectionIs(text, iText, "%[=-%[") then
             -- quote ([[ ]])
             -- annoying syntax thing they added [====[ comment ]====] with same number of equals on either side
             local numEquals = 0
@@ -184,7 +184,7 @@ tokenize = function(text)
             iText, nextToken = iText+6, text:sub(iText, iText+5)
             tokens[#tokens+1] = LBSymbol:new(T.LBTAG, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%-%-%[=*%[") then
+        elseif LBStr.nextSectionEquals(text, iText, "--[") and LBStr.nextSectionIs(text, iText, "%-%-%[=-%[") then
             -- multi-line comment
             -- annoying syntax thing they added [====[ comment ]====] with same number of equals on either side
             local numEquals = 0
@@ -426,17 +426,30 @@ end;
 ---@field isReturnableScope boolean defined the type of scope, function or loop or none; for return and break keywords
 ---@field isLoopScope boolean
 ---@field errorObj any
+---@field cache any
 Parse = {
     ---@return Parse
     new = function(this, type, tokens, i, parent)
-        this = LifeBoatAPI.Tools.BaseClass.new(this)
-        this.i = i or 1
-        this.tokens = tokens
-        this.symbol = LBSymbol:new(type)
-        this.parent = parent
-        this.isReturnableScope = parent and parent.isReturnableScope or false
-        this.isLoopScope = parent and parent.isLoopScope or false
-        return this
+        -- hardcoded class instantiation for performance, as it's called very often
+        return {
+            new = this.new,
+            branch = this.branch,
+            commit = this.commit,
+            error = this.error,
+            match = this.match,
+            consume = this.consume,
+            tryConsume = this.tryConsume,
+            tryConsumeRules = this.tryConsumeRules,
+            tryConsumeRulesAs = this.tryConsumeRulesAs,
+
+            i = i or 1,
+            tokens = tokens,
+            symbol = LBSymbol:new(type),
+            parent = parent,
+            isReturnableScope = parent and parent.isReturnableScope or false,
+            isLoopScope = parent and parent.isLoopScope or false,
+            cache = parent and parent.cache or {}
+        }
     end;
 
     ---@return Parse
@@ -505,8 +518,20 @@ Parse = {
         local rules = {...}
         for irules=1, #rules do
             local rule = rules[irules]
-            if rule(this) then
-                return true
+
+            if not this.cache[rule] then
+                this.cache[rule] = {}
+            end
+
+            if this.cache[rule][this.i] ~= false then
+                local result = rule(this)
+                
+                if result then
+                    this.cache[rule][this.i] = true
+                    return true
+                else
+                    this.cache[rule][this.i] = false
+                end
             end
         end
         return false
@@ -1204,14 +1229,6 @@ parse = function(text)
     if not result then
         error(parser.errorObj:toString())
     end
-    
-    return simplify(parser.symbol)
-end;
-
-testParse = function(parseFunc, text)
-    local tokens = tokenize(text)
-    local parser = Parse:new("TEST", tokens, 1)
-    local result = parseFunc(parser)
     
     return simplify(parser.symbol)
 end;
