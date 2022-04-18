@@ -1,1185 +1,1409 @@
----@class LBSymbol
----@field type string
----@field raw string
-LBSymbol = {
-    new = function(this, type, raw, lineinfo)
-        this = LifeBoatAPI.Tools.BaseClass.new(this)
-        this.type = type
-        this.raw = raw
-        this.lineInfo = lineinfo
-        return this
-    end;
-
-    fromToken = function(this, token)
-        return LBSymbol:new(token.type, token.raw, token.lineInfo)
-    end;
-}
-
---- takes either a list of params, of a table in arg1
-set = function(...)
-    local args = {...}
-    args = type(args[1]) == "table" and args[1] or args 
-
-    local result = {}
-    for i=1,#args do
-        result[args[i]] = true
-    end
-    return result
-end;
-
-
-
-LBTokenTypes = {
-    STRING          = "STRING",
-    LBTAG           = "LBTAG",
-    COMMENT         = "COMMENT",
-    OPENBRACKET     = "OPENBRACKET",
-    CLOSEBRACKET    = "CLOSEBRACKET",
-    OPENSQUARE      = "OPENSQUARE",
-    CLOSESQUARE     = "CLOSESQUARE",
-    OPENCURLY       = "OPENCURLY",
-    CLOSECURLY      = "CLOSECURLY",
-    COMMA           = "COMMA",
-    SEMICOLON       = "SEMICOLON",
-    COMPARISON      = "COMPARISON",
-    BINARY_OP       = "BINARY_OP",
-    MIXED_OP        = "MIXED_OP",
-    UNARY_OP        = "UNARY_OP",
-    ASSIGN          = "ASSIGN",
-    DOTACCESS       = "DOTACCESS",
-    COLONACCESS     = "COLONACCESS",
-    IDENTIFIER      = "IDENTIFIER",
-    TYPECONSTANT    = "TYPECONSTANT",
-    NUMBER          = "NUMBER",
-    HEX             = "HEX",
-    WHITESPACE      = "WHITESPACE",
-    VARARGS         = "VARARGS",
-    AND             = "AND",
-    BREAK           = "BREAK",
-    DO              = "DO",
-    ELSE            = "ELSE",
-    ELSEIF          = "ELSEIF",
-    END             = "END",
-    FOR             = "FOR",
-    FUNCTION        = "FUNCTION",
-    GOTO            = "GOTO",
-    IF              = "IF",
-    IN              = "IN",
-    LOCAL           = "LOCAL",
-    NOT             = "NOT",
-    OR              = "OR",
-    REPEAT          = "REPEAT",
-    RETURN          = "RETURN",
-    THEN            = "THEN",
-    UNTIL           = "UNTIL",
-    WHILE           = "WHILE",
-    FALSE           = "FALSE",
-    TRUE            = "TRUE",
-    NIL             = "NIL",
-    GOTOMARKER     = "GOTO_LABEL",
-    SOF = "SOF",
-    EOF = "EOF"}
-
-local T = LBTokenTypes
-
-
-LBKeywords = {
-    ["and"]             = LBTokenTypes.AND,
-    ["break"]           = LBTokenTypes.BREAK,
-    ["do"]              = LBTokenTypes.DO,
-    ["else"]            = LBTokenTypes.ELSE,
-    ["elseif"]          = LBTokenTypes.ELSEIF,
-    ["end"]             = LBTokenTypes.END,
-    ["for"]             = LBTokenTypes.FOR,
-    ["function"]        = LBTokenTypes.FUNCTION,
-    ["goto"]            = LBTokenTypes.GOTO,
-    ["if"]              = LBTokenTypes.IF,
-    ["in"]              = LBTokenTypes.IN,
-    ["local"]           = LBTokenTypes.LOCAL,
-    ["not"]             = LBTokenTypes.NOT,
-    ["or"]              = LBTokenTypes.OR,
-    ["repeat"]          = LBTokenTypes.REPEAT,
-    ["return"]          = LBTokenTypes.RETURN,
-    ["then"]            = LBTokenTypes.THEN,
-    ["until"]           = LBTokenTypes.UNTIL,
-    ["while"]           = LBTokenTypes.WHILE,
-    ["false"]           = LBTokenTypes.FALSE,
-    ["true"]            = LBTokenTypes.TRUE,
-    ["nil"]             = LBTokenTypes.NIL,
-}
-
-tokenizekeyword = function(keyword)
-    return LBKeywords[keyword]
-end;
-
----@param text string
----@return LBToken[]
-tokenize = function(text)
-    local LBStr = LifeBoatAPI.Tools.StringUtils
-    local tokens = {}
-    local nextToken = ""
-
-    local lineNumber = 1
-    local lastLineStartIndex = 1
-    local iText = 1
-
-    local getLineInfo = function()
-        return {
-            line = lineNumber,
-            index = iText,
-            column = 1 + iText - lastLineStartIndex,
-            toString = function(this)
-                return string.format("line: %d, column: %d, index: %d", this.line, this.column, this.index)
-            end
-        };
-    end;
-
-    while iText <= #text do
-        local lineInfo = getLineInfo()
-        local startIndex = iText
-
-        if LBStr.nextSectionEquals(text, iText, '"') then
-            -- quote (")
-            iText, nextToken = LBStr.getTextIncluding(text, iText, '[^\\]"')
-            tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "'") then
-            -- quote (')
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "[^\\]'")
-            tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "%[=*%[") then
-            -- quote ([[ ]])
-            -- annoying syntax thing they added [====[ comment ]====] with same number of equals on either side
-            local numEquals = 0
-            local closingPattern = "%]"
-            while text:sub(iText+3+numEquals,iText+3+numEquals) == '=' do
-                numEquals = numEquals + 1
-                closingPattern = closingPattern .. "="
-            end
-            closingPattern = closingPattern .. "%]"
-            iText, nextToken = LBStr.getTextIncluding(text, iText, closingPattern)
-            tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)  
-
-        elseif LBStr.nextSectionEquals(text, iText, "---@lb") then
-            -- preprocessor tag
-            iText, nextToken = iText+6, text:sub(iText, iText+5)
-            tokens[#tokens+1] = LBSymbol:new(T.LBTAG, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "%-%-%[=*%[") then
-            -- multi-line comment
-            -- annoying syntax thing they added [====[ comment ]====] with same number of equals on either side
-            local numEquals = 0
-            local closingPattern = "%]"
-            while text:sub(iText+3+numEquals,iText+3+numEquals) == '=' do
-                numEquals = numEquals + 1
-                closingPattern = closingPattern .. "="
-            end
-            closingPattern = closingPattern .. "%]"
-
-            iText, nextToken = LBStr.getTextIncluding(text, iText, closingPattern)
-            tokens[#tokens+1] = LBSymbol:new(T.COMMENT, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "--") then
-            -- single-line comment
-            iText, nextToken = LBStr.getTextUntil(text, iText, "\n")
-            tokens[#tokens+1] = LBSymbol:new(T.COMMENT, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, ";") then
-            -- single-line comment
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.SEMICOLON, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, ",") then
-            -- single-line comment
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.COMMA, nextToken)
-
-
-        elseif LBStr.nextSectionEquals(text, iText, "(") then
-            -- regular brackets
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.OPENBRACKET, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "[") then
-            -- regular brackets
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.OPENSQUARE, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "{") then
-            -- regular brackets
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.OPENCURLY, nextToken)
-
-
-        elseif LBStr.nextSectionEquals(text, iText, ")") then
-            -- regular brackets
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.CLOSEBRACKET, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "]") then
-            -- regular brackets
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.CLOSESQUARE, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "}") then
-            -- regular brackets
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.CLOSECURLY, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, ">>") then
-            -- comparison
-            iText, nextToken = iText+2, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "<<") then
-            -- comparison
-            iText, nextToken = iText+2, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-
-
-        elseif LBStr.nextSectionEquals(text, iText, ">=", "<=", "~=", "==") then
-            -- comparison
-            iText, nextToken = iText+2, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, ">", "<") then
-            -- comparison
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "//") then
-            -- floor (one math op not two)
-            iText, nextToken = iText+1, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "#") then
-            -- all other math ops
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.UNARY_OP, nextToken)
-        
-        elseif LBStr.nextSectionEquals(text, iText, "~", "-") then
-            -- all other math ops
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.MIXED_OP, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "*", "/", "+", "%", "^", "&", "|") then
-            -- all other math ops
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-
-
-        elseif LBStr.nextSectionEquals(text, iText, "...") then
-            -- varargs
-            iText, nextToken = iText+3, text:sub(iText, iText+2)
-            tokens[#tokens+1] = LBSymbol:new(T.VARARGS, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "..") then
-            -- concat
-            iText, nextToken = iText+2, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "=") then
-            -- assignment
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.ASSIGN, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "[%a_][%w_]*") then
-            -- keywords & identifier
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "[%a_][%w_]*")
-            local keyword = tokenizekeyword(nextToken)
-            if keyword then
-                tokens[#tokens+1] = LBSymbol:new(keyword, nextToken)
-            else
-                tokens[#tokens+1] = LBSymbol:new(T.IDENTIFIER, nextToken)
-            end
-
-        elseif LBStr.nextSectionEquals(text, iText, " ", "\n", "\t", "\r") then
-            -- whitespace
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "%s*")
-            tokens[#tokens+1] = LBSymbol:new(T.WHITESPACE, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "0x%x+") then
-            -- hex 
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "0x%x+")
-            tokens[#tokens+1] = LBSymbol:new(T.HEX, nextToken)
-
-        elseif LBStr.nextSectionIs(text, iText, "%d*%.?%d+") then 
-            -- number
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "%d*%.?%d+")
-            tokens[#tokens+1] = LBSymbol:new(T.NUMBER, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, ".") then
-            -- chain access
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.DOTACCESS, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, "::") then
-            -- chain access
-            iText, nextToken = iText+1, text:sub(iText, iText+1)
-            tokens[#tokens+1] = LBSymbol:new(T.GOTOMARKER, nextToken)
-
-        elseif LBStr.nextSectionEquals(text, iText, ":") then
-            -- chain access
-            iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.COLONACCESS, nextToken)
-
-        else
-            error(lineInfo:toString() .. "\nCan't process symbol \"" .. text:sub(iText, iText+10) .. "...\"\n\n\"" .. text:sub(math.max(0, iText-20), iText+20) .. "...\"")
-        end
-        tokens[#tokens].lineInfo = lineInfo
-
-        -- update line info
-        local newLines = LBStr.find(nextToken, "\n")
-        if #newLines > 0 then
-            lineNumber = lineNumber + #newLines
-            lastLineStartIndex = startIndex + newLines[#newLines].endIndex
-        end
-    end
-
-    -- insert StartOfFile and EndOfFile tokens for whitespace association
-    --  need to find first non-whitespace/non-comment node
-    local i = 1
-    while i <= #tokens do
-        if not is(tokens[i].type, T.WHITESPACE, T.COMMENT) then
-            break;
-        end
-        i=i+1
-    end
-    -- add the EOF marker
-    tokens[#tokens+1] = LBSymbol:new(T.EOF,nil, getLineInfo())
-
-    return associateRightWhitespaceAndComments(tokens)
-end;
-
-associateRightWhitespaceAndComments = function(tokens)
-    local result = {}
-    local leadingWhitespace = {}
-    for itokens=1, #tokens do
-        if is(tokens[itokens].type, T.WHITESPACE, T.COMMENT) then
-            leadingWhitespace[#leadingWhitespace+1] = tokens[itokens]
-        else
-            local token = tokens[itokens]
-            result[#result+1] = token
-            for ileadingWhitespace=1, #leadingWhitespace do
-                token[#token+1] = leadingWhitespace[ileadingWhitespace]
-            end
-            leadingWhitespace = {}
-        end
-    end
-
-    -- add any trailing whitespace to the EOF marker
-    local eofToken = tokens[#tokens]
-    if #leadingWhitespace > 0 then
-        for ileadingWhitespace=1, #leadingWhitespace do
-            eofToken[#eofToken+1] = leadingWhitespace[ileadingWhitespace]
-        end
-    end
-    return result
-end;
-
-insertIntoTable = function(tbl, list)
-    for i=1,#list do
-        tbl[#tbl+1] = list[i]
-    end
-
-    return tbl
-end;
-
-
-
-
-is = function(obj, ...)
-    local args = {...}
-    for i=1,#args do
-        if obj == args[i] then
-            return args[i]
-        end
-    end
-    return nil
-end;
-
-
-
--- what things can we do from "regular scope"
-
----@class Parse
----@field parent Parse
----@field tokens LBSymbol[]
----@field symbol LBSymbol
----@field i number
----@field isFunctionScope boolean only affects one thing "is return a valid keyword"
----@field errorObj any
-Parse = {
-    ---@return Parse
-    new = function(this, type, tokens, i, parent)
-        this = LifeBoatAPI.Tools.BaseClass.new(this)
-        this.i = i or 1
-        this.tokens = tokens
-        this.symbol = LBSymbol:new(type)
-        this.parent = parent
-        this.isFunctionScope = parent and parent.isFunctionScope or false
-        return this
-    end;
-
-    ---@return Parse
-    branch = function(this, type)
-        return Parse:new(type, this.tokens, this.i, this)
-    end;
-
-    ---@param this Parse
-    commit = function(this)
-        if this.parent then
-            this.parent.symbol[#this.parent.symbol+1] = this.symbol
-            this.parent.i = this.i
-        end
-        return true
-    end;
-
-    error = function(this, message)
-        local lineInfo = this.tokens[this.i].lineInfo
-        if (not this.errorObj) or (lineInfo.index > this.errorObj.index) then
-            this.errorObj = {
-                owner = this,
-                message = message,
-                i = this.i,
-                index = lineInfo.index,
-                line = lineInfo.line,
-                column = lineInfo.column,
-                toString = function(err)
-                    return "line: " .. err.line .. ", column: " .. err.column .. "\n"
-                        .. "at token " .. err.i .. ": " .. tostring(this.tokens[err.i].raw) .. "\n"
-                        .. message .. "\n"
-                end;
-            }
-        end
-
-        if (not this.parent.errorObj) or (this.errorObj.index > this.parent.errorObj.index) then
-            this.parent.errorObj = this.errorObj
-        end
-        return false
-    end;
-
-    ---@return boolean
-    match = function(this, ...)
-        return is(this.tokens[this.i].type, ...)
-    end;
-
-    ---@return boolean
-    consume = function(this, ...)
-        local consumedAny = this:tryConsume(...)
-        while(this:tryConsume(...)) do end
-        return consumedAny
-    end;
-
-    ---@return boolean
-    tryConsume = function(this, ...)
-        if is(this.tokens[this.i].type, ...) then
-            this.symbol[#this.symbol+1] = this.tokens[this.i]
-            this.i = this.i + 1
-            return true
-        else
-            return false
-        end
-    end;
-
-    ---@param this Parse
-    tryConsumeRules = function(this, ...)
-        local rules = {...}
-        for irules=1, #rules do
-            local rule = rules[irules]
-            if rule(this) then
-                return true
-            end
-        end
-        return false
-    end;
-
-    ---@param this Parse
-    tryConsumeRulesAs = function(this, name, ...)
-        local branch = this:branch(name)
-        local result = branch:tryConsumeRules(...)
-        if result then
-            branch:commit()
-        else
-            branch:error("Failed to parse as " .. tostring(name))
-        end
-        return result
-    end;
-}
-
-
-LBSymbolTypes = {
-    FUNCTIONDEF         = "FUNCTIONDEF",
-    FUNCTIONCALL        = "FUNCTIONCALL",
-    TABLEDEF            = "TABLEDEF",
-    WHILE_LOOP          = "WHILE_LOOP",
-    FOR_LOOP            = "FOR_LOOP",
-    DO_END              = "DO_END",
-    REPEAT_UNTIL        = "REPEAT_UNTIL",
-    SQUARE_BRACKETS     = "SQUARE_BRACKETS",
-    
-    IF_STATEMENT        = "IF_STATEMENT",
-    IF_CONDITION        = "IF_CONDITION",
-
-    BODY                = "BODY",
-
-    ASSIGNMENT          = "ASSIGNMENT",
-    PROGRAM             = "PROGRAM",
-    PARENTHESIS         = "PARENTHESIS",
-    EXPCHAIN            = "EXPCHAIN",
-    OPERATORCHAIN       = "OPERATORCHAIN",
-    DECLARE_LOCAL       = "DECLARE_LOCAL",
-    FUNCTIONDEF_PARAMS  = "FUNCTIONDEF_PARAMS",
-    PARAM               = "PARAM",
-
-    GOTOLABEL           = "GOTOLABEL",
-    GOTOSTATEMENT       = "GOTOSTATEMENT"
-    }
-local S = LBSymbolTypes
-
-
----@param parse Parse
-Statement = function(parse)
-    parse = parse:branch(S.STATEMENT)
-    if parse:tryConsume(T.SEMICOLON)
-     or parse:tryConsumeRules(
-        NamedFunctionDefinition,
-        IfStatement,
-        ForLoopStatement,
-        ForInLoopStatement,
-        WhileLoopStatement,
-        RepeatUntilStatement,
-        DoEndStatement,
-        GotoLabelStatement,
-        GotoStatement,
-        ProcessorLBTagSection,
-        FunctionCallStatement,
-        AssignmentOrLocalDeclaration,
-        parse.isFunctionScope and ReturnStatement or nil
-    ) then
-        return parse:commit()
-    end
-
-    return parse:error("Invalid statement")
-end;
-
-
-SquareBracketsIndex = function(parse)
-    parse = parse:branch(S.SQUARE_BRACKETS)
-
-    if parse:tryConsume(T.OPENSQUARE)
-        and parse:tryConsumeRules(Expression)
-        and parse:tryConsume(T.CLOSESQUARE) then
-
-        return parse:commit()
-    end
-
-    return parse:error("Invalid square-bracket index")
+
+--
+-- ParseLua.lua
+--
+-- The main lua parser and lexer.
+-- LexLua returns a Lua token stream, with tokens that preserve
+-- all whitespace formatting information.
+-- ParseLua returns an AST, internally relying on LexLua.
+--
+
+local util = require'Util'
+local lookupify = util.lookupify
+
+local WhiteChars = lookupify{' ', '\n', '\t', '\r'}
+local EscapeLookup = {['\r'] = '\\r', ['\n'] = '\\n', ['\t'] = '\\t', ['"'] = '\\"', ["'"] = "\\'"}
+local LowerChars = lookupify{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+							 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+							 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
+local UpperChars = lookupify{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+							 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+							 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+local Digits = lookupify{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+local HexDigits = lookupify{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+							'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f'}
+
+local Symbols = lookupify{'+', '-', '*', '/', '^', '%', ',', '{', '}', '[', ']', '(', ')', ';', '#'}
+local Scope = require'Scope'
+
+local Keywords = lookupify{
+	'and', 'break', 'do', 'else', 'elseif',
+	'end', 'false', 'for', 'function', 'goto', 'if',
+	'in', 'local', 'nil', 'not', 'or', 'repeat',
+	'return', 'then', 'true', 'until', 'while',
+};
+
+local function LexLua(src)
+	--token dump
+	local tokens = {}
+
+	local st, err = pcall(function()
+		--line / char / pointer tracking
+		local p = 1
+		local line = 1
+		local char = 1
+
+		--get / peek functions
+		local function get()
+			local c = src:sub(p,p)
+			if c == '\n' then
+				char = 1
+				line = line + 1
+			else
+				char = char + 1
+			end
+			p = p + 1
+			return c
+		end
+		local function peek(n)
+			n = n or 0
+			return src:sub(p+n,p+n)
+		end
+		local function consume(chars)
+			local c = peek()
+			for i = 1, #chars do
+				if c == chars:sub(i,i) then return get() end
+			end
+		end
+
+		--shared stuff
+		local function generateError(err)
+			return error(">> :"..line..":"..char..": "..err, 0)
+		end
+
+		local function tryGetLongString()
+			local start = p
+			if peek() == '[' then
+				local equalsCount = 0
+				local depth = 1
+				while peek(equalsCount+1) == '=' do
+					equalsCount = equalsCount + 1
+				end
+				if peek(equalsCount+1) == '[' then
+					--start parsing the string. Strip the starting bit
+					for _ = 0, equalsCount+1 do get() end
+
+					--get the contents
+					local contentStart = p
+					while true do
+						--check for eof
+						if peek() == '' then
+							generateError("Expected `]"..string.rep('=', equalsCount).."]` near <eof>.", 3)
+						end
+
+						--check for the end
+						local foundEnd = true
+						if peek() == ']' then
+							for i = 1, equalsCount do
+								if peek(i) ~= '=' then foundEnd = false end
+							end
+							if peek(equalsCount+1) ~= ']' then
+								foundEnd = false
+							end
+						else
+							if peek() == '[' then
+								-- is there an embedded long string?
+								local embedded = true
+								for i = 1, equalsCount do
+									if peek(i) ~= '=' then
+										embedded = false
+										break
+									end
+								end
+								if peek(equalsCount + 1) == '[' and embedded then
+									-- oh look, there was
+									depth = depth + 1
+									for i = 1, (equalsCount + 2) do
+										get()
+									end
+								end
+							end
+							foundEnd = false
+						end
+						--
+						if foundEnd then
+							depth = depth - 1
+							if depth == 0 then
+								break
+							else
+								for i = 1, equalsCount + 2 do
+									get()
+								end
+							end
+						else
+							get()
+						end
+					end
+
+					--get the interior string
+					local contentString = src:sub(contentStart, p-1)
+
+					--found the end. Get rid of the trailing bit
+					for i = 0, equalsCount+1 do get() end
+
+					--get the exterior string
+					local longString = src:sub(start, p-1)
+
+					--return the stuff
+					return contentString, longString
+				else
+					return nil
+				end
+			else
+				return nil
+			end
+		end
+
+		--main token emitting loop
+		while true do
+			--get leading whitespace. The leading whitespace will include any comments
+			--preceding the token. This prevents the parser needing to deal with comments
+			--separately.
+			local leading = { }
+			local leadingWhite = ''
+			local longStr = false
+			while true do
+				local c = peek()
+				if c == '#' and peek(1) == '!' and line == 1 then
+					-- #! shebang for linux scripts
+					get()
+					get()
+					leadingWhite = "#!"
+					while peek() ~= '\n' and peek() ~= '' do
+						leadingWhite = leadingWhite .. get()
+					end
+					local token = {
+						Type = 'Comment',
+						CommentType = 'Shebang',
+						Data = leadingWhite,
+						Line = line,
+						Char = char
+					}
+					token.Print = function()
+						return "<"..(token.Type .. string.rep(' ', 7-#token.Type)).."  "..(token.Data or '').." >"
+					end
+					leadingWhite = ""
+					table.insert(leading, token)
+				end
+				if c == ' ' or c == '\t' then
+					--whitespace
+					--leadingWhite = leadingWhite..get()
+					local c2 = get() -- ignore whitespace
+					table.insert(leading, { Type = 'Whitespace', Line = line, Char = char, Data = c2 })
+				elseif c == '\n' or c == '\r' then
+					local nl = get()
+					if leadingWhite ~= "" then
+						local token = {
+							Type = 'Comment',
+							CommentType = longStr and 'LongComment' or 'Comment',
+							Data = leadingWhite,
+							Line = line,
+							Char = char,
+						}
+						token.Print = function()
+							return "<"..(token.Type .. string.rep(' ', 7-#token.Type)).."  "..(token.Data or '').." >"
+						end
+						table.insert(leading, token)
+						leadingWhite = ""
+					end
+					table.insert(leading, { Type = 'Whitespace', Line = line, Char = char, Data = nl })
+				elseif c == '-' and peek(1) == '-' then
+					--comment
+					get()
+					get()
+					leadingWhite = leadingWhite .. '--'
+					local _, wholeText = tryGetLongString()
+					if wholeText then
+						leadingWhite = leadingWhite..wholeText
+						longStr = true
+					else
+						while peek() ~= '\n' and peek() ~= '' do
+							leadingWhite = leadingWhite..get()
+						end
+					end
+				else
+					break
+				end
+			end
+			if leadingWhite ~= "" then
+				local token = {
+					Type = 'Comment',
+					CommentType = longStr and 'LongComment' or 'Comment',
+					Data = leadingWhite,
+					Line = line,
+					Char = char,
+				}
+				token.Print = function()
+					return "<"..(token.Type .. string.rep(' ', 7-#token.Type)).."  "..(token.Data or '').." >"
+				end
+				table.insert(leading, token)
+			end
+
+			--get the initial char
+			local thisLine = line
+			local thisChar = char
+			local errorAt = ":"..line..":"..char..":> "
+			local c = peek()
+
+			--symbol to emit
+			local toEmit = nil
+
+			--branch on type
+			if c == '' then
+				--eof
+				toEmit = { Type = 'Eof' }
+
+			elseif UpperChars[c] or LowerChars[c] or c == '_' then
+				--ident or keyword
+				local start = p
+				repeat
+					get()
+					c = peek()
+				until not (UpperChars[c] or LowerChars[c] or Digits[c] or c == '_')
+				local dat = src:sub(start, p-1)
+				if Keywords[dat] then
+					toEmit = {Type = 'Keyword', Data = dat}
+				else
+					toEmit = {Type = 'Ident', Data = dat}
+				end
+
+			elseif Digits[c] or (peek() == '.' and Digits[peek(1)]) then
+				--number const
+				local start = p
+				if c == '0' and peek(1) == 'x' then
+					get();get()
+					while HexDigits[peek()] do get() end
+					if consume('Pp') then
+						consume('+-')
+						while Digits[peek()] do get() end
+					end
+				else
+					while Digits[peek()] do get() end
+					if consume('.') then
+						while Digits[peek()] do get() end
+					end
+					if consume('Ee') then
+						consume('+-')
+						while Digits[peek()] do get() end
+					end
+				end
+				toEmit = {Type = 'Number', Data = src:sub(start, p-1)}
+
+			elseif c == '\'' or c == '\"' then
+				local start = p
+				--string const
+				local delim = get()
+				local contentStart = p
+				while true do
+					local c = get()
+					if c == '\\' then
+						get() --get the escape char
+					elseif c == delim then
+						break
+					elseif c == '' then
+						generateError("Unfinished string near <eof>")
+					end
+				end
+				local content = src:sub(contentStart, p-2)
+				local constant = src:sub(start, p-1)
+				toEmit = {Type = 'String', Data = constant, Constant = content}
+
+			elseif c == '[' then
+				local content, wholetext = tryGetLongString()
+				if wholetext then
+					toEmit = {Type = 'String', Data = wholetext, Constant = content}
+				else
+					get()
+					toEmit = {Type = 'Symbol', Data = '['}
+				end
+
+			elseif consume('>=<') then
+				if consume('=') then
+					toEmit = {Type = 'Symbol', Data = c..'='}
+				else
+					toEmit = {Type = 'Symbol', Data = c}
+				end
+
+			elseif consume('~') then
+				if consume('=') then
+					toEmit = {Type = 'Symbol', Data = '~='}
+				else
+					generateError("Unexpected symbol `~` in source.", 2)
+				end
+
+			elseif consume('.') then
+				if consume('.') then
+					if consume('.') then
+						toEmit = {Type = 'Symbol', Data = '...'}
+					else
+						toEmit = {Type = 'Symbol', Data = '..'}
+					end
+				else
+					toEmit = {Type = 'Symbol', Data = '.'}
+				end
+
+			elseif consume(':') then
+				if consume(':') then
+					toEmit = {Type = 'Symbol', Data = '::'}
+				else
+					toEmit = {Type = 'Symbol', Data = ':'}
+				end
+
+			elseif Symbols[c] then
+				get()
+				toEmit = {Type = 'Symbol', Data = c}
+
+			else
+				local contents, all = tryGetLongString()
+				if contents then
+					toEmit = {Type = 'String', Data = all, Constant = contents}
+				else
+					generateError("Unexpected Symbol `"..c.."` in source.", 2)
+				end
+			end
+
+			--add the emitted symbol, after adding some common data
+			toEmit.LeadingWhite = leading -- table of leading whitespace/comments
+			--for k, tok in pairs(leading) do
+			--	tokens[#tokens + 1] = tok
+			--end
+
+			toEmit.Line = thisLine
+			toEmit.Char = thisChar
+			toEmit.Print = function()
+				return "<"..(toEmit.Type..string.rep(' ', 7-#toEmit.Type)).."  "..(toEmit.Data or '').." >"
+			end
+			tokens[#tokens+1] = toEmit
+
+			--halt after eof has been emitted
+			if toEmit.Type == 'Eof' then break end
+		end
+	end)
+	if not st then
+		return false, err
+	end
+
+	--public interface:
+	local tok = {}
+	local savedP = {}
+	local p = 1
+	
+	function tok:getp()
+		return p
+	end
+	
+	function tok:setp(n)
+		p = n
+	end
+	
+	function tok:getTokenList()
+		return tokens
+	end
+	
+	--getters
+	function tok:Peek(n)
+		n = n or 0
+		return tokens[math.min(#tokens, p+n)]
+	end
+	function tok:Get(tokenList)
+		local t = tokens[p]
+		p = math.min(p + 1, #tokens)
+		if tokenList then
+			table.insert(tokenList, t)
+		end
+		return t
+	end
+	function tok:Is(t)
+		return tok:Peek().Type == t
+	end
+
+	--save / restore points in the stream
+	function tok:Save()
+		savedP[#savedP+1] = p
+	end
+	function tok:Commit()
+		savedP[#savedP] = nil
+	end
+	function tok:Restore()
+		p = savedP[#savedP]
+		savedP[#savedP] = nil
+	end
+
+	--either return a symbol if there is one, or return true if the requested
+	--symbol was gotten.
+	function tok:ConsumeSymbol(symb, tokenList)
+		local t = self:Peek()
+		if t.Type == 'Symbol' then
+			if symb then
+				if t.Data == symb then
+					self:Get(tokenList)
+					return true
+				else
+					return nil
+				end
+			else
+				self:Get(tokenList)
+				return t
+			end
+		else
+			return nil
+		end
+	end
+
+	function tok:ConsumeKeyword(kw, tokenList)
+		local t = self:Peek()
+		if t.Type == 'Keyword' and t.Data == kw then
+			self:Get(tokenList)
+			return true
+		else
+			return nil
+		end
+	end
+
+	function tok:IsKeyword(kw)
+		local t = tok:Peek()
+		return t.Type == 'Keyword' and t.Data == kw
+	end
+
+	function tok:IsSymbol(s)
+		local t = tok:Peek()
+		return t.Type == 'Symbol' and t.Data == s
+	end
+
+	function tok:IsEof()
+		return tok:Peek().Type == 'Eof'
+	end
+
+	return true, tok
 end
 
-ParenthesisExpression = function(parse)
-    parse = parse:branch(S.PARENTHESIS)
 
-    if parse:tryConsume(T.OPENBRACKET)
-        and parse:tryConsumeRules(Expression)
-        and parse:tryConsume(T.CLOSEBRACKET) then
+local function ParseLua(src)
+	local st, tok
+	if type(src) ~= 'table' then
+		st, tok = LexLua(src)
+	else
+		st, tok = true, src
+	end
+	if not st then
+		return false, tok
+	end
+	--
+	local function GenerateError(msg)
+		local err = ">> :"..tok:Peek().Line..":"..tok:Peek().Char..": "..msg.."\n"
+		--find the line
+		local lineNum = 0
+		if type(src) == 'string' then
+			for line in src:gmatch("[^\n]*\n?") do
+				if line:sub(-1,-1) == '\n' then line = line:sub(1,-2) end
+				lineNum = lineNum+1
+				if lineNum == tok:Peek().Line then
+					err = err..">> `"..line:gsub('\t','    ').."`\n"
+					for i = 1, tok:Peek().Char do
+						local c = line:sub(i,i)
+						if c == '\t' then
+							err = err..'    '
+						else
+							err = err..' '
+						end
+					end
+					err = err.."   ^^^^"
+					break
+				end
+			end
+		end
+		return err
+	end
+	--
+	local VarUid = 0
+	-- No longer needed: handled in Scopes now local GlobalVarGetMap = {} 
+	local VarDigits = {'_', 'a', 'b', 'c', 'd'}
+	local function CreateScope(parent)
+		--[[
+		local scope = {}
+		scope.Parent = parent
+		scope.LocalList = {}
+		scope.LocalMap = {}
 
-        return parse:commit()
-    end
+		function scope:ObfuscateVariables()
+			for _, var in pairs(scope.LocalList) do
+				local id = ""
+				repeat
+					local chars = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuioplkjhgfdsazxcvbnm_"
+					local chars2 = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuioplkjhgfdsazxcvbnm_1234567890"
+					local n = math.random(1, #chars)
+					id = id .. chars:sub(n, n)
+					for i = 1, math.random(0,20) do
+						local n = math.random(1, #chars2)
+						id = id .. chars2:sub(n, n)
+					end
+				until not GlobalVarGetMap[id] and not parent:GetLocal(id) and not scope.LocalMap[id]
+				var.Name = id
+				scope.LocalMap[id] = var
+			end
+		end
+		
+		scope.RenameVars = scope.ObfuscateVariables
 
-    return parse:error("Invalid parenthesis expression")
-end;
+		-- Renames a variable from this scope and down.
+		-- Does not rename global variables.
+		function scope:RenameVariable(old, newName)
+			if type(old) == "table" then -- its (theoretically) an AstNode variable
+				old = old.Name
+			end
+			for _, var in pairs(scope.LocalList) do
+				if var.Name == old then
+					var.Name = newName
+					scope.LocalMap[newName] = var
+				end
+			end
+		end
 
-TableDef = function(parse)
-    parse = parse:branch(S.TABLEDEF)
+		function scope:GetLocal(name)
+			--first, try to get my variable
+			local my = scope.LocalMap[name]
+			if my then return my end
 
-    if parse:tryConsume(T.OPENCURLY) then
-        
-        if parse:tryConsumeRules(TableValueInitialization) then
-            while parse:tryConsume(T.COMMA, T.SEMICOLON) do
-                if not parse:tryConsumeRules(TableValueInitialization) then
-                    break; -- it's valid to end on a comma/semi-colon
-                end
-            end
-        end
+			--next, try parent
+			if scope.Parent then
+				local par = scope.Parent:GetLocal(name)
+				if par then return par end
+			end
 
-        
-        if parse:tryConsume(T.CLOSECURLY) then
-            return parse:commit()
-        end
-    end
+			return nil
+		end
 
-    return parse:error("Invalid table definition")
-end;
+		function scope:CreateLocal(name)
+			--create my own var
+			local my = {}
+			my.Scope = scope
+			my.Name = name
+			my.CanRename = true
+			--
+			scope.LocalList[#scope.LocalList+1] = my
+			scope.LocalMap[name] = my
+			--
+			return my
+		end]]
+		local scope = Scope:new(parent)
+		scope.RenameVars = scope.ObfuscateLocals
+		scope.ObfuscateVariables = scope.ObfuscateLocals
+		scope.Print = function() return "<Scope>" end
+		return scope
+	end
 
----@param parse Parse
-FunctionDefParenthesis = function(parse)
-    parse = parse:branch(S.FUNCTIONDEF_PARAMS)
-    if parse:tryConsume(T.OPENBRACKET) then
+	local ParseExpr
+	local ParseStatementList
+	local ParseSimpleExpr, 
+			ParseSubExpr,
+			ParsePrimaryExpr,
+			ParseSuffixedExpr
 
-        if(parse:tryConsume(T.IDENTIFIER)) then
-            
-            while(parse:tryConsume(T.COMMA)) do
-                if parse:tryConsume(T.VARARGS) then
-                    break -- should be final parameter, so close brackets next
-                end
-                if not parse:tryConsume(T.IDENTIFIER) then
-                    return parse:error("Expected parameter after ','")
-                end
-            end
-        elseif parse:tryConsume(T.VARARGS) then
-            -- nothing else to do, expect end
-        end
+	local function ParseFunctionArgsAndBody(scope, tokenList)
+		local funcScope = CreateScope(scope)
+		if not tok:ConsumeSymbol('(', tokenList) then
+			return false, GenerateError("`(` expected.")
+		end
 
-        if parse:tryConsume(T.CLOSEBRACKET) then
-            return parse:commit()
-        end
-    end
+		--arg list
+		local argList = {}
+		local isVarArg = false
+		while not tok:ConsumeSymbol(')', tokenList) do
+			if tok:Is('Ident') then
+				local arg = funcScope:CreateLocal(tok:Get(tokenList).Data)
+				argList[#argList+1] = arg
+				if not tok:ConsumeSymbol(',', tokenList) then
+					if tok:ConsumeSymbol(')', tokenList) then
+						break
+					else
+						return false, GenerateError("`)` expected.")
+					end
+				end
+			elseif tok:ConsumeSymbol('...', tokenList) then
+				isVarArg = true
+				if not tok:ConsumeSymbol(')', tokenList) then
+					return false, GenerateError("`...` must be the last argument of a function.")
+				end
+				break
+			else
+				return false, GenerateError("Argument name or `...` expected")
+			end
+		end
 
-    return parse:error("Invalid function-definition parenthesis")
-end;
+		--body
+		local st, body = ParseStatementList(funcScope)
+		if not st then return false, body end
 
-ExpressionList = function(parse)
-    -- a,b,c,d,e comma separated items
-    parse = parse:branch()
-    if parse:tryConsumeRules(Expression) then
-        while parse:tryConsume(T.COMMA) do
-            if not parse:tryConsumeRules(Expression) then
-                return parse:error("Expression list must not leave trailing ','")
-            end
-        end
-        return parse:commit()
-    end
+		--end
+		if not tok:ConsumeKeyword('end', tokenList) then
+			return false, GenerateError("`end` expected after function body")
+		end
+		local nodeFunc = {}
+		nodeFunc.AstType   = 'Function'
+		nodeFunc.Scope     = funcScope
+		nodeFunc.Arguments = argList
+		nodeFunc.Body      = body
+		nodeFunc.VarArg    = isVarArg
+		nodeFunc.Tokens    = tokenList
+		--
+		return true, nodeFunc
+	end
 
-    return parse:error("Invalid expression-list")
-end;
 
----@param parse Parse
-ReturnStatement = function(parse)
-    parse = parse:branch()
-    if parse:tryConsume(T.RETURN) then
-        if parse:tryConsumeRules(ExpressionList) then
-            return parse:commit() 
-        end
-    end
+	function ParsePrimaryExpr(scope)
+		local tokenList = {}
 
-    return parse:error("Invalid return statement")
+		if tok:ConsumeSymbol('(', tokenList) then
+			local st, ex = ParseExpr(scope)
+			if not st then return false, ex end
+			if not tok:ConsumeSymbol(')', tokenList) then
+				return false, GenerateError("`)` Expected.")
+			end
+			if false then
+				--save the information about parenthesized expressions somewhere
+				ex.ParenCount = (ex.ParenCount or 0) + 1
+				return true, ex
+			else
+				local parensExp = {}
+				parensExp.AstType   = 'Parentheses'
+				parensExp.Inner     = ex
+				parensExp.Tokens    = tokenList
+				return true, parensExp
+			end
+
+		elseif tok:Is('Ident') then
+			local id = tok:Get(tokenList)
+			local var = scope:GetLocal(id.Data)
+			if not var then
+				var = scope:GetGlobal(id.Data)
+				if not var then
+					var = scope:CreateGlobal(id.Data)
+				else
+					var.References = var.References + 1
+				end
+			else
+				var.References = var.References + 1
+			end
+			--
+			local nodePrimExp = {}
+			nodePrimExp.AstType   = 'VarExpr'
+			nodePrimExp.Name      = id.Data
+			nodePrimExp.Variable  = var
+			nodePrimExp.Tokens    = tokenList
+			--
+			return true, nodePrimExp
+		else
+			return false, GenerateError("primary expression expected")
+		end
+	end
+
+	function ParseSuffixedExpr(scope, onlyDotColon)
+		--base primary expression
+		local st, prim = ParsePrimaryExpr(scope)
+		if not st then return false, prim end
+		--
+		while true do
+			local tokenList = {}
+
+			if tok:IsSymbol('.') or tok:IsSymbol(':') then
+				local symb = tok:Get(tokenList).Data
+				if not tok:Is('Ident') then
+					return false, GenerateError("<Ident> expected.")
+				end
+				local id = tok:Get(tokenList)
+				local nodeIndex = {}
+				nodeIndex.AstType  = 'MemberExpr'
+				nodeIndex.Base     = prim
+				nodeIndex.Indexer  = symb
+				nodeIndex.Ident    = id
+				nodeIndex.Tokens   = tokenList
+				--
+				prim = nodeIndex
+
+			elseif not onlyDotColon and tok:ConsumeSymbol('[', tokenList) then
+				local st, ex = ParseExpr(scope)
+				if not st then return false, ex end
+				if not tok:ConsumeSymbol(']', tokenList) then
+					return false, GenerateError("`]` expected.")
+				end
+				local nodeIndex = {}
+				nodeIndex.AstType  = 'IndexExpr'
+				nodeIndex.Base     = prim
+				nodeIndex.Index    = ex
+				nodeIndex.Tokens   = tokenList
+				--
+				prim = nodeIndex
+
+			elseif not onlyDotColon and tok:ConsumeSymbol('(', tokenList) then
+				local args = {}
+				while not tok:ConsumeSymbol(')', tokenList) do
+					local st, ex = ParseExpr(scope)
+					if not st then return false, ex end
+					args[#args+1] = ex
+					if not tok:ConsumeSymbol(',', tokenList) then
+						if tok:ConsumeSymbol(')', tokenList) then
+							break
+						else
+							return false, GenerateError("`)` Expected.")
+						end
+					end
+				end
+				local nodeCall = {}
+				nodeCall.AstType   = 'CallExpr'
+				nodeCall.Base      = prim
+				nodeCall.Arguments = args
+				nodeCall.Tokens    = tokenList
+				--
+				prim = nodeCall
+
+			elseif not onlyDotColon and tok:Is('String') then
+				--string call
+				local nodeCall = {}
+				nodeCall.AstType    = 'StringCallExpr'
+				nodeCall.Base       = prim
+				nodeCall.Arguments  = { tok:Get(tokenList) }
+				nodeCall.Tokens     = tokenList
+				--
+				prim = nodeCall
+
+			elseif not onlyDotColon and tok:IsSymbol('{') then
+				--table call
+				local st, ex = ParseSimpleExpr(scope)
+				-- FIX: ParseExpr(scope) parses the table AND and any following binary expressions.
+				-- We just want the table
+				if not st then return false, ex end
+				local nodeCall = {}
+				nodeCall.AstType   = 'TableCallExpr'
+				nodeCall.Base      = prim
+				nodeCall.Arguments = { ex }
+				nodeCall.Tokens    = tokenList
+				--
+				prim = nodeCall
+
+			else
+				break
+			end
+		end
+		return true, prim
+	end
+
+
+	function ParseSimpleExpr(scope)
+		local tokenList = {}
+
+		if tok:Is('Number') then
+			local nodeNum = {}
+			nodeNum.AstType = 'NumberExpr'
+			nodeNum.Value   = tok:Get(tokenList)
+			nodeNum.Tokens  = tokenList
+			return true, nodeNum
+
+		elseif tok:Is('String') then
+			local nodeStr = {}
+			nodeStr.AstType = 'StringExpr'
+			nodeStr.Value   = tok:Get(tokenList)
+			nodeStr.Tokens  = tokenList
+			return true, nodeStr
+
+		elseif tok:ConsumeKeyword('nil', tokenList) then
+			local nodeNil = {}
+			nodeNil.AstType = 'NilExpr'
+			nodeNil.Tokens  = tokenList
+			return true, nodeNil
+
+		elseif tok:IsKeyword('false') or tok:IsKeyword('true') then
+			local nodeBoolean = {}
+			nodeBoolean.AstType = 'BooleanExpr'
+			nodeBoolean.Value   = (tok:Get(tokenList).Data == 'true')
+			nodeBoolean.Tokens  = tokenList
+			return true, nodeBoolean
+
+		elseif tok:ConsumeSymbol('...', tokenList) then
+			local nodeDots = {}
+			nodeDots.AstType  = 'DotsExpr'
+			nodeDots.Tokens   = tokenList
+			return true, nodeDots
+
+		elseif tok:ConsumeSymbol('{', tokenList) then
+			local v = {}
+			v.AstType = 'ConstructorExpr'
+			v.EntryList = {}
+			--
+			while true do
+				if tok:IsSymbol('[', tokenList) then
+					--key
+					tok:Get(tokenList)
+					local st, key = ParseExpr(scope)
+					if not st then
+						return false, GenerateError("Key Expression Expected")
+					end
+					if not tok:ConsumeSymbol(']', tokenList) then
+						return false, GenerateError("`]` Expected")
+					end
+					if not tok:ConsumeSymbol('=', tokenList) then
+						return false, GenerateError("`=` Expected")
+					end
+					local st, value = ParseExpr(scope)
+					if not st then
+						return false, GenerateError("Value Expression Expected")
+					end
+					v.EntryList[#v.EntryList+1] = {
+						Type  = 'Key';
+						Key   = key;
+						Value = value;
+					}
+
+				elseif tok:Is('Ident') then
+					--value or key
+					local lookahead = tok:Peek(1)
+					if lookahead.Type == 'Symbol' and lookahead.Data == '=' then
+						--we are a key
+						local key = tok:Get(tokenList)
+						if not tok:ConsumeSymbol('=', tokenList) then
+							return false, GenerateError("`=` Expected")
+						end
+						local st, value = ParseExpr(scope)
+						if not st then
+							return false, GenerateError("Value Expression Expected")
+						end
+						v.EntryList[#v.EntryList+1] = {
+							Type  = 'KeyString';
+							Key   = key.Data;
+							Value = value;
+						}
+
+					else
+						--we are a value
+						local st, value = ParseExpr(scope)
+						if not st then
+							return false, GenerateError("Value Exected")
+						end
+						v.EntryList[#v.EntryList+1] = {
+							Type = 'Value';
+							Value = value;
+						}
+
+					end
+				elseif tok:ConsumeSymbol('}', tokenList) then
+					break
+
+				else
+					--value
+					local st, value = ParseExpr(scope)
+					v.EntryList[#v.EntryList+1] = {
+						Type = 'Value';
+						Value = value;
+					}
+					if not st then
+						return false, GenerateError("Value Expected")
+					end
+				end
+
+				if tok:ConsumeSymbol(';', tokenList) or tok:ConsumeSymbol(',', tokenList) then
+					--all is good
+				elseif tok:ConsumeSymbol('}', tokenList) then
+					break
+				else
+					return false, GenerateError("`}` or table entry Expected")
+				end
+			end
+			v.Tokens  = tokenList
+			return true, v
+
+		elseif tok:ConsumeKeyword('function', tokenList) then
+			local st, func = ParseFunctionArgsAndBody(scope, tokenList)
+			if not st then return false, func end
+			--
+			func.IsLocal = true
+			return true, func
+
+		else
+			return ParseSuffixedExpr(scope)
+		end
+	end
+
+
+	local unops = lookupify{'-', 'not', '#'}
+	local unopprio = 8
+	local priority = {
+		['+'] = {6,6};
+		['-'] = {6,6};
+		['%'] = {7,7};
+		['/'] = {7,7};
+		['*'] = {7,7};
+		['^'] = {10,9};
+		['..'] = {5,4};
+		['=='] = {3,3};
+		['<'] = {3,3};
+		['<='] = {3,3};
+		['~='] = {3,3};
+		['>'] = {3,3};
+		['>='] = {3,3};
+		['and'] = {2,2};
+		['or'] = {1,1};
+	}
+	function ParseSubExpr(scope, level)
+		--base item, possibly with unop prefix
+		local st, exp
+		if unops[tok:Peek().Data] then
+			local tokenList = {}
+			local op = tok:Get(tokenList).Data
+			st, exp = ParseSubExpr(scope, unopprio)
+			if not st then return false, exp end
+			local nodeEx = {}
+			nodeEx.AstType = 'UnopExpr'
+			nodeEx.Rhs     = exp
+			nodeEx.Op      = op
+			nodeEx.OperatorPrecedence = unopprio
+			nodeEx.Tokens  = tokenList
+			exp = nodeEx
+		else
+			st, exp = ParseSimpleExpr(scope)
+			if not st then return false, exp end
+		end
+
+		--next items in chain
+		while true do
+			local prio = priority[tok:Peek().Data]
+			if prio and prio[1] > level then
+				local tokenList = {}
+				local op = tok:Get(tokenList).Data
+				local st, rhs = ParseSubExpr(scope, prio[2])
+				if not st then return false, rhs end
+				local nodeEx = {}
+				nodeEx.AstType = 'BinopExpr'
+				nodeEx.Lhs     = exp
+				nodeEx.Op      = op
+				nodeEx.OperatorPrecedence = prio[1]
+				nodeEx.Rhs     = rhs
+				nodeEx.Tokens  = tokenList
+				--
+				exp = nodeEx
+			else
+				break
+			end
+		end
+
+		return true, exp
+	end
+
+
+	ParseExpr = function(scope)
+		return ParseSubExpr(scope, 0)
+	end
+
+
+	local function ParseStatement(scope)
+		local stat = nil
+		local tokenList = {}
+		if tok:ConsumeKeyword('if', tokenList) then
+			--setup
+			local nodeIfStat = {}
+			nodeIfStat.AstType = 'IfStatement'
+			nodeIfStat.Clauses = {}
+
+			--clauses
+			repeat
+				local st, nodeCond = ParseExpr(scope)
+				if not st then return false, nodeCond end
+				if not tok:ConsumeKeyword('then', tokenList) then
+					return false, GenerateError("`then` expected.")
+				end
+				local st, nodeBody = ParseStatementList(scope)
+				if not st then return false, nodeBody end
+				nodeIfStat.Clauses[#nodeIfStat.Clauses+1] = {
+					Condition = nodeCond;
+					Body = nodeBody;
+				}
+			until not tok:ConsumeKeyword('elseif', tokenList)
+
+			--else clause
+			if tok:ConsumeKeyword('else', tokenList) then
+				local st, nodeBody = ParseStatementList(scope)
+				if not st then return false, nodeBody end
+				nodeIfStat.Clauses[#nodeIfStat.Clauses+1] = {
+					Body = nodeBody;
+				}
+			end
+
+			--end
+			if not tok:ConsumeKeyword('end', tokenList) then
+				return false, GenerateError("`end` expected.")
+			end
+
+			nodeIfStat.Tokens = tokenList
+			stat = nodeIfStat
+
+		elseif tok:ConsumeKeyword('while', tokenList) then
+			--setup
+			local nodeWhileStat = {}
+			nodeWhileStat.AstType = 'WhileStatement'
+
+			--condition
+			local st, nodeCond = ParseExpr(scope)
+			if not st then return false, nodeCond end
+
+			--do
+			if not tok:ConsumeKeyword('do', tokenList) then
+				return false, GenerateError("`do` expected.")
+			end
+
+			--body
+			local st, nodeBody = ParseStatementList(scope)
+			if not st then return false, nodeBody end
+
+			--end
+			if not tok:ConsumeKeyword('end', tokenList) then
+				return false, GenerateError("`end` expected.")
+			end
+
+			--return
+			nodeWhileStat.Condition = nodeCond
+			nodeWhileStat.Body      = nodeBody
+			nodeWhileStat.Tokens    = tokenList
+			stat = nodeWhileStat
+
+		elseif tok:ConsumeKeyword('do', tokenList) then
+			--do block
+			local st, nodeBlock = ParseStatementList(scope)
+			if not st then return false, nodeBlock end
+			if not tok:ConsumeKeyword('end', tokenList) then
+				return false, GenerateError("`end` expected.")
+			end
+
+			local nodeDoStat = {}
+			nodeDoStat.AstType = 'DoStatement'
+			nodeDoStat.Body    = nodeBlock
+			nodeDoStat.Tokens  = tokenList
+			stat = nodeDoStat
+
+		elseif tok:ConsumeKeyword('for', tokenList) then
+			--for block
+			if not tok:Is('Ident') then
+				return false, GenerateError("<ident> expected.")
+			end
+			local baseVarName = tok:Get(tokenList)
+			if tok:ConsumeSymbol('=', tokenList) then
+				--numeric for
+				local forScope = CreateScope(scope)
+				local forVar = forScope:CreateLocal(baseVarName.Data)
+				--
+				local st, startEx = ParseExpr(scope)
+				if not st then return false, startEx end
+				if not tok:ConsumeSymbol(',', tokenList) then
+					return false, GenerateError("`,` Expected")
+				end
+				local st, endEx = ParseExpr(scope)
+				if not st then return false, endEx end
+				local st, stepEx;
+				if tok:ConsumeSymbol(',', tokenList) then
+					st, stepEx = ParseExpr(scope)
+					if not st then return false, stepEx end
+				end
+				if not tok:ConsumeKeyword('do', tokenList) then
+					return false, GenerateError("`do` expected")
+				end
+				--
+				local st, body = ParseStatementList(forScope)
+				if not st then return false, body end
+				if not tok:ConsumeKeyword('end', tokenList) then
+					return false, GenerateError("`end` expected")
+				end
+				--
+				local nodeFor = {}
+				nodeFor.AstType  = 'NumericForStatement'
+				nodeFor.Scope    = forScope
+				nodeFor.Variable = forVar
+				nodeFor.Start    = startEx
+				nodeFor.End      = endEx
+				nodeFor.Step     = stepEx
+				nodeFor.Body     = body
+				nodeFor.Tokens   = tokenList
+				stat = nodeFor
+			else
+				--generic for
+				local forScope = CreateScope(scope)
+				--
+				local varList = { forScope:CreateLocal(baseVarName.Data) }
+				while tok:ConsumeSymbol(',', tokenList) do
+					if not tok:Is('Ident') then
+						return false, GenerateError("for variable expected.")
+					end
+					varList[#varList+1] = forScope:CreateLocal(tok:Get(tokenList).Data)
+				end
+				if not tok:ConsumeKeyword('in', tokenList) then
+					return false, GenerateError("`in` expected.")
+				end
+				local generators = {}
+				local st, firstGenerator = ParseExpr(scope)
+				if not st then return false, firstGenerator end
+				generators[#generators+1] = firstGenerator
+				while tok:ConsumeSymbol(',', tokenList) do
+					local st, gen = ParseExpr(scope)
+					if not st then return false, gen end
+					generators[#generators+1] = gen
+				end
+				if not tok:ConsumeKeyword('do', tokenList) then
+					return false, GenerateError("`do` expected.")
+				end
+				local st, body = ParseStatementList(forScope)
+				if not st then return false, body end
+				if not tok:ConsumeKeyword('end', tokenList) then
+					return false, GenerateError("`end` expected.")
+				end
+				--
+				local nodeFor = {}
+				nodeFor.AstType      = 'GenericForStatement'
+				nodeFor.Scope        = forScope
+				nodeFor.VariableList = varList
+				nodeFor.Generators   = generators
+				nodeFor.Body         = body
+				nodeFor.Tokens       = tokenList
+				stat = nodeFor
+			end
+
+		elseif tok:ConsumeKeyword('repeat', tokenList) then
+			local st, body = ParseStatementList(scope)
+			if not st then return false, body end
+			--
+			if not tok:ConsumeKeyword('until', tokenList) then
+				return false, GenerateError("`until` expected.")
+			end
+			-- FIX: Used to parse in parent scope
+			-- Now parses in repeat scope
+			local st, cond = ParseExpr(body.Scope)
+			if not st then return false, cond end
+			--
+			local nodeRepeat = {}
+			nodeRepeat.AstType   = 'RepeatStatement'
+			nodeRepeat.Condition = cond
+			nodeRepeat.Body      = body
+			nodeRepeat.Tokens    = tokenList
+			stat = nodeRepeat
+
+		elseif tok:ConsumeKeyword('function', tokenList) then
+			if not tok:Is('Ident') then
+				return false, GenerateError("Function name expected")
+			end
+			local st, name = ParseSuffixedExpr(scope, true) --true => only dots and colons
+			if not st then return false, name end
+			--
+			local st, func = ParseFunctionArgsAndBody(scope, tokenList)
+			if not st then return false, func end
+			--
+			func.IsLocal = false
+			func.Name    = name
+			stat = func
+
+		elseif tok:ConsumeKeyword('local', tokenList) then
+			if tok:Is('Ident') then
+				local varList = { tok:Get(tokenList).Data }
+				while tok:ConsumeSymbol(',', tokenList) do
+					if not tok:Is('Ident') then
+						return false, GenerateError("local var name expected")
+					end
+					varList[#varList+1] = tok:Get(tokenList).Data
+				end
+
+				local initList = {}
+				if tok:ConsumeSymbol('=', tokenList) then
+					repeat
+						local st, ex = ParseExpr(scope)
+						if not st then return false, ex end
+						initList[#initList+1] = ex
+					until not tok:ConsumeSymbol(',', tokenList)
+				end
+
+				--now patch var list
+				--we can't do this before getting the init list, because the init list does not
+				--have the locals themselves in scope.
+				for i, v in pairs(varList) do
+					varList[i] = scope:CreateLocal(v)
+				end
+
+				local nodeLocal = {}
+				nodeLocal.AstType   = 'LocalStatement'
+				nodeLocal.LocalList = varList
+				nodeLocal.InitList  = initList
+				nodeLocal.Tokens    = tokenList
+				--
+				stat = nodeLocal
+
+			elseif tok:ConsumeKeyword('function', tokenList) then
+				if not tok:Is('Ident') then
+					return false, GenerateError("Function name expected")
+				end
+				local name = tok:Get(tokenList).Data
+				local localVar = scope:CreateLocal(name)
+				--
+				local st, func = ParseFunctionArgsAndBody(scope, tokenList)
+				if not st then return false, func end
+				--
+				func.Name         = localVar
+				func.IsLocal      = true
+				stat = func
+
+			else
+				return false, GenerateError("local var or function def expected")
+			end
+
+		elseif tok:ConsumeSymbol('::', tokenList) then
+			if not tok:Is('Ident') then
+				return false, GenerateError('Label name expected')
+			end
+			local label = tok:Get(tokenList).Data
+			if not tok:ConsumeSymbol('::', tokenList) then
+				return false, GenerateError("`::` expected")
+			end
+			local nodeLabel = {}
+			nodeLabel.AstType = 'LabelStatement'
+			nodeLabel.Label   = label
+			nodeLabel.Tokens  = tokenList
+			stat = nodeLabel
+
+		elseif tok:ConsumeKeyword('return', tokenList) then
+			local exList = {}
+			if not tok:IsKeyword('end') then
+				local st, firstEx = ParseExpr(scope)
+				if st then
+					exList[1] = firstEx
+					while tok:ConsumeSymbol(',', tokenList) do
+						local st, ex = ParseExpr(scope)
+						if not st then return false, ex end
+						exList[#exList+1] = ex
+					end
+				end
+			end
+
+			local nodeReturn = {}
+			nodeReturn.AstType   = 'ReturnStatement'
+			nodeReturn.Arguments = exList
+			nodeReturn.Tokens    = tokenList
+			stat = nodeReturn
+
+		elseif tok:ConsumeKeyword('break', tokenList) then
+			local nodeBreak = {}
+			nodeBreak.AstType = 'BreakStatement'
+			nodeBreak.Tokens  = tokenList
+			stat = nodeBreak
+
+		elseif tok:ConsumeKeyword('goto', tokenList) then
+			if not tok:Is('Ident') then
+				return false, GenerateError("Label expected")
+			end
+			local label = tok:Get(tokenList).Data
+			local nodeGoto = {}
+			nodeGoto.AstType = 'GotoStatement'
+			nodeGoto.Label   = label
+			nodeGoto.Tokens  = tokenList
+			stat = nodeGoto
+
+		else
+			--statementParseExpr
+			local st, suffixed = ParseSuffixedExpr(scope)
+			if not st then return false, suffixed end
+
+			--assignment or call?
+			if tok:IsSymbol(',') or tok:IsSymbol('=') then
+				--check that it was not parenthesized, making it not an lvalue
+				if (suffixed.ParenCount or 0) > 0 then
+					return false, GenerateError("Can not assign to parenthesized expression, is not an lvalue")
+				end
+
+				--more processing needed
+				local lhs = { suffixed }
+				while tok:ConsumeSymbol(',', tokenList) do
+					local st, lhsPart = ParseSuffixedExpr(scope)
+					if not st then return false, lhsPart end
+					lhs[#lhs+1] = lhsPart
+				end
+
+				--equals
+				if not tok:ConsumeSymbol('=', tokenList) then
+					return false, GenerateError("`=` Expected.")
+				end
+
+				--rhs
+				local rhs = {}
+				local st, firstRhs = ParseExpr(scope)
+				if not st then return false, firstRhs end
+				rhs[1] = firstRhs
+				while tok:ConsumeSymbol(',', tokenList) do
+					local st, rhsPart = ParseExpr(scope)
+					if not st then return false, rhsPart end
+					rhs[#rhs+1] = rhsPart
+				end
+
+				--done
+				local nodeAssign = {}
+				nodeAssign.AstType = 'AssignmentStatement'
+				nodeAssign.Lhs     = lhs
+				nodeAssign.Rhs     = rhs
+				nodeAssign.Tokens  = tokenList
+				stat = nodeAssign
+
+			elseif suffixed.AstType == 'CallExpr' or
+				   suffixed.AstType == 'TableCallExpr' or
+				   suffixed.AstType == 'StringCallExpr'
+			then
+				--it's a call statement
+				local nodeCall = {}
+				nodeCall.AstType    = 'CallStatement'
+				nodeCall.Expression = suffixed
+				nodeCall.Tokens     = tokenList
+				stat = nodeCall
+			else
+				return false, GenerateError("Assignment Statement Expected")
+			end
+		end
+
+		if tok:IsSymbol(';') then
+			stat.Semicolon = tok:Get( stat.Tokens )
+		end
+		return true, stat
+	end
+
+
+	local statListCloseKeywords = lookupify{'end', 'else', 'elseif', 'until'}
+
+	ParseStatementList = function(scope)
+		local nodeStatlist   = {}
+		nodeStatlist.Scope   = CreateScope(scope)
+		nodeStatlist.AstType = 'Statlist'
+		nodeStatlist.Body    = { }
+		nodeStatlist.Tokens  = { }
+		--
+		--local stats = {}
+		--
+		while not statListCloseKeywords[tok:Peek().Data] and not tok:IsEof() do
+			local st, nodeStatement = ParseStatement(nodeStatlist.Scope)
+			if not st then return false, nodeStatement end
+			--stats[#stats+1] = nodeStatement
+			nodeStatlist.Body[#nodeStatlist.Body + 1] = nodeStatement
+		end
+
+		if tok:IsEof() then
+			local nodeEof = {}
+			nodeEof.AstType = 'Eof'
+			nodeEof.Tokens  = { tok:Get() }
+			nodeStatlist.Body[#nodeStatlist.Body + 1] = nodeEof
+		end
+
+		--
+		--nodeStatlist.Body = stats
+		return true, nodeStatlist
+	end
+
+
+	local function mainfunc()
+		local topScope = CreateScope()
+		return ParseStatementList(topScope)
+	end
+
+	local st, main = mainfunc()
+	--print("Last Token: "..PrintTable(tok:Peek()))
+	return st, main
 end
 
----@param parse Parse
-AnonymousFunctionDef = function(parse)
-    parse = parse:branch(S.FUNCTIONDEF)
-
-    if parse:tryConsume(T.FUNCTION) 
-    and parse:tryConsumeRules(FunctionDefParenthesis) then
-
-        parse.isFunctionScope = true;
-        parse:tryConsumeRules(genBody(T.END))
-
-        if parse:tryConsume(T.END) then
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid anonymous function definition")
-end;
-
----@param parse Parse
-NamedFunctionDefinition = function(parse, ...)
-    parse = parse:branch(S.FUNCTIONDEF)
-
-    if parse:tryConsume(T.FUNCTION)
-        and parse:tryConsume(T.IDENTIFIER) then
-
-        -- for each ".", require a <name> after
-        while parse:tryConsume(T.DOTACCESS) do
-            if not parse:tryConsume(T.IDENTIFIER) then
-                return parse:error("Expected identifier after '.' ")
-            end
-        end
-
-        -- if : exists, require <name> after
-        if parse:tryConsume(T.COLONACCESS) then
-            if not parse:tryConsume(T.IDENTIFIER) then
-                return parse:error("Expected final identifier after ':' ")
-            end
-        end
-
-        if parse:tryConsumeRules(FunctionDefParenthesis) then
-
-            parse.isFunctionScope = true;
-            parse:tryConsumeRules(genBody(T.END))
-
-            if parse:tryConsume(T.END) then
-                return parse:commit()
-            end
-        end
-    end
-
-    return parse:error("Invalid named-function definition")
-end;
-
----@param parse Parse
-BinaryExpression = function(parse)
-    parse = parse:branch(S.OPERATORCHAIN)
-    if parse:tryConsumeRules(SingleExpression)
-        and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP, T.COMPARISON)
-        and parse:tryConsumeRules(Expression) then
-
-        return parse:commit()
-    end
-
-    return parse:error("Invalid binary expression")
-end;
-
-
-LValue = function(parse)
-    parse = parse:branch() -- no typename; meaning it will simplify out
-
-    -- messy but easier way to handle Lvalues: (saves a lot of duplication)
-    -- easiest thing to do is, check if we can make a valid ExpChain and then make sure the end of it is actually modifiable
-    if parse:tryConsumeRules(ExpressionChainedOperator) then
-        local lastChild = parse.symbol[#parse.symbol]
-        if lastChild
-        and lastChild[#lastChild]
-        and is(lastChild[#lastChild].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
-            parse.symbol.type = S.LVALUE
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid lvalue")
-end;
-
-
-
----@param parse Parse
-FunctionCallStatement = function(parse)
-    parse = parse:branch()
-
-    -- save a lot of duplication by finding a valid ExpChain and then backtracking
-    if parse:tryConsumeRules(ExpressionChainedOperator) then
-        local lastChild = parse.symbol[#parse.symbol]
-        if lastChild
-        and lastChild[#lastChild]
-        and is(lastChild[#lastChild].type, S.FUNCTIONCALL) then
-            parse.symbol.type = S.FUNCTIONCALL
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid function call statement")
-end;
-
-
----@param parse Parse
-ExpressionChainedOperator = function(parse)
-    -- a = (1+2)()()[1].123 param,func,func,accesschain,accesschain
-    -- singleExpressions can chain into infinite function calls, etc.
-    parse = parse:branch(S.EXPCHAIN)
-    if parse:tryConsume(T.IDENTIFIER) or parse:tryConsumeRules(ParenthesisExpression) then
-        while true do
-            if parse:tryConsume(T.DOTACCESS) then -- .<name>
-                if not parse:tryConsume(T.IDENTIFIER) then
-                    return parse:error("Expected identifier after '.' ")
-                end
-            elseif parse:tryConsume(T.COLONACCESS) then -- :<name>(func) 
-                if not (parse:tryConsume(T.IDENTIFIER)
-                       and parse:tryConsumeRules(FunctionCallParenthesis)) then
-                    return parse:error("Expected function call after ':'")
-                end
-            elseif parse:tryConsumeRules(SquareBracketsIndex, FunctionCallParenthesis) then -- [123] or (a,b,c)
-                -- all OK
-            else
-                return parse:commit();
-            end
-        end
-    end
-
-    return parse:error("Invalid expression chain")
-end
-
-SingleExpression = function(parse)
-    -- single expression, not lined by binary, e.g. a string, an identifier-chain, etc.
-    parse = parse:branch()
-
-    -- clear any unary operators from the front
-    while parse:tryConsume(T.UNARY_OP, T.MIXED_OP) do end
-
-    if parse:tryConsume(T.VARARGS, T.STRING, T.NUMBER, T.HEX, T.TRUE, T.FALSE, T.NIL)-- hard-coded value
-     or parse:tryConsumeRules(
-        ParenthesisExpression,
-        ExpressionChainedOperator, -- (exp.index.index.index[index][index](func)(func)(func))
-        TableDef,
-        AnonymousFunctionDef) then
-        return parse:commit()
-    end
-
-    return parse:error("Invalid single-expression")
-end;
-
----@param parse Parse
-Expression = function(parse)
-    -- identifier.access
-    -- expression mathop|concat expression chain
-    -- parenthesis -> expression
-    parse = parse:branch()
-
-    if parse:tryConsumeRules(
-        BinaryExpression, -- (exp op exp) (infinite chain-> single_exp op (exp op exp)) etc.
-        SingleExpression
-    ) then
-        return parse:commit()
-    end
-
-    return parse:error("Invalid expression")
-end;
-
-genBody = function(...)
-    local args = {...}
-
-    ---@param parse Parse
-    return function(parse)
-        parse = parse:branch(S.BODY)
-
-        while not parse:match(table.unpack(args)) do
-            if not parse:tryConsumeRules(Statement) then
-                return parse:error("Failed to terminate body")
-            end
-        end
-
-        return parse:commit()
-    end;
-end
-
----@param parse Parse
-IfStatement = function(parse)
-    parse = parse:branch(S.IF_STATEMENT)
-    if parse:tryConsume(T.IF) 
-        and parse:tryConsumeRulesAs(S.IF_CONDITION, Expression)
-        and parse:tryConsume(T.THEN) then
-        
-        -- statements, if any - may be empty
-        parse:tryConsumeRules(genBody(T.ELSEIF, T.ELSE, T.END))
-
-        -- potential for elseifs (if they exist, must be well structured or return false "badly made thingmy")
-        while parse:tryConsume(T.ELSEIF) do
-            if not (parse:tryConsumeRulesAs(S.IF_CONDITION, Expression)
-                and parse:tryConsume(T.THEN)) then
-                return parse:error("Improperly specified elseif statement")
-            else
-                -- parse statements in the "elseif" section
-                parse:tryConsumeRules(genBody(T.ELSEIF, T.ELSE, T.END))
-            end
-        end
-
-        -- possible "else" section
-        if parse:tryConsume(T.ELSE) then
-            parse:tryConsumeRules(genBody(T.END))
-        end
-
-        if parse:tryConsume(T.END) then
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid if Statement")
-end;
-
----@param parse Parse
-AssignmentOrLocalDeclaration = function(parse)
-    parse = parse:branch(S.ASSIGNMENT)
-    local isLocal = parse:tryConsume(T.LOCAL)
-    
-    if parse:tryConsumeRules(LValue) then -- check last part of the EXPCHAIN was assignable
-        
-        -- now check repeatedly for the same, with comma separators
-        --   return false if a comma is provided, but not a valid assignable value
-        while parse:tryConsume(T.COMMA) do
-            if not parse:tryConsumeRules(LValue) then
-                return parse:error("Expected lvalue after comma")
-            end
-        end
-
-        if parse:tryConsume(T.ASSIGN) then -- equals sign "="
-            -- expect a list of expressions to assign
-            if parse:tryConsumeRules(ExpressionList) then
-                return parse:commit()
-            end
-        elseif isLocal then
-            -- if declared local, can be a simple "local statement" with no value - as rare as that is
-            parse.symbol.type = S.DECLARE_LOCAL
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid Assignment/Local Declaration")
-end;
-
----@param parse Parse
-FunctionCallParenthesis = function(parse)
-    parse = parse:branch(S.FUNCTIONCALL)
-    if  parse:tryConsume(T.OPENBRACKET) then
-
-        -- can be empty parens
-        parse:tryConsumeRules(ExpressionList)
-
-        if parse:tryConsume(T.CLOSEBRACKET) then
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid function call parenthesis")
-end;
-
-TableAssignment = function(parse)
-    parse = parse:branch(S.ASSIGNMENT)
-    if parse:tryConsumeRules(SquareBracketsIndex)
-        or parse:tryConsume(T.IDENTIFIER) then
-
-        if parse:tryConsume(T.ASSIGN) 
-            and parse:tryConsumeRules(Expression) then
-
-            return parse:commit()
-        end
-    end
-
-    return parse:error("Invalid table assignment")
-end;
-
-TableValueInitialization = function(parse)
-    parse = parse:branch()
-    if parse:tryConsumeRules(
-        TableAssignment,
-        Expression
-    ) then
-        return parse:commit()
-    end
-
-    return parse:error("Invalid table value")
-end;
-
----@param parse Parse
-ForLoopStatement = function(parse)
-    parse = parse:branch(S.FOR_LOOP)
-    
-    if parse:tryConsume(T.FOR) then
-        -- a,b,c,d,e=1..works
-        if parse:tryConsume(T.IDENTIFIER)
-            and parse:tryConsume(T.ASSIGN)
-            and parse:tryConsumeRules(Expression) 
-            and parse:tryConsume(T.COMMA)
-            and parse:tryConsumeRules(Expression) then
-
-            -- optional 3rd parameter (step)
-            if parse:tryConsume(T.COMMA)
-                and not parse:tryConsumeRules(Expression) then
-                return parse:error("Trailing ',' in for-loop definition")
-            end
-
-            if parse:tryConsume(T.DO)
-            and parse:tryConsumeRules(genBody(T.END))
-            and parse:tryConsume(T.END) then
-                return parse:commit()
-            end
-        end
-    end
-
-    return parse:error("Invalid for-loop")
-end;
-
-
----@param parse Parse
-ForInLoopStatement = function(parse)
-    parse = parse:branch(S.FOR_LOOP)
-    
-    if parse:tryConsume(T.FOR) then
-        -- a,b,c,d,e=1..works
-        if parse:tryConsume(T.IDENTIFIER) then -- check last part of the EXPCHAIN was assignable
-
-            -- now check repeatedly for the same, with comma separators
-            --   return false if a comma is provided, but not a valid assignable value
-            while parse:tryConsume(T.COMMA) do
-                if not parse:tryConsume(T.IDENTIFIER) then
-                    return parse:error("Expected identifier after comma")
-                end
-            end
-
-            -- =exp, exp
-            if parse:tryConsume(T.IN)
-            and parse:tryConsumeRules(Expression) then
-
-                -- can now handle as many additional params as wanted
-                while parse:tryConsume(T.COMMA) do
-                    if not parse:tryConsumeRules(Expression) then
-                        return parse:error("Trailing ',' in for-loop definition")
-                    end
-                end
-
-                if parse:tryConsume(T.DO)
-                and parse:tryConsumeRules(genBody(T.END))
-                and parse:tryConsume(T.END) then
-                    return parse:commit()
-                end
-            end
-        end
-    end
-
-    return parse:error("Invalid for-loop")
-end;
-
----@param parse Parse
-WhileLoopStatement = function(parse)
-    parse = parse:branch(S.WHILE_LOOP)
-    
-    if parse:tryConsume(T.WHILE)
-     and parse:tryConsumeRules(Expression)
-     and parse:tryConsume(T.DO)
-     and parse:tryConsumeRules(genBody(T.END))
-     and parse:tryConsume(T.END) then
-         return parse:commit()
-     end
-
-     return parse:error("Invalid while loop");
-end;
-
-
----@param parse Parse
-RepeatUntilStatement = function(parse)
-    parse = parse:branch(S.REPEAT_UNTIL)
-    
-    if parse:tryConsume(T.REPEAT)
-    and parse:tryConsumeRules(genBody(T.UNTIL))
-    and parse:tryConsume(T.UNTIL)
-     and parse:tryConsumeRules(Expression) then
-         return parse:commit()
-     end
-
-     return parse:error("Invalid repeat-until loop");
-end;
-
-DoEndStatement = function(parse)
-    parse = parse:branch(S.DO_END)
-    
-    if parse:tryConsume(T.DO)
-    and parse:tryConsumeRules(genBody(T.END))
-    and parse:tryConsume(T.END) then
-         return parse:commit()
-     end
-
-     return parse:error("Invalid repeat-until loop");
-end;
-
--- could arguably ban this
----@param parse Parse
-GotoStatement = function(parse)
-    parse = parse:branch(S.GOTOSTATEMENT)
-    if parse:tryConsume(T.GOTO)
-     and parse:tryConsume(T.IDENTIFIER) then
-        return parse:commit()
-    end
-
-    return parse:error("Invalid goto")
-end;
-
----@param parse Parse
-GotoLabelStatement = function(parse)
-    parse = parse:branch(S.GOTOLABEL)
-    if parse:tryConsume(T.GOTOMARKER)
-        and parse:tryConsume(T.IDENTIFIER)
-        and parse:tryConsume(T.GOTOMARKER) then
-            return parse:commit()
-    end
-    return parse:error("Invalid goto ::label::")
-end;
-
-
-ProcessorLBTagSection = function(parse)
-end;
-
-Program = function(parse)
-    local parse = parse:branch()
-
-    parse:tryConsumeRules(genBody(T.EOF))
-
-    if parse:tryConsume(T.EOF) then
-        return parse:commit()
-    end
-
-    return parse:error("Did not reach EOF")
-end;
-
-
----@return string
-toStringTokens = function(tokens)
-    local result = {}
-    for i=1,#tokens do
-        result[#result+1] = tokens[i].raw
-    end
-    return table.concat(result)
-end;
-
-toStringParse = function(tree)
-    local result = {}
-    for i=1,#tree do
-        result[#result+1] = toStringParse(tree[i])
-        result[#result+1] = tree[i].raw
-    end
-    return table.concat(result)
-end;
-
----@param tree LBSymbol
-simplify = function(tree)
-    local i = 1   
-    while i <= #tree do
-        local child = tree[i]
-
-        if not child.type or (tree.type == child.type) then
-            
-            if child[1] then
-                tree[i] = child[1]
-            end
-            for ichild=2, #child do
-                table.insert(tree, i+ichild-1, child[ichild])
-            end
-        else
-            simplify(tree[i])
-            i = i + 1
-        end 
-    end
-
-    return tree
-end;
-
-parse = function(text)
-    local tokens = tokenize(text)
-    local parser = Parse:new(nil, tokens, 1)
-    local result = Program(parser)
-
-    if not result then
-        error(parser.errorObj:toString())
-    end
-    
-    return simplify(parser.symbol)
-end;
-
-testParse = function(parseFunc, text)
-    local tokens = tokenize(text)
-    local parser = Parse:new("TEST", tokens, 1)
-    local result = parseFunc(parser)
-    
-    return simplify(parser.symbol)
-end;
-
-
-local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
-
-local parsed = parse(text)
-
-LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
-    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]]),
-    toStringParse(parsed))
-
-
-__simulator:exit()
+return { LexLua = LexLua, ParseLua = ParseLua }
+	

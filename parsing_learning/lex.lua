@@ -111,6 +111,25 @@ tokenizekeyword = function(keyword)
     return LBKeywords[keyword]
 end;
 
+getString = function(lineInfo, text, iText, ending)
+    local start = iText
+    local backslashes = 0
+    iText = iText + 1
+    while iText <= #text do
+        local char = text:sub(iText,iText)
+        if char == "\\" then
+            iText = iText + 2
+        elseif char == ending then
+            return iText+1, text:sub(start, iText)
+        else
+            iText = iText + 1
+        end
+    end
+
+    error(lineInfo:toString() .. "\nIncomplete string, starting at: " .. iText .. ": \n " .. text:sub(start) )
+end;
+
+
 ---@param text string
 ---@return LBToken[]
 tokenize = function(text)
@@ -139,12 +158,12 @@ tokenize = function(text)
 
         if LBStr.nextSectionEquals(text, iText, '"') then
             -- quote (")
-            iText, nextToken = LBStr.getTextIncluding(text, iText, '[^\\]"')
+            iText, nextToken = getString(lineInfo, text, iText, '"')
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
 
         elseif LBStr.nextSectionEquals(text, iText, "'") then
             -- quote (')
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "[^\\]'")
+            iText, nextToken = getString(lineInfo, text, iText, "'")
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
 
         elseif LBStr.nextSectionIs(text, iText, "%[=*%[") then
@@ -404,7 +423,7 @@ end;
 ---@field tokens LBSymbol[]
 ---@field symbol LBSymbol
 ---@field i number
----@field isFunctionScope boolean defined the type of scope, function or loop or none; for return and break keywords
+---@field isReturnableScope boolean defined the type of scope, function or loop or none; for return and break keywords
 ---@field isLoopScope boolean
 ---@field errorObj any
 Parse = {
@@ -415,7 +434,7 @@ Parse = {
         this.tokens = tokens
         this.symbol = LBSymbol:new(type)
         this.parent = parent
-        this.isFunctionScope = parent and parent.isFunctionScope or false
+        this.isReturnableScope = parent and parent.isReturnableScope or false
         this.isLoopScope = parent and parent.isLoopScope or false
         return this
     end;
@@ -555,7 +574,7 @@ Statement = function(parse)
         ProcessorLBTagSection,
         FunctionCallStatement,
         AssignmentOrLocalDeclaration,
-        parse.isFunctionScope and ReturnStatement or nil
+        parse.isReturnableScope and ReturnStatement or nil
     ) then
         return parse:commit()
     end
@@ -673,7 +692,7 @@ AnonymousFunctionDef = function(parse)
     if parse:tryConsume(T.FUNCTION) 
     and parse:tryConsumeRules(FunctionDefParenthesis) then
 
-        parse.isFunctionScope = true;
+        parse.isReturnableScope = true;
         parse.isLoopScope = false;
         parse:tryConsumeRules(genBody(T.END))
 
@@ -688,6 +707,9 @@ end;
 ---@param parse Parse
 NamedFunctionDefinition = function(parse, ...)
     parse = parse:branch(S.FUNCTIONDEF)
+    
+    -- optionally local
+    parse:tryConsume(T.LOCAL)
 
     if parse:tryConsume(T.FUNCTION)
         and parse:tryConsume(T.IDENTIFIER) then
@@ -708,7 +730,7 @@ NamedFunctionDefinition = function(parse, ...)
 
         if parse:tryConsumeRules(FunctionDefParenthesis) then
 
-            parse.isFunctionScope = true;
+            parse.isReturnableScope = true;
             parse.isLoopScope = false;
             parse:tryConsumeRules(genBody(T.END))
 
@@ -772,7 +794,6 @@ FunctionCallStatement = function(parse)
 
     return parse:error("Invalid function call statement")
 end;
-
 
 ---@param parse Parse
 ExpressionChainedOperator = function(parse)
@@ -857,6 +878,8 @@ end
 ---@param parse Parse
 IfStatement = function(parse)
     parse = parse:branch(S.IF_STATEMENT)
+    parse.isReturnableScope = true
+
     if parse:tryConsume(T.IF) 
         and parse:tryConsumeRulesAs(S.IF_CONDITION, Expression)
         and parse:tryConsume(T.THEN) then
@@ -918,6 +941,8 @@ AssignmentOrLocalDeclaration = function(parse)
     return parse:error("Invalid Assignment/Local Declaration")
 end;
 
+
+
 ---@param parse Parse
 FunctionCallParenthesis = function(parse)
     parse = parse:branch(S.FUNCTIONCALL)
@@ -929,6 +954,12 @@ FunctionCallParenthesis = function(parse)
         if parse:tryConsume(T.CLOSEBRACKET) then
             return parse:commit()
         end
+    elseif parse:tryConsume(T.STRING) then
+        -- alternate way to call functions, abyssmal addition to the language 
+        return parse:commit()
+    elseif parse:tryConsumeRules(TableDef) then
+        -- equally mental way of calling functions, please refrain from this
+        return parse:commit()
     end
 
     return parse:error("Invalid function call parenthesis")
@@ -965,6 +996,7 @@ end;
 ForLoopStatement = function(parse)
     parse = parse:branch(S.FOR_LOOP)
     parse.isLoopScope = true
+    parse.isReturnableScope = true
     
     if parse:tryConsume(T.FOR) then
         -- a,b,c,d,e=1..works
@@ -996,6 +1028,7 @@ end;
 ForInLoopStatement = function(parse)
     parse = parse:branch(S.FOR_LOOP)
     parse.isLoopScope = true
+    parse.isReturnableScope = true
     
     if parse:tryConsume(T.FOR) then
         -- a,b,c,d,e=1..works
@@ -1036,6 +1069,7 @@ end;
 WhileLoopStatement = function(parse)
     parse = parse:branch(S.WHILE_LOOP)
     parse.isLoopScope = true
+    parse.isReturnableScope = true
     
     if parse:tryConsume(T.WHILE)
      and parse:tryConsumeRules(Expression)
@@ -1053,6 +1087,7 @@ end;
 RepeatUntilStatement = function(parse)
     parse = parse:branch(S.REPEAT_UNTIL)
     parse.isLoopScope = true
+    parse.isReturnableScope = true
     
     if parse:tryConsume(T.REPEAT)
     and parse:tryConsumeRules(genBody(T.UNTIL))
@@ -1066,7 +1101,8 @@ end;
 
 DoEndStatement = function(parse)
     parse = parse:branch(S.DO_END)
-    
+    parse.isReturnableScope = true
+
     if parse:tryConsume(T.DO)
     and parse:tryConsumeRules(genBody(T.END))
     and parse:tryConsume(T.END) then
@@ -1106,8 +1142,11 @@ end;
 Program = function(parse)
     local parse = parse:branch()
 
-    parse:tryConsumeRules(genBody(T.EOF))
+    parse:tryConsumeRules(genBody(T.EOF, T.RETURN))
 
+    if parse:tryConsumeRules(ReturnStatement) then
+        
+    end
     if parse:tryConsume(T.EOF) then
         return parse:commit()
     end
@@ -1177,7 +1216,6 @@ testParse = function(parseFunc, text)
     return simplify(parser.symbol)
 end;
 
-
 local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
 
 local parsed = parse(text)
@@ -1188,3 +1226,4 @@ LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
 
 
 __simulator:exit()
+
