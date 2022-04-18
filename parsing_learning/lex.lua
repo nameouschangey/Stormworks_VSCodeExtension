@@ -212,6 +212,7 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
+
         elseif LBStr.nextSectionIs(text, iText, "%.%.%.") then
             -- varargs
             iText, nextToken = iText+3, text:sub(iText, iText+2)
@@ -249,9 +250,9 @@ tokenize = function(text)
             iText, nextToken = LBStr.getTextIncluding(text, iText, "0x%x+")
             tokens[#tokens+1] = LBSymbol:new(T.HEX, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%x*%.?%x+") then 
+        elseif LBStr.nextSectionIs(text, iText, "%d*%.?%d+") then 
             -- number
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "%x*%.?%x+")
+            iText, nextToken = LBStr.getTextIncluding(text, iText, "%d*%.?%d+")
             tokens[#tokens+1] = LBSymbol:new(T.NUMBER, nextToken)
 
         elseif LBStr.nextSectionIs(text, iText, "%.") then
@@ -278,6 +279,9 @@ tokenize = function(text)
         end
         i=i+1
     end
+    -- add the EOF marker
+    tokens[#tokens+1] = LBSymbol:new(T.EOF)
+
     return associateRightWhitespaceAndComments(tokens)
 end;
 
@@ -298,11 +302,10 @@ associateRightWhitespaceAndComments = function(tokens)
     end
 
     -- add any trailing whitespace to the EOF marker
+    local eofToken = tokens[#tokens]
     if #leadingWhitespace > 0 then
-        local token = LBSymbol:new(T.EOF)
-        result[#result+1] = token
         for ileadingWhitespace=1, #leadingWhitespace do
-            token[#token+1] = leadingWhitespace[ileadingWhitespace]
+            eofToken[#eofToken+1] = leadingWhitespace[ileadingWhitespace]
         end
     end
     return result
@@ -400,36 +403,40 @@ Parse = {
     end;
 
     ---@param this Parse
-    consumeRules = function(this, ...)
-        if not this:tryConsumeRules(...) then
-            error("Parse error, no suitable rule")
+    tryConsumeRulesAs = function(this, name, ...)
+        local branch = this:branch(name)
+        local result = branch:tryConsumeRules(...)
+        if result then
+            branch:commit()
         end
-        return true
+        return result
     end;
 }
 
 
 LBSymbolTypes = {
-    TOKEN               = "TOKEN",
-    STRING              = "STRING",
     FUNCTIONDEF         = "FUNCTIONDEF",
     FUNCTIONCALL        = "FUNCTIONCALL",
     TABLEDEF            = "TABLEDEF",
-    IDENTIFIER_CHAIN    = "IDENTIFIER_CHAIN",
-    LBTAG               = "LBTAG",
     WHILE_LOOP          = "WHILE_LOOP",
     FOR_LOOP            = "FOR_LOOP",
     DO_END              = "DO_END",
     REPEAT_UNTIL        = "REPEAT_UNTIL",
     SQUARE_BRACKETS     = "SQUARE_BRACKETS",
-    PARAMLIST           = "PARAMLIST",
-    PARAM               = "PARAM",
+    
     IF_STATEMENT        = "IF_STATEMENT",
+    IF_CONDITION        = "IF_CONDITION",
+
+    BODY                = "BODY",
+
     ASSIGNMENT          = "ASSIGNMENT",
     PROGRAM             = "PROGRAM",
     PARENTHESIS         = "PARENTHESIS",
     EXPCHAIN            = "EXPCHAIN",
-    OPERATORCHAIN           = "BINARYEXP"
+    OPERATORCHAIN       = "OPERATORCHAIN",
+    DECLARE_LOCAL       = "DECLARE_LOCAL",
+    FUNCTIONDEF_PARAMS  = "FUNCTIONDEF_PARAMS",
+    PARAM               = "PARAM"
     }
 local S = LBSymbolTypes
 
@@ -439,31 +446,20 @@ Statement = function(parse)
     parse = parse:branch(S.STATEMENT)
     if parse:tryConsumeRules(
         NamedFunctionDefinition,
-        Assignment,
-        LocalWithoutAssignment,
-        FunctionCall,
+        AssignmentOrLocalDeclaration,
+        FunctionCallStatement,
         IfStatement,
-        ProcessorLBTagSection
+
+        -- other statements
+
+        ProcessorLBTagSection,
+        parse.isFunctionScope and ReturnStatement or nil
     ) then
         return parse:commit()
     end
-    -- Assignment
-    -- local without Assignment
-    -- Whitespace/Comments
-    -- Function Call
-    -- Function Def
-    -- If/Loops/Do/Etc.
-    -- Goto (bleh)
 end;
 
 
-
-ExpressionList = function(parse)
-    -- a,b,c,d,e comma separated items
-end;
-
-FunctionCall = function(parse)
-end;
 
 
 
@@ -489,14 +485,6 @@ ParenthesisExpression = function(parse)
     end
 end;
 
----@param parse Parse
---AccessChain = function(parse)
---    parse = parse:branch(S.ACCESSCHAIN)
---    if (parse:tryConsume(T.DOTACCESS) and parse:tryConsume(T.IDENTIFIER)) or parse:tryConsume(SquareBracketsIndex) then
---        return parse:commit()
---    end
---end;
-
 
 TableDef = function(parse)
     parse = parse:branch(S.TABLEDEF)
@@ -511,6 +499,48 @@ TableDef = function(parse)
     end
 end;
 
+---@param parse Parse
+FunctionDefParenthesis = function(parse)
+    parse = parse:branch(S.FUNCTIONDEF_PARAMS)
+    if parse:tryConsume(T.OPENBRACKET) then
+
+        if(parse:tryConsume(T.IDENTIFIER)) then
+            
+            while(parse:tryConsume(T.COMMA)) do
+                if not parse:tryConsume(T.IDENTIFIER) then
+                    return false
+                end
+            end
+        end
+
+        if parse:tryConsume(T.CLOSEBRACKET) then
+            return parse:commit()
+        end
+    end
+end;
+
+ExpressionList = function(parse)
+    -- a,b,c,d,e comma separated items
+    parse = parse:branch()
+    if parse:tryConsumeRules(Expression) then
+        while parse:tryConsume(T.COMMA) do
+            if not parse:tryConsumeRules(Expression) then
+                return false
+            end
+        end
+
+        return parse:commit()
+    end
+end;
+
+---@param parse Parse
+ReturnStatement = function(parse)
+    parse = parse:branch()
+    if parse:tryConsume(T.RETURN)
+        and parse:tryConsumeRules(ExpressionList) then
+        return parse:commit() 
+    end
+end
 
 ---@param parse Parse
 AnonymousFunctionDef = function(parse)
@@ -520,7 +550,7 @@ AnonymousFunctionDef = function(parse)
     and parse:tryConsumeRules(FunctionDefParenthesis) then
 
         parse.isFunctionScope = true;
-        while parse:consumeRules(Statement) do end
+        parse:tryConsumeRules(Body)
 
         if parse:tryConsume(T.END) then
             return parse:commit()
@@ -528,25 +558,38 @@ AnonymousFunctionDef = function(parse)
     end
 end;
 
-FunctionDefParenthesis = function(parse)
-end;
-
-NamedFunctionDefinition = function(parse)
+---@param parse Parse
+NamedFunctionDefinition = function(parse, ...)
     parse = parse:branch(S.FUNCTIONDEF)
 
-    if parse:tryConsume(T.FUNCTION) 
-    and parse:tryConsumeRules(IdentifierChain)
-    and parse:tryConsumeRules(FunctionDefParenthesis) then
+    if parse:tryConsume(T.FUNCTION)
+        and parse:tryConsume(T.IDENTIFIER) then
 
-        parse.isFunctionScope = true;
-        while parse:consumeRules(Statement) do end
+        -- for each ".", require a <name> after
+        while parse:tryConsume(T.DOTACCESS) do
+            if not parse:tryConsume(T.IDENTIFIER) then
+                return false
+            end
+        end
 
-        if parse:tryConsume(T.END) then
-            return parse:commit()
+        -- if : exists, require <name> after
+        if parse:tryConsume(T.COLONACCESS) then
+            if not parse:tryConsume(T.IDENTIFIER) then
+                return false
+            end
+        end
+
+        if parse:tryConsumeRules(FunctionDefParenthesis) then
+
+            parse.isFunctionScope = true;
+            parse:tryConsumeRules(Body)
+
+            if parse:tryConsume(T.END) then
+                return parse:commit()
+            end
         end
     end
 end;
-
 
 ---@param parse Parse
 BinaryExpression = function(parse)
@@ -559,16 +602,60 @@ BinaryExpression = function(parse)
     end
 end;
 
+
+LValue = function(parse)
+    parse = parse:branch() -- no typename; meaning it will simplify out
+
+    -- messy but easier way to handle Lvalues: (saves a lot of duplication)
+    -- easiest thing to do is, check if we can make a valid ExpChain and then make sure the end of it is actually modifiable
+    if parse:tryConsume(ExpressionChainedOperator)
+        and parse.symbol[#parse.symbol] and parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]]
+        and is(parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
+            parse.symbol.type = S.LVALUE
+            return parse:commit()
+    end
+end;
+
+FunctionCallParenthesis = function(parse)
+end;
+
+---@param parse Parse
+FunctionCallStatement = function(parse)
+    parse = parse:branch()
+
+    -- save a lot of duplication by finding a valid ExpChain and then backtracking
+    if parse:tryConsume(ExpressionChainedOperator)
+        and parse.symbol[#parse.symbol] and parse.symbol[#parse.symbol[#parse.symbol]]
+        and is(parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]].type, S.FUNCTIONCALL) then
+            parse.symbol = S.FUNCTIONCALL
+            return parse:commit()
+    end
+end;
+
+
+
 ---@param parse Parse
 ExpressionChainedOperator = function(parse)
     -- a = (1+2)()()[1].123 param,func,func,accesschain,accesschain
     -- singleExpressions can chain into infinite function calls, etc.
     parse = parse:branch(S.EXPCHAIN)
     if parse:tryConsume(T.IDENTIFIER) or parse:tryConsumeRules(ParenthesisExpression) then
-
-        while parse:tryConsumeRules(AccessChain, FunctionCall) do end
-
-        return parse:commit();
+        while true do
+            if parse:tryConsume(T.DOTACCESS) then -- .<name>
+                if not parse:tryConsume(T.IDENTIFIER) then
+                    return false
+                end
+            elseif parse:tryConsume(T.COLONACCESS) then -- :<name>(func) 
+                if not (parse:tryConsume(T.IDENTIFIER)
+                       and parse:tryConsumeRules(FunctionCallParenthesis)) then
+                    return false
+                end
+            elseif parse:tryConsumeRules(SquareBracketsIndex, FunctionCallParenthesis) then -- [123] or (a,b,c)
+                -- all OK
+            else
+                return parse:commit();
+            end
+        end
     end
 end
 
@@ -605,39 +692,44 @@ Expression = function(parse)
     end
 end;
 
+Body = function(parse)
+    parse = parse:branch(S.BODY)
+    while parse:tryConsumeRules(Statement) do end
+    return parse:commit()
+end;
 
+BodyAtLeastOne = function(parse)
+    parse = parse:branch(S.BODY)
+    if parse:tryConsumeRules(Statement) then
+        while parse:tryConsumeRules(Statement) do end
+        return parse:commit()
+    end
+end;
 
 ---@param parse Parse
 IfStatement = function(parse)
     parse = parse:branch(S.IF_STATEMENT)
-    if parse:tryConsume(T.IF)
-        and parse:tryConsumeRules(Expression)
+    if parse:tryConsume(T.IF) 
+        and parse:tryConsumeRulesAs(S.IF_CONDITION, Expression)
         and parse:tryConsume(T.THEN) then
         
         -- statements, if any - may be empty
-        while parse:tryConsumeRules(Statement) do end
+        parse:tryConsumeRules(Body)
 
         -- potential for elseifs (if they exist, must be well structured or return false "badly made thingmy")
         while parse:tryConsume(T.ELSEIF) do
-            if not (parse:tryConsumeRules(Expression)
+            if not (parse:tryConsumeRulesAs(S.IF_CONDITION, Expression)
                 and parse:tryConsume(T.THEN)) then
                 return false
             else
                 -- parse statements in the "elseif" section
-                while parse:tryConsumeRules(Statement) do end
+                parse:tryConsumeRules(Body)
             end
         end
 
         -- possible "else" section
         if parse:tryConsume(T.ELSE) then
-            -- if "else" exists, expression + then must be well formed
-            if not (parse:tryConsumeRules(Expression)
-                and parse:tryConsume(T.THEN)) then
-                return false
-            else
-                -- parse statements in the "elseif" section
-                while parse:tryConsumeRules(Statement) do end
-            end
+            parse:tryConsumeRules(Body)
         end
 
         if parse:tryConsume(T.END) then
@@ -646,38 +738,52 @@ IfStatement = function(parse)
     end
 end;
 
-
 ---@param parse Parse
-Assignment = function(parse)
+AssignmentOrLocalDeclaration = function(parse)
     parse = parse:branch(S.ASSIGNMENT)
-    parse:tryConsume(T.LOCAL)
-    parse:tryConsume()
-end;
+    local isLocal = parse:tryConsume(T.LOCAL)
+    
+    if parse:tryConsumeRules(LValue) then -- check last part of the EXPCHAIN was assignable
+        
+        -- now check repeatedly for the same, with comma separators
+        --   return false if a comma is provided, but not a valid assignable value
+        while parse:tryConsume(T.COMMA) do
+            if not parse:tryConsumeRules(LValue) then
+                return false
+            end
+        end
 
+        if parse:tryConsume(T.ASSIGN) then -- equals sign "="
+            -- expect a list of expressions to assign
+            if parse:tryConsumeRules(ExpressionList) then
+                return parse:commit()
+            end
+        elseif isLocal then
+            -- if declared local, can be a simple "local statement" with no value - as rare as that is
+            parse.symbol.type = S.DECLARE_LOCAL
+            return parse:commit()
+        end
+    end
 
-
-LocalWithoutAssignment = function(parse)
 end;
 
 TableValueInitialization = function(parse)
 end;
 
-FunctionCall = function(parse)
-end;
-
 ProcessorLBTagSection = function(parse)
 end;
 
-ParseProgram = function(tokens)
-    local parse = Parse:new(S.PROGRAM, tokens, 1)
 
-    while parse:consumeRules(Statement) do end
 
-    parse:tryConsume(T.EOF) -- optional end-of-file token for trailing whitespace
+Program = function(parse)
+    local parse = parse:branch()
 
-    return parse
+    parse:tryConsumeRules(Body)
+
+    if parse:tryConsume(T.EOF) then
+        return parse:commit()
+    end
 end;
-
 
 
 ---@return string
@@ -719,11 +825,13 @@ testParse = function(parseFunc, text)
     return parser.symbol
 end;
 
-local squareBrackets = testParse(IfStatement,[[
+local squareBrackets = testParse(Program,[[
+    local a
 
-    if (123 + 123 + 555 + 444) then
+
+    function abc.def ()
+        a = 1123
     end
-
 ]])
 
 local simplified = simplify(squareBrackets)

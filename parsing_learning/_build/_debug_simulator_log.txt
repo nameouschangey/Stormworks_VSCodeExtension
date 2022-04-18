@@ -1,10 +1,10 @@
-17/04/2022 15:45:20 Launching, time stamp.
-17/04/2022 15:45:20 Opening connection on port 14238
-17/04/2022 15:45:20 Now Accepting TCP clients
-17/04/2022 15:45:20 MainWindow Initialized and running
-17/04/2022 15:45:20 Client accepted - Client Connected: True, beginning Message Loop
+17/04/2022 21:37:19 Launching, time stamp.
+17/04/2022 21:37:19 Opening connection on port 14238
+17/04/2022 21:37:19 Now Accepting TCP clients
+17/04/2022 21:37:19 MainWindow Initialized and running
+17/04/2022 21:37:19 Client accepted - Client Connected: True, beginning Message Loop
 
-17/04/2022 15:45:59 SocketReadTask - Exception - Closing Pipe - Client Connected: False - System.IO.IOException: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host. ---> System.Net.Sockets.SocketException: An existing connection was forcibly closed by the remote host
+17/04/2022 21:37:51 SocketReadTask - Exception - Closing Pipe - Client Connected: False - System.IO.IOException: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host. ---> System.Net.Sockets.SocketException: An existing connection was forcibly closed by the remote host
    at System.Net.Sockets.Socket.Receive(Byte[] buffer, Int32 offset, Int32 size, SocketFlags socketFlags)
    at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
    --- End of inner exception stack trace ---
@@ -12,5 +12,5 @@
    at STORMWORKS_Simulator.SocketConnection.<.ctor>b__13_0() in C:\personal\STORMWORKS_VSCodeExtension\CsharpSimulator\STORMWORKS_Simulator\src\SocketConnection.cs:line 87
 
 
-17/04/2022 15:45:59 Pipe_OnPipeClosed - Closing Application
+17/04/2022 21:37:51 Pipe_OnPipeClosed - Closing Application
 
