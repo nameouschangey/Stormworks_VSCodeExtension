@@ -116,85 +116,103 @@ tokenize = function(text)
     while iText <= #text do
         local lineInfo = getLineInfo()
         local startIndex = iText
+        local nextChar = text:sub(iText, iText)
 
-        if LBStr.nextSectionIs(text, iText, '"') then
+        if LBStr.nextSectionEquals(text, iText, '"') then
             -- quote (")
             iText, nextToken = LBStr.getTextIncluding(text, iText, '[^\\]"')
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "'") then
+        elseif LBStr.nextSectionEquals(text, iText, "'") then
             -- quote (')
             iText, nextToken = LBStr.getTextIncluding(text, iText, "[^\\]'")
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%[%[") then
+        elseif LBStr.nextSectionIs(text, iText, "%[=*%[") then
             -- quote ([[ ]])
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "%]%]")
+            -- annoying syntax thing they added [====[ comment ]====] with same number of equals on either side
+            local numEquals = 0
+            local closingPattern = "%]"
+            while text:sub(iText+3+numEquals,iText+3+numEquals) == '=' do
+                numEquals = numEquals + 1
+                closingPattern = closingPattern .. "="
+            end
+            closingPattern = closingPattern .. "%]"
+            iText, nextToken = LBStr.getTextIncluding(text, iText, closingPattern)
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)  
 
-        elseif LBStr.nextSectionIs(text, iText, "%-%-%-@lb") then
+        elseif LBStr.nextSectionEquals(text, iText, "---@lb") then
             -- preprocessor tag
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%-%-%-@lb")
             tokens[#tokens+1] = LBSymbol:new(T.LBTAG, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%-%-%[%[") then
+        elseif LBStr.nextSectionIs(text, iText, "%-%-%[=*%[") then
             -- multi-line comment
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "%]%]")
+            -- annoying syntax thing they added [====[ comment ]====] with same number of equals on either side
+            local numEquals = 0
+            local closingPattern = "%]"
+            while text:sub(iText+3+numEquals,iText+3+numEquals) == '=' do
+                numEquals = numEquals + 1
+                closingPattern = closingPattern .. "="
+            end
+            closingPattern = closingPattern .. "%]"
+
+            iText, nextToken = LBStr.getTextIncluding(text, iText, closingPattern)
             tokens[#tokens+1] = LBSymbol:new(T.COMMENT, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%-%-") then
+        elseif LBStr.nextSectionEquals(text, iText, "--") then
             -- single-line comment
             iText, nextToken = LBStr.getTextUntil(text, iText, "\n")
             tokens[#tokens+1] = LBSymbol:new(T.COMMENT, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, ";") then
+        elseif LBStr.nextSectionEquals(text, iText, ";") then
             -- single-line comment
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.SEMICOLON, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, ",") then
+        elseif LBStr.nextSectionEquals(text, iText, ",") then
             -- single-line comment
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.COMMA, nextToken)
 
 
-        elseif LBStr.nextSectionIs(text, iText, "%(") then
+        elseif LBStr.nextSectionEquals(text, iText, "(") then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.OPENBRACKET, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%[") then
+        elseif LBStr.nextSectionEquals(text, iText, "[") then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.OPENSQUARE, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%{") then
+        elseif LBStr.nextSectionEquals(text, iText, "{") then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.OPENCURLY, nextToken)
 
 
-        elseif LBStr.nextSectionIs(text, iText, "%)") then
+        elseif LBStr.nextSectionEquals(text, iText, ")") then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.CLOSEBRACKET, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%]") then
+        elseif LBStr.nextSectionEquals(text, iText, "]") then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.CLOSESQUARE, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%}") then
+        elseif LBStr.nextSectionEquals(text, iText, "}") then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.CLOSECURLY, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, ">>") then
+        elseif LBStr.nextSectionEquals(text, iText, ">>") then
             -- comparison
             iText, nextToken = iText+2, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "<<") then
+        elseif LBStr.nextSectionEquals(text, iText, "<<") then
             -- comparison
             iText, nextToken = iText+2, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
@@ -210,12 +228,12 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "//") then
+        elseif LBStr.nextSectionEquals(text, iText, "//") then
             -- floor (one math op not two)
             iText, nextToken = iText+1, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "#") then
+        elseif LBStr.nextSectionEquals(text, iText, "#") then
             -- all other math ops
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.UNARY_OP, nextToken)
@@ -231,19 +249,19 @@ tokenize = function(text)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
 
-        elseif LBStr.nextSectionIs(text, iText, "%.%.%.") then
+        elseif LBStr.nextSectionEquals(text, iText, "...") then
             -- varargs
             iText, nextToken = iText+3, text:sub(iText, iText+2)
             tokens[#tokens+1] = LBSymbol:new(T.VARARGS, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%.%.") then
+        elseif LBStr.nextSectionEquals(text, iText, "..") then
             -- concat
             iText, nextToken = iText+2, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
 
 
-        elseif LBStr.nextSectionIs(text, iText, "=") then
+        elseif LBStr.nextSectionEquals(text, iText, "=") then
             -- assignment
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.ASSIGN, nextToken)
@@ -273,17 +291,17 @@ tokenize = function(text)
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%d*%.?%d+")
             tokens[#tokens+1] = LBSymbol:new(T.NUMBER, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%.") then
+        elseif LBStr.nextSectionEquals(text, iText, ".") then
             -- chain access
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.DOTACCESS, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%:%:") then
+        elseif LBStr.nextSectionEquals(text, iText, "::") then
             -- chain access
             iText, nextToken = iText+1, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.GOTOMARKER, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "%:") then
+        elseif LBStr.nextSectionEquals(text, iText, ":") then
             -- chain access
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.COLONACCESS, nextToken)

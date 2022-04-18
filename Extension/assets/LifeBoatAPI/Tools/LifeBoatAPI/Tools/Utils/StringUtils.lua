@@ -137,6 +137,18 @@ LifeBoatAPI.Tools.StringUtils = {
         return startIndex == i
     end;
     
+    --- Whether the two sections match
+    ---@return boolean
+    nextSectionEquals = function(text, i, str)
+        for istr=1, #str do
+            local char = str:sub(istr,istr)
+            if char ~= text:sub(i+istr-1,i+istr-1) then
+                return false
+            end
+        end
+        return true
+    end;
+
     ---@return number, string
     getTextIncluding = function(text, searchStart, ...)
         local patterns = {...}
