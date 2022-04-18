@@ -22,6 +22,7 @@ is = function(obj, ...)
 end;
 
 
+
 ---@class LBSymbol
 ---@field type string
 ---@field raw string
@@ -147,6 +148,15 @@ tokenize = function(text)
     local LBStr = LifeBoatAPI.Tools.StringUtils
     local nextSectionEquals = LBStr.nextSectionEquals
     local nextSectionIs = LBStr.nextSectionIs
+
+    --performance lookups
+    local lookup_digit = set("1","2","3","4","5","6","7","8","9","0",".")
+    local lookup_alpha = set("_", "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+                                  "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
+    local lookup_math  = set("*","/","+","%","^","&","|")
+    local lookup_ws    = set(" ", "\n", "\r", "\t")
+
+
 
     local tokens = {}
     local nextToken = ""
@@ -296,7 +306,7 @@ tokenize = function(text)
             iText, nextToken = iText+1, nextChar
             tokens[#tokens+1] = LBSymbol:new(T.MIXED_OP, nextToken)
 
-        elseif nextChar == "*" or nextChar == "/" or nextChar == "+" or nextChar == "%" or nextChar == "^" or nextChar == "&" or nextChar == "|" then
+        elseif lookup_math[nextChar] then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
@@ -312,12 +322,12 @@ tokenize = function(text)
             iText, nextToken = iText+2, next2Char
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
-        elseif nextChar =="=" then
+        elseif nextChar == "=" then
             -- assignment
             iText, nextToken = iText+1, nextChar
             tokens[#tokens+1] = LBSymbol:new(T.ASSIGN, nextToken)
 
-        elseif nextSectionIs(text, iText, "[%a_]") then
+        elseif lookup_alpha[nextChar] then
             -- keywords & identifier
             iText, nextToken = LBStr.getTextIncluding(text, iText, "[%a_][%w_]*")
             local keyword = tokenizekeyword(nextToken)
@@ -327,7 +337,7 @@ tokenize = function(text)
                 tokens[#tokens+1] = LBSymbol:new(T.IDENTIFIER, nextToken)
             end
 
-        elseif nextChar == " " or nextChar == "\n" or nextChar == "\t" or nextChar == "\r" then --nextSectionIs(text, iText, "%s") then
+        elseif lookup_ws[nextChar] then --nextSectionIs(text, iText, "%s") then
             -- whitespace
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%s*")
             tokens[#tokens+1] = LBSymbol:new(T.WHITESPACE, nextToken)
@@ -337,7 +347,7 @@ tokenize = function(text)
             iText, nextToken = LBStr.getTextIncluding(text, iText, "0x%x+")
             tokens[#tokens+1] = LBSymbol:new(T.HEX, nextToken)
 
-        elseif nextSectionIs(text, iText, "%d*%.?%d+") then 
+        elseif lookup_digit[nextChar] and nextSectionIs(text, iText, "%d*%.?%d+") then 
             -- number
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%d*%.?%d+")
             tokens[#tokens+1] = LBSymbol:new(T.NUMBER, nextToken)
