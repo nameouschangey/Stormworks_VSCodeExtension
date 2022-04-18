@@ -304,9 +304,11 @@ end;
 ReturnStatement = function(parse)
     parse = parse:branch()
     if parse:tryConsume(T.RETURN) then
-        if parse:tryConsumeRules(ExpressionList) then
-            return parse:commit() 
-        end
+
+        -- optional expression-list
+        parse:tryConsumeRules(ExpressionList)
+
+        return parse:commit()
     end
 
     return parse:error("Invalid return statement")

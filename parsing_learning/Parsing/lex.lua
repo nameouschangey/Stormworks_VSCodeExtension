@@ -289,7 +289,7 @@ tokenize = function(text)
 
         elseif nextSectionEquals(text, iText, "//") then
             -- floor (one math op not two)
-            iText, nextToken = iText+1, text:sub(iText, iText+1)
+            iText, nextToken = iText+2, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
         elseif nextSectionEquals(text, iText, "#") then
