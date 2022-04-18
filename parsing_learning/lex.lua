@@ -76,6 +76,7 @@ LBTokenTypes = {
     FALSE           = "FALSE",
     TRUE            = "TRUE",
     NIL             = "NIL",
+    GOTOMARKER     = "GOTO_LABEL",
     SOF = "SOF",
     EOF = "EOF"}
 
@@ -99,18 +100,22 @@ tokenize = function(text)
 
     local lineNumber = 1
     local lastLineStartIndex = 1
+    local iText = 1
 
-    --lex
-    local iText = 1 
-    while iText <= #text do
-        local lineInfo = {
+    local getLineInfo = function()
+        return {
             line = lineNumber,
             index = iText,
-            column = iText - lastLineStartIndex,
+            column = 1 + iText - lastLineStartIndex,
             toString = function(this)
                 return string.format("line: %d, column: %d, index: %d", this.line, this.column, this.index)
             end
-        }
+        };
+    end;
+
+    while iText <= #text do
+        local lineInfo = getLineInfo()
+        local startIndex = iText
 
         if LBStr.nextSectionIs(text, iText, '"') then
             -- quote (")
@@ -215,7 +220,7 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.UNARY_OP, nextToken)
         
-        elseif LBStr.nextSectionIs(text, iText, "~%-") then
+        elseif LBStr.nextSectionIs(text, iText, "[~%-]") then
             -- all other math ops
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.MIXED_OP, nextToken)
@@ -255,16 +260,8 @@ tokenize = function(text)
 
         elseif LBStr.nextSectionIs(text, iText, "%s+") then
             -- whitespace
-            local startIndex = iText
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%s*")
             tokens[#tokens+1] = LBSymbol:new(T.WHITESPACE, nextToken)
-            -- update line info
-            local newLines = LBStr.find(nextToken, "\n")
-            if #newLines > 0 then
-                lineNumber = lineNumber + #newLines
-                lastLineStartIndex = startIndex + newLines[#newLines].endIndex
-            end
-
 
         elseif LBStr.nextSectionIs(text, iText, "0x%x+") then
             -- hex 
@@ -281,6 +278,11 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.DOTACCESS, nextToken)
 
+        elseif LBStr.nextSectionIs(text, iText, "%:%:") then
+            -- chain access
+            iText, nextToken = iText+1, text:sub(iText, iText+1)
+            tokens[#tokens+1] = LBSymbol:new(T.GOTOMARKER, nextToken)
+
         elseif LBStr.nextSectionIs(text, iText, "%:") then
             -- chain access
             iText, nextToken = iText+1, text:sub(iText, iText)
@@ -290,6 +292,13 @@ tokenize = function(text)
             error(lineInfo:toString() .. "\nCan't process symbol \"" .. text:sub(iText, iText+10) .. "...\"\n\n\"" .. text:sub(math.max(0, iText-20), iText+20) .. "...\"")
         end
         tokens[#tokens].lineInfo = lineInfo
+
+        -- update line info
+        local newLines = LBStr.find(nextToken, "\n")
+        if #newLines > 0 then
+            lineNumber = lineNumber + #newLines
+            lastLineStartIndex = startIndex + newLines[#newLines].endIndex
+        end
     end
 
     -- insert StartOfFile and EndOfFile tokens for whitespace association
@@ -302,7 +311,7 @@ tokenize = function(text)
         i=i+1
     end
     -- add the EOF marker
-    tokens[#tokens+1] = LBSymbol:new(T.EOF)
+    tokens[#tokens+1] = LBSymbol:new(T.EOF,nil, getLineInfo())
 
     return associateRightWhitespaceAndComments(tokens)
 end;
@@ -402,7 +411,7 @@ Parse = {
                 line = lineInfo.line,
                 column = lineInfo.column,
                 toString = function(err)
-                    return "line: " .. err.line .. ", column: " .. err.column .. ", index: " .. err.index .. "\n"
+                    return "line: " .. err.line .. ", column: " .. err.column .. "\n"
                         .. "at token " .. err.i .. ": " .. this.tokens[err.i].raw .. "\n"
                         .. message .. "\n"
                 end;
@@ -486,7 +495,10 @@ LBSymbolTypes = {
     OPERATORCHAIN       = "OPERATORCHAIN",
     DECLARE_LOCAL       = "DECLARE_LOCAL",
     FUNCTIONDEF_PARAMS  = "FUNCTIONDEF_PARAMS",
-    PARAM               = "PARAM"
+    PARAM               = "PARAM",
+
+    GOTOLABEL           = "GOTOLABEL",
+    GOTOSTATEMENT       = "GOTOSTATEMENT"
     }
 local S = LBSymbolTypes
 
@@ -494,14 +506,19 @@ local S = LBSymbolTypes
 ---@param parse Parse
 Statement = function(parse)
     parse = parse:branch(S.STATEMENT)
-    if parse:tryConsumeRules(
+    if parse:tryConsume(T.SEMICOLON)
+     or parse:tryConsumeRules(
         NamedFunctionDefinition,
         AssignmentOrLocalDeclaration,
         FunctionCallStatement,
         IfStatement,
-
-        -- other statements
-
+        ForLoopStatement,
+        ForInLoopStatement,
+        WhileLoopStatement,
+        RepeatUntilStatement,
+        DoEndStatement,
+        GotoLabelStatement,
+        GotoStatement,
         ProcessorLBTagSection,
         parse.isFunctionScope and ReturnStatement or nil
     ) then
@@ -684,7 +701,7 @@ LValue = function(parse)
 
     -- messy but easier way to handle Lvalues: (saves a lot of duplication)
     -- easiest thing to do is, check if we can make a valid ExpChain and then make sure the end of it is actually modifiable
-    if parse:tryConsume(ExpressionChainedOperator)
+    if parse:tryConsumeRules(ExpressionChainedOperator)
         and parse.symbol[#parse.symbol] and parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]]
         and is(parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
             parse.symbol.type = S.LVALUE
@@ -701,7 +718,7 @@ FunctionCallStatement = function(parse)
     parse = parse:branch()
 
     -- save a lot of duplication by finding a valid ExpChain and then backtracking
-    if parse:tryConsume(ExpressionChainedOperator)
+    if parse:tryConsumeRules(ExpressionChainedOperator)
         and parse.symbol[#parse.symbol] and parse.symbol[#parse.symbol[#parse.symbol]]
         and is(parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]].type, S.FUNCTIONCALL) then
             parse.symbol = S.FUNCTIONCALL
@@ -875,8 +892,6 @@ end;
 
 TableAssignment = function(parse)
     parse = parse:branch(S.ASSIGNMENT)
-    local isLocal = parse:tryConsume(T.LOCAL)
-    
     if parse:tryConsumeRules(SquareBracketsIndex)
         or parse:tryConsume(T.IDENTIFIER) then
 
@@ -893,8 +908,8 @@ end;
 TableValueInitialization = function(parse)
     parse = parse:branch()
     if parse:tryConsumeRules(
-        Expression,
-        TableAssignment
+        TableAssignment,
+        Expression
     ) then
         return parse:commit()
     end
@@ -902,26 +917,143 @@ TableValueInitialization = function(parse)
     return parse:error("Invalid table value")
 end;
 
-ProcessorLBTagSection = function(parse)
-end;
-
+---@param parse Parse
 ForLoopStatement = function(parse)
+    parse = parse:branch(S.FOR_LOOP)
+    
+    if parse:tryConsume(T.FOR) then
+        -- a,b,c,d,e=1..works
+        if parse:tryConsume(T.IDENTIFIER)
+            and parse:tryConsume(T.ASSIGN)
+            and parse:tryConsumeRules(Expression) 
+            and parse:tryConsume(T.COMMA)
+            and parse:tryConsumeRules(Expression) then
+
+            -- optional 3rd parameter (step)
+            if parse:tryConsume(T.COMMA)
+                and not parse:tryConsumeRules(Expression) then
+                return parse:error("Trailing ',' in for-loop definition")
+            end
+
+            if parse:tryConsume(T.DO)
+            and parse:tryConsumeRules(genBody(T.END))
+            and parse:tryConsume(T.END) then
+                return parse:commit()
+            end
+        end
+    end
+
+    return parse:error("Invalid for-loop")
 end;
 
 
+---@param parse Parse
+ForInLoopStatement = function(parse)
+    parse = parse:branch(S.FOR_LOOP)
+    
+    if parse:tryConsume(T.FOR) then
+        -- a,b,c,d,e=1..works
+        if parse:tryConsume(T.IDENTIFIER) then -- check last part of the EXPCHAIN was assignable
+
+            -- now check repeatedly for the same, with comma separators
+            --   return false if a comma is provided, but not a valid assignable value
+            while parse:tryConsume(T.COMMA) do
+                if not parse:tryConsume(T.IDENTIFIER) then
+                    return parse:error("Expected identifier after comma")
+                end
+            end
+
+            -- =exp, exp
+            if parse:tryConsume(T.IN)
+            and parse:tryConsumeRules(Expression) then
+
+                -- can now handle as many additional params as wanted
+                while parse:tryConsume(T.COMMA) do
+                    if not parse:tryConsumeRules(Expression) then
+                        return parse:error("Trailing ',' in for-loop definition")
+                    end
+                end
+
+                if parse:tryConsume(T.DO)
+                and parse:tryConsumeRules(genBody(T.END))
+                and parse:tryConsume(T.END) then
+                    return parse:commit()
+                end
+            end
+        end
+    end
+
+    return parse:error("Invalid for-loop")
+end;
+
+---@param parse Parse
 WhileLoopStatement = function(parse)
+    parse = parse:branch(S.WHILE_LOOP)
+    
+    if parse:tryConsume(T.WHILE)
+     and parse:tryConsumeRules(Expression)
+     and parse:tryConsume(T.DO)
+     and parse:tryConsumeRules(genBody(T.END))
+     and parse:tryConsume(T.END) then
+         return parse:commit()
+     end
+
+     return parse:error("Invalid while loop");
 end;
 
+
+---@param parse Parse
 RepeatUntilStatement = function(parse)
+    parse = parse:branch(S.REPEAT_UNTIL)
+    
+    if parse:tryConsume(T.REPEAT)
+    and parse:tryConsumeRules(genBody(T.UNTIL))
+    and parse:tryConsume(T.UNTIL)
+     and parse:tryConsumeRules(Expression) then
+         return parse:commit()
+     end
+
+     return parse:error("Invalid repeat-until loop");
 end;
 
 DoEndStatement = function(parse)
+    parse = parse:branch(S.DO_END)
+    
+    if parse:tryConsume(T.DO)
+    and parse:tryConsumeRules(genBody(T.END))
+    and parse:tryConsume(T.END) then
+         return parse:commit()
+     end
+
+     return parse:error("Invalid repeat-until loop");
 end;
 
 -- could arguably ban this
+---@param parse Parse
 GotoStatement = function(parse)
+    parse = parse:branch(S.GOTOSTATEMENT)
+    if parse:tryConsume(T.GOTO)
+     and parse:tryConsume(T.IDENTIFIER) then
+        return parse:commit()
+    end
+
+    return parse:error("Invalid goto")
 end;
 
+---@param parse Parse
+GotoLabelStatement = function(parse)
+    parse = parse:branch(S.GOTOLABEL)
+    if parse:tryConsume(T.GOTOMARKER)
+        and parse:tryConsume(T.IDENTIFIER)
+        and parse:tryConsume(T.GOTOMARKER) then
+            return parse:commit()
+    end
+    return parse:error("Invalid goto ::label::")
+end;
+
+
+ProcessorLBTagSection = function(parse)
+end;
 
 Program = function(parse)
     local parse = parse:branch()

@@ -88,7 +88,7 @@ LifeBoatAPI.Tools.StringUtils = {
         local found = {}
         local index = startIndex or 1 -- reminder; str:sub(1,1) gets the first character of the string
         local searching = true
-        while index < #text and searching do
+        while index <= #text and searching do
             local match = LifeBoatAPI.Tools.StringMatch:new(text:find(pattern, index))
             if(match.startIndex) then
                 match.startIndex = match.startIndex + startOffset
