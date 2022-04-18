@@ -813,10 +813,18 @@ simplify = function(tree)
     return tree
 end;
 
+s = require("socket")
+
 parse = function(text)
+    local startTime = s.gettime()
     local tokens = tokenize(text)
+
+    print("tokenize time: " .. tostring(s.gettime() - startTime)) -- 3.2285842895508 (base)
+
+    startTime = s.gettime()
     local parser = Parse:new(nil, tokens, 1)
     local result = Program(parser)
+    print("parse time: " .. tostring(s.gettime() - startTime)) -- 2.3244800567627 (base)
 
     if not result then
         error(parser.errorObj:toString())

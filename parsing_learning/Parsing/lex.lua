@@ -171,7 +171,7 @@ tokenize = function(text)
     while iText <= #text do
         local lineInfo = getLineInfo()
         local startIndex = iText
-
+        
         if nextSectionEquals(text, iText, '"') then
             -- quote (")
             iText, nextToken = getString(lineInfo, text, iText, '"')
