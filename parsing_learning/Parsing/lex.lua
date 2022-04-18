@@ -95,7 +95,7 @@ LBTokenTypes = {
 local T = LBTokenTypes
 
 
-LBKeywords = {
+local LBKeywords = {
     ["and"]             = LBTokenTypes.AND,
     ["break"]           = LBTokenTypes.BREAK,
     ["do"]              = LBTokenTypes.DO,
@@ -120,11 +120,11 @@ LBKeywords = {
     ["nil"]             = LBTokenTypes.NIL,
 }
 
-tokenizekeyword = function(keyword)
+local tokenizekeyword = function(keyword)
     return LBKeywords[keyword]
 end;
 
-getString = function(lineInfo, text, iText, ending)
+local getString = function(lineInfo, text, iText, ending)
     local start = iText
     iText = iText + 1
     while iText <= #text do
@@ -141,6 +141,31 @@ getString = function(lineInfo, text, iText, ending)
     error(lineInfo:toString() .. "\nIncomplete string, starting at: " .. iText .. ": \n " .. text:sub(start) )
 end;
 
+local associateRightWhitespaceAndComments = function(tokens)
+    local result = {}
+    local leadingWhitespace = {}
+    for itokens=1, #tokens do
+        if is(tokens[itokens].type, T.WHITESPACE, T.COMMENT) then
+            leadingWhitespace[#leadingWhitespace+1] = tokens[itokens]
+        else
+            local token = tokens[itokens]
+            result[#result+1] = token
+            for ileadingWhitespace=1, #leadingWhitespace do
+                token[#token+1] = leadingWhitespace[ileadingWhitespace]
+            end
+            leadingWhitespace = {}
+        end
+    end
+
+    -- add any trailing whitespace to the EOF marker
+    local eofToken = tokens[#tokens]
+    if #leadingWhitespace > 0 then
+        for ileadingWhitespace=1, #leadingWhitespace do
+            eofToken[#eofToken+1] = leadingWhitespace[ileadingWhitespace]
+        end
+    end
+    return result
+end;
 
 ---@param text string
 ---@return LBToken[]
@@ -394,30 +419,3 @@ tokenize = function(text)
 
     return associateRightWhitespaceAndComments(tokens)
 end;
-
-associateRightWhitespaceAndComments = function(tokens)
-    local result = {}
-    local leadingWhitespace = {}
-    for itokens=1, #tokens do
-        if is(tokens[itokens].type, T.WHITESPACE, T.COMMENT) then
-            leadingWhitespace[#leadingWhitespace+1] = tokens[itokens]
-        else
-            local token = tokens[itokens]
-            result[#result+1] = token
-            for ileadingWhitespace=1, #leadingWhitespace do
-                token[#token+1] = leadingWhitespace[ileadingWhitespace]
-            end
-            leadingWhitespace = {}
-        end
-    end
-
-    -- add any trailing whitespace to the EOF marker
-    local eofToken = tokens[#tokens]
-    if #leadingWhitespace > 0 then
-        for ileadingWhitespace=1, #leadingWhitespace do
-            eofToken[#eofToken+1] = leadingWhitespace[ileadingWhitespace]
-        end
-    end
-    return result
-end;
-
