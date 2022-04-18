@@ -93,7 +93,7 @@ LifeBoatAPI.Tools.StringUtils = {
             if(match.startIndex) then
                 match.startIndex = match.startIndex + startOffset
                 index = match.endIndex + 1 + endOffset
-                LifeBoatAPI.Tools.TableUtils.add(found, match)
+                found[#found+1] = match
             else
                 searching = false
             end

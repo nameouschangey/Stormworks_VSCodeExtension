@@ -2,15 +2,16 @@
 ---@field type string
 ---@field raw string
 LBSymbol = {
-    new = function(this, type, raw)
+    new = function(this, type, raw, lineinfo)
         this = LifeBoatAPI.Tools.BaseClass.new(this)
         this.type = type
         this.raw = raw
+        this.lineInfo = lineinfo
         return this
     end;
 
     fromToken = function(this, token)
-        return LBSymbol:new(token.type, token.raw)
+        return LBSymbol:new(token.type, token.raw, token.lineInfo)
     end;
 }
 
@@ -96,9 +97,21 @@ tokenize = function(text)
     local tokens = {}
     local nextToken = ""
 
+    local lineNumber = 1
+    local lastLineStartIndex = 1
+
     --lex
     local iText = 1 
     while iText <= #text do
+        local lineInfo = {
+            line = lineNumber,
+            index = iText,
+            column = iText - lastLineStartIndex,
+            toString = function(this)
+                return string.format("line: %d, column: %d, index: %d", this.line, this.column, this.index)
+            end
+        }
+
         if LBStr.nextSectionIs(text, iText, '"') then
             -- quote (")
             iText, nextToken = LBStr.getTextIncluding(text, iText, '[^\\]"')
@@ -242,8 +255,16 @@ tokenize = function(text)
 
         elseif LBStr.nextSectionIs(text, iText, "%s+") then
             -- whitespace
+            local startIndex = iText
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%s*")
             tokens[#tokens+1] = LBSymbol:new(T.WHITESPACE, nextToken)
+            -- update line info
+            local newLines = LBStr.find(nextToken, "\n")
+            if #newLines > 0 then
+                lineNumber = lineNumber + #newLines
+                lastLineStartIndex = startIndex + newLines[#newLines].endIndex
+            end
+
 
         elseif LBStr.nextSectionIs(text, iText, "0x%x+") then
             -- hex 
@@ -266,8 +287,9 @@ tokenize = function(text)
             tokens[#tokens+1] = LBSymbol:new(T.COLONACCESS, nextToken)
 
         else
-            error("unexpected text " .. nextToken .. " at " .. iText)
+            error(lineInfo:toString() .. "\nCan't process symbol \"" .. text:sub(iText, iText+10) .. "...\"\n\n\"" .. text:sub(math.max(0, iText-20), iText+20) .. "...\"")
         end
+        tokens[#tokens].lineInfo = lineInfo
     end
 
     -- insert StartOfFile and EndOfFile tokens for whitespace association
@@ -342,6 +364,7 @@ end;
 ---@field symbol LBSymbol
 ---@field i number
 ---@field isFunctionScope boolean only affects one thing "is return a valid keyword"
+---@field errorObj any
 Parse = {
     ---@return Parse
     new = function(this, type, tokens, i, parent)
@@ -366,6 +389,30 @@ Parse = {
             this.parent.i = this.i
         end
         return true
+    end;
+
+    error = function(this, message)
+        local lineInfo = this.tokens[this.i].lineInfo
+        if (not this.errorObj) or (lineInfo.index > this.errorObj.index) then
+            this.errorObj = {
+                owner = this,
+                message = message,
+                i = this.i,
+                index = lineInfo.index,
+                line = lineInfo.line,
+                column = lineInfo.column,
+                toString = function(err)
+                    return "line: " .. err.line .. ", column: " .. err.column .. ", index: " .. err.index .. "\n"
+                        .. "at token " .. err.i .. ": " .. this.tokens[err.i].raw .. "\n"
+                        .. message .. "\n"
+                end;
+            }
+        end
+
+        if (not this.parent.errorObj) or (this.errorObj.index > this.parent.errorObj.index) then
+            this.parent.errorObj = this.errorObj
+        end
+        return false
     end;
 
     ---@return boolean
@@ -394,8 +441,9 @@ Parse = {
     ---@param this Parse
     tryConsumeRules = function(this, ...)
         local rules = {...}
-        for irule=1, #rules do
-            if rules[irule](this) then
+        for irules=1, #rules do
+            local rule = rules[irules]
+            if rule(this) then
                 return true
             end
         end
@@ -408,6 +456,8 @@ Parse = {
         local result = branch:tryConsumeRules(...)
         if result then
             branch:commit()
+        else
+            branch:error("Failed to parse as " .. tostring(name))
         end
         return result
     end;
@@ -457,10 +507,9 @@ Statement = function(parse)
     ) then
         return parse:commit()
     end
+
+    return parse:error("Invalid statement")
 end;
-
-
-
 
 
 SquareBracketsIndex = function(parse)
@@ -472,6 +521,8 @@ SquareBracketsIndex = function(parse)
 
         return parse:commit()
     end
+
+    return parse:error("Invalid square-bracket index")
 end
 
 ParenthesisExpression = function(parse)
@@ -483,20 +534,30 @@ ParenthesisExpression = function(parse)
 
         return parse:commit()
     end
-end;
 
+    return parse:error("Invalid parenthesis expression")
+end;
 
 TableDef = function(parse)
     parse = parse:branch(S.TABLEDEF)
 
     if parse:tryConsume(T.OPENCURLY) then
         
-        while parse:tryConsumeRules(TableValueInitialization) do end
+        if parse:tryConsumeRules(TableValueInitialization) then
+            while parse:tryConsume(T.COMMA, T.SEMICOLON) do
+                if not parse:tryConsumeRules(TableValueInitialization) then
+                    break; -- it's valid to end on a comma/semi-colon
+                end
+            end
+        end
+
         
         if parse:tryConsume(T.CLOSECURLY) then
             return parse:commit()
         end
     end
+
+    return parse:error("Invalid table definition")
 end;
 
 ---@param parse Parse
@@ -507,8 +568,11 @@ FunctionDefParenthesis = function(parse)
         if(parse:tryConsume(T.IDENTIFIER)) then
             
             while(parse:tryConsume(T.COMMA)) do
+                if parse:tryConsume(T.VARARGS) then
+                    break -- should be final parameter, so close brackets next
+                end
                 if not parse:tryConsume(T.IDENTIFIER) then
-                    return false
+                    return parse:error("Expected parameter after ','")
                 end
             end
         end
@@ -517,6 +581,8 @@ FunctionDefParenthesis = function(parse)
             return parse:commit()
         end
     end
+
+    return parse:error("Invalid function-definition parenthesis")
 end;
 
 ExpressionList = function(parse)
@@ -525,12 +591,14 @@ ExpressionList = function(parse)
     if parse:tryConsumeRules(Expression) then
         while parse:tryConsume(T.COMMA) do
             if not parse:tryConsumeRules(Expression) then
-                return false
+                return parse:error("Expression list must not leave trailing ','")
             end
         end
 
         return parse:commit()
     end
+
+    return parse:error("Invalid expression-list")
 end;
 
 ---@param parse Parse
@@ -540,6 +608,8 @@ ReturnStatement = function(parse)
         and parse:tryConsumeRules(ExpressionList) then
         return parse:commit() 
     end
+
+    return parse:error("Invalid return statement")
 end
 
 ---@param parse Parse
@@ -550,12 +620,14 @@ AnonymousFunctionDef = function(parse)
     and parse:tryConsumeRules(FunctionDefParenthesis) then
 
         parse.isFunctionScope = true;
-        parse:tryConsumeRules(Body)
+        parse:tryConsumeRules(genBody(T.END))
 
         if parse:tryConsume(T.END) then
             return parse:commit()
         end
     end
+
+    return parse:error("Invalid anonymous function definition")
 end;
 
 ---@param parse Parse
@@ -568,27 +640,29 @@ NamedFunctionDefinition = function(parse, ...)
         -- for each ".", require a <name> after
         while parse:tryConsume(T.DOTACCESS) do
             if not parse:tryConsume(T.IDENTIFIER) then
-                return false
+                return parse:error("Expected identifier after '.' ")
             end
         end
 
         -- if : exists, require <name> after
         if parse:tryConsume(T.COLONACCESS) then
             if not parse:tryConsume(T.IDENTIFIER) then
-                return false
+                return parse:error("Expected final identifier after ':' ")
             end
         end
 
         if parse:tryConsumeRules(FunctionDefParenthesis) then
 
             parse.isFunctionScope = true;
-            parse:tryConsumeRules(Body)
+            parse:tryConsumeRules(genBody(T.END))
 
             if parse:tryConsume(T.END) then
                 return parse:commit()
             end
         end
     end
+
+    return parse:error("Invalid named-function definition")
 end;
 
 ---@param parse Parse
@@ -600,6 +674,8 @@ BinaryExpression = function(parse)
 
         return parse:commit()
     end
+
+    return parse:error("Invalid binary expression")
 end;
 
 
@@ -614,10 +690,11 @@ LValue = function(parse)
             parse.symbol.type = S.LVALUE
             return parse:commit()
     end
+
+    return parse:error("Invalid lvalue")
 end;
 
-FunctionCallParenthesis = function(parse)
-end;
+
 
 ---@param parse Parse
 FunctionCallStatement = function(parse)
@@ -630,8 +707,9 @@ FunctionCallStatement = function(parse)
             parse.symbol = S.FUNCTIONCALL
             return parse:commit()
     end
-end;
 
+    return parse:error("Invalid function call statement")
+end;
 
 
 ---@param parse Parse
@@ -643,12 +721,12 @@ ExpressionChainedOperator = function(parse)
         while true do
             if parse:tryConsume(T.DOTACCESS) then -- .<name>
                 if not parse:tryConsume(T.IDENTIFIER) then
-                    return false
+                    return parse:error("Expected identifier after '.' ")
                 end
             elseif parse:tryConsume(T.COLONACCESS) then -- :<name>(func) 
                 if not (parse:tryConsume(T.IDENTIFIER)
                        and parse:tryConsumeRules(FunctionCallParenthesis)) then
-                    return false
+                    return parse:error("Expected function call after ':'")
                 end
             elseif parse:tryConsumeRules(SquareBracketsIndex, FunctionCallParenthesis) then -- [123] or (a,b,c)
                 -- all OK
@@ -657,6 +735,8 @@ ExpressionChainedOperator = function(parse)
             end
         end
     end
+
+    return parse:error("Invalid expression chain")
 end
 
 SingleExpression = function(parse)
@@ -675,6 +755,8 @@ SingleExpression = function(parse)
         then
         return parse:commit()
     end
+
+    return parse:error("Invalid single-expression")
 end;
 
 ---@param parse Parse
@@ -690,21 +772,26 @@ Expression = function(parse)
     ) then
         return parse:commit()
     end
+
+    return parse:error("Invalid expression")
 end;
 
-Body = function(parse)
-    parse = parse:branch(S.BODY)
-    while parse:tryConsumeRules(Statement) do end
-    return parse:commit()
-end;
+genBody = function(...)
+    local args = {...}
 
-BodyAtLeastOne = function(parse)
-    parse = parse:branch(S.BODY)
-    if parse:tryConsumeRules(Statement) then
-        while parse:tryConsumeRules(Statement) do end
+    ---@param parse Parse
+    return function(parse)
+        parse = parse:branch(S.BODY)
+
+        while not parse:match(table.unpack(args)) do
+            if not parse:tryConsumeRules(Statement) then
+                return parse:error("Failed to terminate body")
+            end
+        end
+
         return parse:commit()
-    end
-end;
+    end;
+end
 
 ---@param parse Parse
 IfStatement = function(parse)
@@ -714,28 +801,30 @@ IfStatement = function(parse)
         and parse:tryConsume(T.THEN) then
         
         -- statements, if any - may be empty
-        parse:tryConsumeRules(Body)
+        parse:tryConsumeRules(genBody(T.ELSEIF, T.ELSE, T.END))
 
         -- potential for elseifs (if they exist, must be well structured or return false "badly made thingmy")
         while parse:tryConsume(T.ELSEIF) do
             if not (parse:tryConsumeRulesAs(S.IF_CONDITION, Expression)
                 and parse:tryConsume(T.THEN)) then
-                return false
+                return parse:error("Improperly specified elseif statement")
             else
                 -- parse statements in the "elseif" section
-                parse:tryConsumeRules(Body)
+                parse:tryConsumeRules(genBody(T.ELSEIF, T.ELSE, T.END))
             end
         end
 
         -- possible "else" section
         if parse:tryConsume(T.ELSE) then
-            parse:tryConsumeRules(Body)
+            parse:tryConsumeRules(genBody(T.END))
         end
 
         if parse:tryConsume(T.END) then
             return parse:commit()
         end
     end
+
+    return parse:error("Invalid if Statement")
 end;
 
 ---@param parse Parse
@@ -749,7 +838,7 @@ AssignmentOrLocalDeclaration = function(parse)
         --   return false if a comma is provided, but not a valid assignable value
         while parse:tryConsume(T.COMMA) do
             if not parse:tryConsumeRules(LValue) then
-                return false
+                return parse:error("Expected lvalue after comma")
             end
         end
 
@@ -765,32 +854,102 @@ AssignmentOrLocalDeclaration = function(parse)
         end
     end
 
+    return parse:error("Invalid Assignment/Local Declaration")
+end;
+
+---@param parse Parse
+FunctionCallParenthesis = function(parse)
+    parse = parse:branch()
+    if  parse:tryConsume(T.OPENBRACKET) then
+
+        -- can be empty parens
+        parse:tryConsumeRules(ExpressionList)
+
+        if parse:tryConsume(T.CLOSEBRACKET) then
+            return parse:commit()
+        end
+    end
+
+    return parse:error("Invalid function call parenthesis")
+end;
+
+TableAssignment = function(parse)
+    parse = parse:branch(S.ASSIGNMENT)
+    local isLocal = parse:tryConsume(T.LOCAL)
+    
+    if parse:tryConsumeRules(SquareBracketsIndex)
+        or parse:tryConsume(T.IDENTIFIER) then
+
+        if parse:tryConsume(T.ASSIGN) 
+            and parse:tryConsumeRules(Expression) then
+
+            return parse:commit()
+        end
+    end
+
+    return parse:error("Invalid table assignment")
 end;
 
 TableValueInitialization = function(parse)
+    parse = parse:branch()
+    if parse:tryConsumeRules(
+        Expression,
+        TableAssignment
+    ) then
+        return parse:commit()
+    end
+
+    return parse:error("Invalid table value")
 end;
 
 ProcessorLBTagSection = function(parse)
 end;
 
+ForLoopStatement = function(parse)
+end;
+
+
+WhileLoopStatement = function(parse)
+end;
+
+RepeatUntilStatement = function(parse)
+end;
+
+DoEndStatement = function(parse)
+end;
+
+-- could arguably ban this
+GotoStatement = function(parse)
+end;
 
 
 Program = function(parse)
     local parse = parse:branch()
 
-    parse:tryConsumeRules(Body)
+    parse:tryConsumeRules(genBody(T.EOF))
 
     if parse:tryConsume(T.EOF) then
         return parse:commit()
     end
+
+    return parse:error("Did not reach EOF")
 end;
 
 
 ---@return string
-toString = function(tokens)
+toStringTokens = function(tokens)
     local result = {}
     for i=1,#tokens do
         result[#result+1] = tokens[i].raw
+    end
+    return table.concat(result)
+end;
+
+toStringParse = function(tree)
+    local result = {}
+    for i=1,#tree do
+        result[#result+1] = toStringParse(tree[i])
+        result[#result+1] = tree[i].raw
     end
     return table.concat(result)
 end;
@@ -818,36 +977,34 @@ simplify = function(tree)
     return tree
 end;
 
+parse = function(text)
+    local tokens = tokenize(text)
+    local parser = Parse:new(nil, tokens, 1)
+    local result = Program(parser)
+
+    if not result then
+        error(parser.errorObj:toString())
+    end
+    
+    return simplify(parser.symbol)
+end;
+
 testParse = function(parseFunc, text)
     local tokens = tokenize(text)
     local parser = Parse:new("TEST", tokens, 1)
     local result = parseFunc(parser)
-    return parser.symbol
+    
+    return simplify(parser.symbol)
 end;
 
-local squareBrackets = testParse(Program,[[
-    local a
+
+local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
+
+local parsed = parse(text)
+
+LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
+    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]]),
+    toStringParse(parsed))
 
 
-    function abc.def ()
-        a = 1123
-    end
-]])
-
-local simplified = simplify(squareBrackets)
-
-local a = 1
--- text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
--- 
--- local tokensList = tokenize(text)
--- 
--- local parsed = ParseProgram(tokensList)
--- 
--- LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
---     LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]]),
---     toString(tokensList))
--- 
--- 
--- 
--- 
- __simulator:exit()
+__simulator:exit()

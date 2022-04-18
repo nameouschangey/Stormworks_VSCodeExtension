@@ -1,1 +1,10 @@
----@lb(macro)f=1abc={}fff=function(a)endabc.def(1,2,3,fff("test"))---@lb(end)a={def=function(this,a)returnaend;ghi=function(this,b)returnbend}
+if (abcdef > 5) then
+    if (false) then
+    end
+end
+
+if (abcdef[123]().asdef(1,2,3)) then
+    if (false) then
+    end
+end
+
