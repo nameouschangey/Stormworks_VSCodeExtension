@@ -8,8 +8,10 @@
 -- ParseLua returns an AST, internally relying on LexLua.
 --
 
+---@lb("test")
 local util = require'Util'
 local lookupify = util.lookupify
+---@lb(end)
 
 local WhiteChars = lookupify{' ', '\n', '\t', '\r'}
 local EscapeLookup = {['\r'] = '\\r', ['\n'] = '\\n', ['\t'] = '\\t', ['"'] = '\\"', ["'"] = "\\'"}

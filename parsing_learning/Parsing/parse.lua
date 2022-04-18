@@ -160,7 +160,9 @@ LBSymbolTypes = {
     PARAM               = "PARAM",
 
     GOTOLABEL           = "GOTOLABEL",
-    GOTOSTATEMENT       = "GOTOSTATEMENT"
+    GOTOSTATEMENT       = "GOTOSTATEMENT",
+
+    LBTAG_SECTION       = "LBTAG_SECTION"
     }
 local S = LBSymbolTypes
 
@@ -760,13 +762,23 @@ GotoLabelStatement = function(parse)
     return parse:error("Invalid goto ::label::")
 end;
 
-
+---@lb(macro,a,b,c)
 ProcessorLBTagSection = function(parse)
+    parse = parse:branch(S.LBTAG_SECTION)
+    if parse:tryConsume(T.LBTAG_START) 
+    and parse:tryConsumeRules(FunctionCallParenthesis)
+    and parse:tryConsumeRules(genBody(T.LBTAG_END))
+    and parse:tryConsume(T.LBTAG_END) then
+        return parse:commit()
+    end
+
+    return parse:error("Invalid lb tag setup")
 end;
+---@lb(end)
 
 
 
-
+---@lbtag(reducable)
 toString = function(tree)
     local result = {}
     for i=1,#tree do

@@ -43,7 +43,8 @@ LBSymbol = {
 
 LBTokenTypes = {
     STRING          = "STRING",
-    LBTAG           = "LBTAG",
+    LBTAG_START     = "LBTAG_START",
+    LBTAG_END       = "LBTAG_END",
     COMMENT         = "COMMENT",
     OPENBRACKET     = "OPENBRACKET",
     CLOSEBRACKET    = "CLOSEBRACKET",
@@ -88,9 +89,8 @@ LBTokenTypes = {
     FALSE           = "FALSE",
     TRUE            = "TRUE",
     NIL             = "NIL",
-    GOTOMARKER     = "GOTO_LABEL",
-    SOF = "SOF",
-    EOF = "EOF"}
+    GOTOMARKER      = "GOTO_LABEL",
+    EOF             = "EOF"}
 
 local T = LBTokenTypes
 
@@ -195,10 +195,15 @@ tokenize = function(text)
             iText, nextToken = LBStr.getTextIncluding(text, iText, closingPattern)
             tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)  
 
+        elseif nextSectionEquals(text, iText, "---@lb(end)") then
+            -- preprocessor tag
+            iText, nextToken = iText+11, text:sub(iText, iText+10)
+            tokens[#tokens+1] = LBSymbol:new(T.LBTAG_END, nextToken)
+
         elseif nextSectionEquals(text, iText, "---@lb") then
             -- preprocessor tag
             iText, nextToken = iText+6, text:sub(iText, iText+5)
-            tokens[#tokens+1] = LBSymbol:new(T.LBTAG, nextToken)
+            tokens[#tokens+1] = LBSymbol:new(T.LBTAG_START, nextToken)
 
         elseif nextSectionEquals(text, iText, "--[") and nextSectionIs(text, iText, "%-%-%[=-%[") then
             -- multi-line comment
