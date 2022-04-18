@@ -28,7 +28,6 @@ set = function(...)
 end;
 
 
-
 LBTokenTypes = {
     STRING          = "STRING",
     LBTAG           = "LBTAG",
@@ -83,12 +82,33 @@ LBTokenTypes = {
 local T = LBTokenTypes
 
 
+LBKeywords = {
+    ["and"]             = LBTokenTypes.AND,
+    ["break"]           = LBTokenTypes.BREAK,
+    ["do"]              = LBTokenTypes.DO,
+    ["else"]            = LBTokenTypes.ELSE,
+    ["elseif"]          = LBTokenTypes.ELSEIF,
+    ["end"]             = LBTokenTypes.END,
+    ["for"]             = LBTokenTypes.FOR,
+    ["function"]        = LBTokenTypes.FUNCTION,
+    ["goto"]            = LBTokenTypes.GOTO,
+    ["if"]              = LBTokenTypes.IF,
+    ["in"]              = LBTokenTypes.IN,
+    ["local"]           = LBTokenTypes.LOCAL,
+    ["not"]             = LBTokenTypes.NOT,
+    ["or"]              = LBTokenTypes.OR,
+    ["repeat"]          = LBTokenTypes.REPEAT,
+    ["return"]          = LBTokenTypes.RETURN,
+    ["then"]            = LBTokenTypes.THEN,
+    ["until"]           = LBTokenTypes.UNTIL,
+    ["while"]           = LBTokenTypes.WHILE,
+    ["false"]           = LBTokenTypes.FALSE,
+    ["true"]            = LBTokenTypes.TRUE,
+    ["nil"]             = LBTokenTypes.NIL,
+}
 
 tokenizekeyword = function(keyword)
-    if keyword == keyword:lower() then  -- ensure keyword is lowercase
-        return LBTokenTypes[keyword:upper()]
-    end
-    return nil
+    return LBKeywords[keyword]
 end;
 
 ---@param text string
@@ -379,15 +399,13 @@ is = function(obj, ...)
 end;
 
 
-
--- what things can we do from "regular scope"
-
 ---@class Parse
 ---@field parent Parse
 ---@field tokens LBSymbol[]
 ---@field symbol LBSymbol
 ---@field i number
----@field isFunctionScope boolean only affects one thing "is return a valid keyword"
+---@field isFunctionScope boolean defined the type of scope, function or loop or none; for return and break keywords
+---@field isLoopScope boolean
 ---@field errorObj any
 Parse = {
     ---@return Parse
@@ -398,6 +416,7 @@ Parse = {
         this.symbol = LBSymbol:new(type)
         this.parent = parent
         this.isFunctionScope = parent and parent.isFunctionScope or false
+        this.isLoopScope = parent and parent.isLoopScope or false
         return this
     end;
 
@@ -427,7 +446,7 @@ Parse = {
                 column = lineInfo.column,
                 toString = function(err)
                     return "line: " .. err.line .. ", column: " .. err.column .. "\n"
-                        .. "at token " .. err.i .. ": " .. this.tokens[err.i].raw .. "\n"
+                        .. "at token " .. err.i .. ": " .. tostring(this.tokens[err.i].raw) .. "\n"
                         .. message .. "\n"
                 end;
             }
@@ -522,10 +541,9 @@ local S = LBSymbolTypes
 Statement = function(parse)
     parse = parse:branch(S.STATEMENT)
     if parse:tryConsume(T.SEMICOLON)
+     or parse.isLoopScope and parse:tryConsume(T.BREAK)
      or parse:tryConsumeRules(
         NamedFunctionDefinition,
-        AssignmentOrLocalDeclaration,
-        FunctionCallStatement,
         IfStatement,
         ForLoopStatement,
         ForInLoopStatement,
@@ -535,6 +553,8 @@ Statement = function(parse)
         GotoLabelStatement,
         GotoStatement,
         ProcessorLBTagSection,
+        FunctionCallStatement,
+        AssignmentOrLocalDeclaration,
         parse.isFunctionScope and ReturnStatement or nil
     ) then
         return parse:commit()
@@ -607,6 +627,8 @@ FunctionDefParenthesis = function(parse)
                     return parse:error("Expected parameter after ','")
                 end
             end
+        elseif parse:tryConsume(T.VARARGS) then
+            -- nothing else to do, expect end
         end
 
         if parse:tryConsume(T.CLOSEBRACKET) then
@@ -626,7 +648,6 @@ ExpressionList = function(parse)
                 return parse:error("Expression list must not leave trailing ','")
             end
         end
-
         return parse:commit()
     end
 
@@ -636,9 +657,10 @@ end;
 ---@param parse Parse
 ReturnStatement = function(parse)
     parse = parse:branch()
-    if parse:tryConsume(T.RETURN)
-        and parse:tryConsumeRules(ExpressionList) then
-        return parse:commit() 
+    if parse:tryConsume(T.RETURN) then
+        if parse:tryConsumeRules(ExpressionList) then
+            return parse:commit() 
+        end
     end
 
     return parse:error("Invalid return statement")
@@ -652,6 +674,7 @@ AnonymousFunctionDef = function(parse)
     and parse:tryConsumeRules(FunctionDefParenthesis) then
 
         parse.isFunctionScope = true;
+        parse.isLoopScope = false;
         parse:tryConsumeRules(genBody(T.END))
 
         if parse:tryConsume(T.END) then
@@ -686,6 +709,7 @@ NamedFunctionDefinition = function(parse, ...)
         if parse:tryConsumeRules(FunctionDefParenthesis) then
 
             parse.isFunctionScope = true;
+            parse.isLoopScope = false;
             parse:tryConsumeRules(genBody(T.END))
 
             if parse:tryConsume(T.END) then
@@ -716,11 +740,14 @@ LValue = function(parse)
 
     -- messy but easier way to handle Lvalues: (saves a lot of duplication)
     -- easiest thing to do is, check if we can make a valid ExpChain and then make sure the end of it is actually modifiable
-    if parse:tryConsumeRules(ExpressionChainedOperator)
-        and parse.symbol[#parse.symbol] and parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]]
-        and is(parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
+    if parse:tryConsumeRules(ExpressionChainedOperator) then
+        local lastChild = parse.symbol[#parse.symbol]
+        if lastChild
+        and lastChild[#lastChild]
+        and is(lastChild[#lastChild].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
             parse.symbol.type = S.LVALUE
             return parse:commit()
+        end
     end
 
     return parse:error("Invalid lvalue")
@@ -733,11 +760,14 @@ FunctionCallStatement = function(parse)
     parse = parse:branch()
 
     -- save a lot of duplication by finding a valid ExpChain and then backtracking
-    if parse:tryConsumeRules(ExpressionChainedOperator)
-        and parse.symbol[#parse.symbol] and parse.symbol[#parse.symbol[#parse.symbol]]
-        and is(parse.symbol[#parse.symbol][#parse.symbol[#parse.symbol]].type, S.FUNCTIONCALL) then
-            parse.symbol = S.FUNCTIONCALL
+    if parse:tryConsumeRules(ExpressionChainedOperator) then
+        local lastChild = parse.symbol[#parse.symbol]
+        if lastChild
+        and lastChild[#lastChild]
+        and is(lastChild[#lastChild].type, S.FUNCTIONCALL) then
+            parse.symbol.type = S.FUNCTIONCALL
             return parse:commit()
+        end
     end
 
     return parse:error("Invalid function call statement")
@@ -776,15 +806,14 @@ SingleExpression = function(parse)
     parse = parse:branch()
 
     -- clear any unary operators from the front
-    while parse:tryConsume(T.UNARY_OP, T.MIXED_OP) do end
+    while parse:tryConsume(T.NOT, T.UNARY_OP, T.MIXED_OP) do end
 
-    if parse:tryConsumeRules(
+    if parse:tryConsume(T.VARARGS, T.STRING, T.NUMBER, T.HEX, T.TRUE, T.FALSE, T.NIL)-- hard-coded value
+     or parse:tryConsumeRules(
         ParenthesisExpression,
         ExpressionChainedOperator, -- (exp.index.index.index[index][index](func)(func)(func))
         TableDef,
-        AnonymousFunctionDef) 
-        or parse:tryConsume(T.STRING, T.NUMBER, T.HEX, T.TRUE, T.FALSE, T.NIL)  -- hard-coded value
-        then
+        AnonymousFunctionDef) then
         return parse:commit()
     end
 
@@ -891,7 +920,7 @@ end;
 
 ---@param parse Parse
 FunctionCallParenthesis = function(parse)
-    parse = parse:branch()
+    parse = parse:branch(S.FUNCTIONCALL)
     if  parse:tryConsume(T.OPENBRACKET) then
 
         -- can be empty parens
@@ -935,6 +964,7 @@ end;
 ---@param parse Parse
 ForLoopStatement = function(parse)
     parse = parse:branch(S.FOR_LOOP)
+    parse.isLoopScope = true
     
     if parse:tryConsume(T.FOR) then
         -- a,b,c,d,e=1..works
@@ -965,6 +995,7 @@ end;
 ---@param parse Parse
 ForInLoopStatement = function(parse)
     parse = parse:branch(S.FOR_LOOP)
+    parse.isLoopScope = true
     
     if parse:tryConsume(T.FOR) then
         -- a,b,c,d,e=1..works
@@ -1004,6 +1035,7 @@ end;
 ---@param parse Parse
 WhileLoopStatement = function(parse)
     parse = parse:branch(S.WHILE_LOOP)
+    parse.isLoopScope = true
     
     if parse:tryConsume(T.WHILE)
      and parse:tryConsumeRules(Expression)
@@ -1020,6 +1052,7 @@ end;
 ---@param parse Parse
 RepeatUntilStatement = function(parse)
     parse = parse:branch(S.REPEAT_UNTIL)
+    parse.isLoopScope = true
     
     if parse:tryConsume(T.REPEAT)
     and parse:tryConsumeRules(genBody(T.UNTIL))
