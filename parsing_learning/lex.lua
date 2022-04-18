@@ -116,7 +116,6 @@ tokenize = function(text)
     while iText <= #text do
         local lineInfo = getLineInfo()
         local startIndex = iText
-        local nextChar = text:sub(iText, iText)
 
         if LBStr.nextSectionEquals(text, iText, '"') then
             -- quote (")
@@ -143,7 +142,7 @@ tokenize = function(text)
 
         elseif LBStr.nextSectionEquals(text, iText, "---@lb") then
             -- preprocessor tag
-            iText, nextToken = LBStr.getTextIncluding(text, iText, "%-%-%-@lb")
+            iText, nextToken = iText+6, text:sub(iText, iText+5)
             tokens[#tokens+1] = LBSymbol:new(T.LBTAG, nextToken)
 
         elseif LBStr.nextSectionIs(text, iText, "%-%-%[=*%[") then
@@ -218,12 +217,12 @@ tokenize = function(text)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
 
 
-        elseif LBStr.nextSectionIs(text, iText, "[><=~]=") then
+        elseif LBStr.nextSectionEquals(text, iText, ">=", "<=", "~=", "==") then
             -- comparison
             iText, nextToken = iText+2, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "[><]") then
+        elseif LBStr.nextSectionEquals(text, iText, ">", "<") then
             -- comparison
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
@@ -238,12 +237,12 @@ tokenize = function(text)
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.UNARY_OP, nextToken)
         
-        elseif LBStr.nextSectionIs(text, iText, "[~%-]") then
+        elseif LBStr.nextSectionEquals(text, iText, "~", "-") then
             -- all other math ops
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.MIXED_OP, nextToken)
 
-        elseif LBStr.nextSectionIs(text, iText, "[%*/%+%%%^&|]") then
+        elseif LBStr.nextSectionEquals(text, iText, "*", "/", "+", "%", "^", "&", "|") then
             -- all other math ops
             iText, nextToken = iText+1, text:sub(iText, iText)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
@@ -258,8 +257,6 @@ tokenize = function(text)
             -- concat
             iText, nextToken = iText+2, text:sub(iText, iText+1)
             tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
-
-
 
         elseif LBStr.nextSectionEquals(text, iText, "=") then
             -- assignment
@@ -276,7 +273,7 @@ tokenize = function(text)
                 tokens[#tokens+1] = LBSymbol:new(T.IDENTIFIER, nextToken)
             end
 
-        elseif LBStr.nextSectionIs(text, iText, "%s+") then
+        elseif LBStr.nextSectionEquals(text, iText, " ", "\n", "\t", "\r") then
             -- whitespace
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%s*")
             tokens[#tokens+1] = LBSymbol:new(T.WHITESPACE, nextToken)
