@@ -143,15 +143,7 @@ LifeBoatAPI.Tools.StringUtils = {
         local strings = {...}
         for istrings=1,#strings do
             local str = strings[istrings]
-            local isMatch = true
-            for istr=1, #str do
-                local char = str:sub(istr,istr)
-                if char ~= text:sub(i+istr-1,i+istr-1) then
-                    isMatch = false
-                    break
-                end
-            end
-            if isMatch then
+            if text:sub(i, i+#str-1) == str then
                 return true
             end
         end
