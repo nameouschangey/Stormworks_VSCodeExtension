@@ -14,39 +14,39 @@ g_savedata = {}
 
 
 -- Callbacks, for intellinsese
-onTick = function(gameTicks) end
-onCreate = function(isWorldCreate) end
-onDestroy = function() end
-onCustomCommand = function(fullMessage, peerID, isAdmin, isAuth, command, ...) end
-onChatMessage = function(peerID, senderName, message) end
-onPlayerJoin = function(steamID, name, peerID, isAdmin, isAuth) end
-onPlayerSit = function(peerID, vehicleID, seatName) end
-onPlayerUnsit = function(peer_id, vehicle_id, seat_name) end
-onCharacterSit = function(object_id, vehicle_id, seat_name) end
-onCharacterUnsit = function(object_id, vehicle_id, seat_name) end
-onPlayerRespawn = function(peer_id) end
-onPlayerLeave = function(steam_id, name, peer_id, is_admin, is_auth) end
-onToggleMap = function(peer_id, is_open) end
-onPlayerDie = function(steam_id, name, peer_id, is_admin, is_auth) end
-onVehicleSpawn = function(vehicle_id, peer_id, x, y, z, cost) end
-onVehicleDespawn = function(vehicle_id, peer_id) end
-onVehicleLoad = function(vehicle_id) end
-onVehicleUnload = function(vehicle_id) end
-onVehicleTeleport = function(vehicle_id, peer_id, x, y, z) end
-onObjectLoad = function(object_id) end
-onObjectUnload = function(object_id) end
-onButtonPress = function(vehicle_id, peer_id, button_name) end
-onSpawnAddonComponent = function(vehicle_id, component_name, TYPE_STRING, addon_index) end
-onVehicleDamaged = function(vehicle_id, damage_amount, voxel_x, voxel_y, voxel_z, body_index) end
-httpReply = function(port, request, reply) end
-onFireExtinguished = function(fire_x, fire_y, fire_z) end
-onForestFireSpawned = function(fire_objective_id, fire_x, fire_y, fire_z) end
-onForestFireExtinguised = function(fire_objective_id, fire_x, fire_y, fire_z) end
-onTornado = function(transform) end
-onMeteor = function(transform, magnitude) end
-onTsunami = function(transform, magnitude) end
-onWhirlpool = function(transform, magnitude) end
-onVolcano = function(transform) end
+function onTick(gameTicks) end
+function onCreate(isWorldCreate) end
+function onDestroy() end
+function onCustomCommand(fullMessage, peerID, isAdmin, isAuth, command, ...) end
+function onChatMessage(peerID, senderName, message) end
+function onPlayerJoin(steamID, name, peerID, isAdmin, isAuth) end
+function onPlayerSit(peerID, vehicleID, seatName) end
+function onPlayerUnsit(peer_id, vehicle_id, seat_name) end
+function onCharacterSit(object_id, vehicle_id, seat_name) end
+function onCharacterUnsit(object_id, vehicle_id, seat_name) end
+function onPlayerRespawn(peer_id) end
+function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth) end
+function onToggleMap(peer_id, is_open) end
+function onPlayerDie(steam_id, name, peer_id, is_admin, is_auth) end
+function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost) end
+function onVehicleDespawn(vehicle_id, peer_id) end
+function onVehicleLoad(vehicle_id) end
+function onVehicleUnload(vehicle_id) end
+function onVehicleTeleport(vehicle_id, peer_id, x, y, z) end
+function onObjectLoad(object_id) end
+function onObjectUnload(object_id) end
+function onButtonPress(vehicle_id, peer_id, button_name) end
+function onSpawnAddonComponent(vehicle_id, component_name, TYPE_STRING, addon_index) end
+function onVehicleDamaged(vehicle_id, damage_amount, voxel_x, voxel_y, voxel_z, body_index) end
+function httpReply(port, request, reply) end
+function onFireExtinguished(fire_x, fire_y, fire_z) end
+function onForestFireSpawned(fire_objective_id, fire_x, fire_y, fire_z) end
+function onForestFireExtinguised(fire_objective_id, fire_x, fire_y, fire_z) end
+function onTornado(transform) end
+function onMeteor(transform, magnitude) end
+function onTsunami(transform, magnitude) end
+function onWhirlpool(transform, magnitude) end
+function onVolcano(transform) end
 
 ---------------------------------------------------------------------------------------------------------------------
 -- MATRICES
@@ -136,17 +136,6 @@ function matrix.multiplyXYZW(matrix1, x, y, z, w) end
 --- @param x number 
 --- @param z number 
 function matrix.rotationToFaceXZ(x, z) end
-
-
-
-
-
-
-
-
-
-
-
 
 
 --------------------------------------------------------------------------------

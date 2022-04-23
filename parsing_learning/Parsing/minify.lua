@@ -2,52 +2,13 @@ require("Parsing.parse")
 local T = LBTokenTypes
 local S = LBSymbolTypes
 
--- macro stuff?
-
-
-removeComments = function(tree)
-    -- remove all comment elements
-    treeForEach(tree,
-        function(current)
-            for i=#current,1,-1 do
-                if current[i].type == T.COMMENT then
-                    table.remove(current, i)
-                end
-            end
-        end)
-
-    combineConsecutiveWhitespace(tree)
-
-    return tree
-end;
-
-shortenVariables = function(tree)
-end;
-
-shortenExternalGlobals = function(tree)
-end;
-
-convertHexadecimals = function(tree)
-    treeForEach(tree,
-        function(current)
-            if current.type == T.HEX then
-                current.type = T.NUMBER
-                current.raw = tostring(tonumber(current.raw))
-            end
-        end)
-
-    return tree
-end;
-
---adds 4 character
--- meaning the number must be used enough that 4+(instances*2) < (length*instances)
--- minimum length is therefore 3, otherwise it cannot be shorter
--- and for 3 times, minimum instances is 4+(2*5) < (3*5)  14 < 15; need 5 instances of 3
-
--- if variable is 2, it's 3+(instances) < (length * instance)
--- length 2, 7 < 6
-
 ---@class VariableNamer
+---@field i number
+---@field firstChars string[]
+---@field secondChars string[]
+---@field existingVariables any
+---@field current string
+---@field next string
 VariableNamer = {
     ---@param this VariableNamer
     new = function(this, existingVariables)
@@ -95,12 +56,125 @@ VariableNamer = {
     end;
 }
 
-reduceDuplicates = function(tree, variableNamer, condition)
+removeComments = function(tree)
+    -- remove all comment elements
+    treeForEach(tree,
+        function(current)
+            for i=#current,1,-1 do
+                if current[i].type == T.COMMENT then
+                    table.remove(current, i)
+                end
+            end
+        end)
+
+    combineConsecutiveWhitespace(tree)
+
+    return tree
+end;
+
+convertHexadecimals = function(tree)
+    treeForEach(tree,
+        function(current)
+            if current.type == T.HEX then
+                current.type = T.NUMBER
+                current.raw = tostring(tonumber(current.raw))
+            end
+        end)
+
+    return tree
+end;
+
+-- convert IDENTIFIER -> EXT_IDENTIFIER where they are non-minifiable externals
+
+classifyProtectedExternals = function(tree)
+    treeForEach(tree,
+    function(current)
+        if current.type == S.EXPCHAIN then
+            
+        end
+    end)
+end;
+
+shortenVariables = function(tree)
+    -- shorten all identifiers that aren't externals
+    -- do we want to protect every use of the word "maths" for example
+    -- or only when it's the base word.
+    -- only way it'd be a problem is if you'd assigned something to _ENV
+    -- but that's on you if you do it, completely idiotic move
+    -- as such we only care about the direct externals <blank>input.getNumber, etc.
+    -- and the base also can't be changed <blank>input
+    -- or better: we find all the base uses <blank>input, <blank>math etc.
+    -- then find all children of that which are also protected and just protect them too
+
+    -- we can also figure out if any of the base elements are being severely overused
+    -- note: we do the chained elements first (e.g. each call to screen.drawTriangleF), then from that; make the screen. calls better themselves
+
+    treeForEach(tree,
+        function(current)
+            if current.type == T.IDENTIFIER then
+                current.type = T.NUMBER
+                current.raw = tostring(tonumber(current.raw))
+            end
+        end)
+
+    return tree
+end;
+
+findExternals = function(tree, externals)
+    local identifiers = {}
+    treeForEach(tree,
+        function(current)
+            if current.type == S.EXPCHAIN then
+                local first = current[1]
+                local external = externals[first.raw]
+                if first and first.type == T.IDENTIFIER and external then
+                    if external.second 
+                    and not (current[2] and is(current[2].type, T.DOTACCESS, T.COLONACCESS)) 
+                    and not (current[3] and current[3].type == T.IDENTIFIER) then
+                        return
+                    end
+
+                    -- does no_minify mean we don't shorten globals used in that section?
+                end
+                
+                identifiers[current.raw] = current
+            end
+        end)
+    return identifiers
+end;
+
+findAllIdentifiers = function(tree)
+    local identifiers = {}
+    treeForEach(tree,
+        function(current)
+            if current.type == T.IDENTIFIER then
+                identifiers[current.raw] = current
+            end
+        end)
+    return identifiers
+end;
+
+reduceDuplicateLiterals = function(tree, variableNamer)
+    reduceDuplicatesWhere(tree, variableNamer,
+    function(val)
+        return is(val.type, T.TRUE, T.FALSE, T.NIL, T.NUMBER, T.HEX, T.STRING)
+    end)
+end;
+
+reduceDuplicateExternals = function(tree, variableNamer)
+    -- duplicates that are special identifiers
+    reduceDuplicatesWhere(tree, variableNamer, 
+    function(val)
+        return val.type == T.IDENTIFIER and isExternal(val.raw)
+    end)
+end;
+
+reduceDuplicatesWhere = function(tree, variableNamer, condition)
     -- find how many of each number literal exists
     local found = {}
     treeForEach(tree,
         function(current)
-            if is(current.type, T.TRUE, T.FALSE, T.NIL, T.NUMBER, T.HEX, T.STRING) then
+            if condition(current) then
                 found[current.raw] = found[current.raw] or {}
                 found[current.raw][#found[current.raw]+1] = current
             end
@@ -156,16 +230,7 @@ combineConsecutiveWhitespace = function(tree)
     return tree
 end;
 
-getSetOfAllIdentifiers = function(tree)
-    local identifiers = {}
-    treeForEach(tree,
-        function(current)
-            if current.type == T.IDENTIFIER then
-                identifiers[current.raw] = true
-            end
-        end)
-    return identifiers
-end;
+
 
 shrinkWhitespaceBlocks = function(tree)
     local LBStr = LifeBoatAPI.Tools.StringUtils

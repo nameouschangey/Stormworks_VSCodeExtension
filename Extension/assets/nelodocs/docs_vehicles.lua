@@ -6,13 +6,17 @@
 
 --- @diagnostic disable: lowercase-global
 
-input = {}
-output = {}
-property = {}
-screen = {}
-map = {}
-async = {}
-debug = {}
+input       = {}
+output      = {}
+property    = {}
+screen      = {}
+map         = {}
+async       = {}
+debug       = {}
+
+function onTick() end
+function onDraw() end
+function httpReply() end
 
 --- Prints a message to the debug log, see DebugViewer by SysInternals (google)
 --- In the simulator, prints the message using regular "print"

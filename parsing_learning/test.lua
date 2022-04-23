@@ -35,7 +35,8 @@ convertHexadecimals(minified)
 --    toString(minified))
 
 local variableRenamer = VariableNamer:new(getSetOfAllIdentifiers(minified))
-reduceDuplicates(minified, variableRenamer)
+reduceDuplicateLiterals(minified, variableRenamer)
+
 LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
     LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]),
     toString(minified))

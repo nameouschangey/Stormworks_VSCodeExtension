@@ -98,6 +98,7 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
         end
     end;
 
+    -- instanceBased is true, unless specifically "false"
     _addFullName = function(this, item, instanceBased)
         instanceBased = instanceBased == nil or instanceBased
         local nameParts = LifeBoatAPI.Tools.StringUtils.split(item, ".")

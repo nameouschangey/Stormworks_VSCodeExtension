@@ -31,70 +31,50 @@ local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPat
 
 if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]])) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[tt.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\tt.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[tt.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\tt.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[tt.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\tt.lua]]), outFile, combinedText, outText) end
-
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[test.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\test.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildMicrocontroller([[test.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\test.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[test.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\test.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[sandbox.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\sandbox.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[sandbox.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\sandbox.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[sandbox.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\sandbox.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[MyMicrocontroller.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildMicrocontroller([[MyMicrocontroller.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[MyMicrocontroller.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[gen1.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[gen1.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[gen1.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[archived.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\archived.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[archived.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\archived.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[archived.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\archived.lua]]), outFile, combinedText, outText) end
-
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[Parsing\parse.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\parse.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildMicrocontroller([[Parsing\parse.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\parse.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[Parsing\parse.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\parse.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[Parsing\minify.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\minify.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[Parsing\minify.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\minify.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[Parsing\minify.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\minify.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[Parsing\lex.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\lex.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildMicrocontroller([[Parsing\lex.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\lex.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[Parsing\lex.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Parsing\lex.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\Util.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\Util.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[min\min_var.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[luaminify\Util.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\Util.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\Util.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\Util.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[min\min_var.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[min\min_var.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\Scope.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\Scope.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[min\min_hex_converted.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_hex_converted.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[luaminify\Scope.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\Scope.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\Scope.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\Scope.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[min\min_hex_converted.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_hex_converted.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[min\min_hex_converted.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_hex_converted.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\ParseLua.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\ParseLua.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[min\gen1.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\gen1.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[luaminify\ParseLua.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\ParseLua.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\ParseLua.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\ParseLua.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\FormatMini.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatMini.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[luaminify\FormatMini.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatMini.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\FormatMini.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatMini.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\FormatIdentity.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatIdentity.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[luaminify\FormatIdentity.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatIdentity.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\FormatIdentity.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatIdentity.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\FormatBeautiful.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatBeautiful.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[luaminify\FormatBeautiful.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatBeautiful.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[luaminify\FormatBeautiful.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\luaminify\FormatBeautiful.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[min\gen1.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\gen1.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]]), [[min\gen1.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\gen1.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildComplete then onLBBuildComplete(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\personal\STORMWORKS_VSCodeExtension\parsing_learning]])) end
 --- @diagnostic enable: undefined-global
