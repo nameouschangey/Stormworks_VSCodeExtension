@@ -9,8 +9,16 @@ a = 0x123
 b = 0x23444
 c = 0xFFF000
 
+asd  = "123"
+def  = "1234234"
+deff = "1234234"
+d2ff = "1234234"
+d3ff = "1234234"
+
+asd = true, true, true, false, false, false, nil, nil, nil, nil, nil
 -- F6 To run me!
 
+a = 100,100,100,100,100,100
 
 require("LifeBoatAPI")              -- Type 'LifeBoatAPI.' and use intellisense to checkout the new LifeBoatAPI library functions; such as the LBVec vector maths library
 

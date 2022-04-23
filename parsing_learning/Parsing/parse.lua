@@ -16,10 +16,7 @@ LBSymbolTypes = {
     IF_STATEMENT        = "IF_STATEMENT",
     IF_CONDITION        = "IF_CONDITION",
 
-    BODY                = "BODY",
-
     ASSIGNMENT          = "ASSIGNMENT",
-    PROGRAM             = "PROGRAM",
     PARENTHESIS         = "PARENTHESIS",
     EXPCHAIN            = "EXPCHAIN",
     OPERATORCHAIN       = "OPERATORCHAIN",
@@ -495,7 +492,7 @@ exp = {
 
         ---@param parse Parse
         return function(parse)
-            parse = parse:branch(S.BODY)
+            parse = parse:branch()
 
             while not parse:match(table.unpack(args)) do
                 if not parse:tryConsumeRules(exp.Statement) then

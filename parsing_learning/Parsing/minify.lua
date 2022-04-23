@@ -50,7 +50,7 @@ end;
 ---@class VariableNamer
 VariableNamer = {
     ---@param this VariableNamer
-    new = function(this)
+    new = function(this, existingVariables)
         this = LifeBoatAPI.Tools.BaseClass.new(this)
         this.firstChars = {"_", "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
         "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
@@ -59,6 +59,7 @@ VariableNamer = {
         "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
         "0","1","2","3","4","5","6","7","8","9"}
 
+        this.existingVariables = existingVariables or {}
         this.i = 1
         this.current = this:_generate(this.i)
         this.next = this:_generate(this.i + 1)
@@ -70,9 +71,11 @@ VariableNamer = {
     end;
 
     getNext = function(this)
+        repeat
         this.current = this:_generate(this.i)
         this.next = this:_generate(this.i + 1)
         this.i = this.i + 1
+        until not this.existingVariables[this.current]
 
         return this.current
     end;
@@ -92,26 +95,26 @@ VariableNamer = {
     end;
 }
 
----@param variableNamer VariableNamer
-reduceNumberDuplicates = function(tree, variableNamer)
+reduceDuplicates = function(tree, variableNamer, condition)
     -- find how many of each number literal exists
-    local numbers = {}
+    local found = {}
     treeForEach(tree,
         function(current)
-            if current.type == T.NUMBER then
-                numbers[current.raw] = numbers[current.raw] or {}
-                numbers[current.raw][#numbers[current.raw]+1] = current
+            if is(current.type, T.TRUE, T.FALSE, T.NIL, T.NUMBER, T.HEX, T.STRING) then
+                found[current.raw] = found[current.raw] or {}
+                found[current.raw][#found[current.raw]+1] = current
             end
         end)
 
     -- generate and make the replacmenets
     local nextVarLength = #variableNamer:peekNext()
-    local variablesByNumber = {}
-    for number, listOfElements in pairs(numbers) do
+    local variablesByValue = {}
+    for rawValue, listOfElements in pairs(found) do
         -- +2 for the = and ; needed in the definition
-        if nextVarLength + 2 + #number + (nextVarLength*#listOfElements) < (#number * #listOfElements) then
+        if nextVarLength + 2 + #rawValue + (nextVarLength*#listOfElements) < (#rawValue * #listOfElements) then
             local variableReplacement = variableNamer:getNext()
-            variablesByNumber[number] = variableReplacement
+            
+            variablesByValue[rawValue] = {type = listOfElements[1].type, replacement=variableReplacement}
             nextVarLength = #variableNamer:peekNext()
 
             -- replace the elements
@@ -124,15 +127,17 @@ reduceNumberDuplicates = function(tree, variableNamer)
     end
 
     -- add the shared variables to the top
-    for number,variable in pairs(variablesByNumber) do
-        newVariable = {type="MINIFY_ADDITION", raw=table.concat({variable,"=",number,";"})}
+    for value,variable in pairs(variablesByValue) do
+        --raw=table.concat({variable,"=",number,";"})
+        newVariable = {type=S.ASSIGNMENT,
+                            {type=T.IDENTIFIER,     raw=variable.replacement},
+                            {type=T.ASSIGN,         raw="="},
+                            {type=variable.type,    raw=value},
+                            {type=T.SEMICOLON,      raw=";"} }
         table.insert(tree, 1, newVariable)
     end
 
     return tree
-end;
-
-reduceStringDuplicates = function(tree)
 end;
 
 
@@ -149,6 +154,17 @@ combineConsecutiveWhitespace = function(tree)
         end)
 
     return tree
+end;
+
+getSetOfAllIdentifiers = function(tree)
+    local identifiers = {}
+    treeForEach(tree,
+        function(current)
+            if current.type == T.IDENTIFIER then
+                identifiers[current.raw] = true
+            end
+        end)
+    return identifiers
 end;
 
 shrinkWhitespaceBlocks = function(tree)

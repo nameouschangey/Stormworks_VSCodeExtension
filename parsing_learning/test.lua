@@ -1,7 +1,7 @@
 require("Parsing.minify")
 
-local sandboxtext = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Sandbox.lua]]))
-local parsedSandbox = parse(sandboxtext)
+--local sandboxtext = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Sandbox.lua]]))
+--local parsedSandbox = parse(sandboxtext)
 
 local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
 local parsed = parse(text)
@@ -10,7 +10,7 @@ LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
     LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\gen1.lua]]),
     toString(parsed))
 
-    local minified = parsed
+local minified = parsed
 
 convertHexadecimals(minified)
     LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
@@ -34,7 +34,8 @@ convertHexadecimals(minified)
 --    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min2.lua]]),
 --    toString(minified))
 
-reduceNumberDuplicates(minified, VariableNamer:new())
+local variableRenamer = VariableNamer:new(getSetOfAllIdentifiers(minified))
+reduceDuplicates(minified, variableRenamer)
 LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
     LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]),
     toString(minified))
