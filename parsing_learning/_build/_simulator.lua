@@ -16,7 +16,7 @@ simulator = __simulator -- 0.0.11 easier to read by far but could be overwritten
 -- compatibility with 0.0.7 projects
 LBSimulatorInputHelpers = LifeBoatAPI.Tools.SimulatorInputHelpers
 
-require("Parsing.parse");
+require("min2");
 
 -- compatibility with 0.0.4 projects
 if onLBSimulatorInit then

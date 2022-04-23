@@ -781,8 +781,6 @@ exp = {
 }
 
 
-
-
 toString = function(tree)
     local result = {}
     for i=1,#tree do
@@ -790,16 +788,6 @@ toString = function(tree)
         result[#result+1] = tree[i].raw
     end
     return table.concat(result)
-end;
-
---- links up nodes with better metadata
---- prepares the AST to actually be used; so it's less confusing
---- things like lbtags
----@param tree LBSymbol
-restructure = function(tree)
-    simplify(tree)
-
-    return tree
 end;
 
 ---restructures the tree to be simpler
@@ -826,8 +814,8 @@ simplify = function(tree)
     return tree
 end;
 
-local s = require("socket")
 
+local s = require("socket")
 parse = function(text)
     local startTime = s.gettime()
     local tokens = tokenize(text)
@@ -848,13 +836,4 @@ end;
 
 
 
-local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
-
-local parsed = parse(text)
-
-LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
-    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\gen1.lua]]),
-    toString(parsed))
-
-__simulator:exit()
 
