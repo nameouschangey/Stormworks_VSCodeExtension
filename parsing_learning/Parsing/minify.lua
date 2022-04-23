@@ -17,7 +17,7 @@ removeComments = function(tree)
         end)
 
     combineConsecutiveWhitespace(tree)
-    
+
     return tree
 end;
 
@@ -28,9 +28,108 @@ shortenExternalGlobals = function(tree)
 end;
 
 convertHexadecimals = function(tree)
+    treeForEach(tree,
+        function(current)
+            if current.type == T.HEX then
+                current.type = T.NUMBER
+                current.raw = tostring(tonumber(current.raw))
+            end
+        end)
+
+    return tree
 end;
 
-reduceNumberDuplicates = function(tree)
+--adds 4 character
+-- meaning the number must be used enough that 4+(instances*2) < (length*instances)
+-- minimum length is therefore 3, otherwise it cannot be shorter
+-- and for 3 times, minimum instances is 4+(2*5) < (3*5)  14 < 15; need 5 instances of 3
+
+-- if variable is 2, it's 3+(instances) < (length * instance)
+-- length 2, 7 < 6
+
+---@class VariableNamer
+VariableNamer = {
+    ---@param this VariableNamer
+    new = function(this)
+        this = LifeBoatAPI.Tools.BaseClass.new(this)
+        this.firstChars = {"_", "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+        "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
+
+        this.secondChars = {"_", "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+        "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+        "0","1","2","3","4","5","6","7","8","9"}
+
+        this.i = 1
+        this.current = this:_generate(this.i)
+        this.next = this:_generate(this.i + 1)
+        return this
+    end;
+
+    peekNext = function(this)
+        return this.next
+    end;
+
+    getNext = function(this)
+        this.current = this:_generate(this.i)
+        this.next = this:_generate(this.i + 1)
+        this.i = this.i + 1
+
+        return this.current
+    end;
+
+    _generate = function(this, i)
+        local lenFirst = #this.firstChars
+        local result = {this.firstChars[((i-1) % lenFirst) + 1]}
+
+        local covered = lenFirst
+        local lenSecond = #this.secondChars
+        while (i-1) // covered > 0 do
+            result[#result+1] = this.secondChars[(((i-1) // covered) % lenSecond) + 1]
+            covered = covered * lenSecond
+        end
+
+        return table.concat(result)
+    end;
+}
+
+---@param variableNamer VariableNamer
+reduceNumberDuplicates = function(tree, variableNamer)
+    -- find how many of each number literal exists
+    local numbers = {}
+    treeForEach(tree,
+        function(current)
+            if current.type == T.NUMBER then
+                numbers[current.raw] = numbers[current.raw] or {}
+                numbers[current.raw][#numbers[current.raw]+1] = current
+            end
+        end)
+
+    -- generate and make the replacmenets
+    local nextVarLength = #variableNamer:peekNext()
+    local variablesByNumber = {}
+    for number, listOfElements in pairs(numbers) do
+        -- +2 for the = and ; needed in the definition
+        if nextVarLength + 2 + #number + (nextVarLength*#listOfElements) < (#number * #listOfElements) then
+            local variableReplacement = variableNamer:getNext()
+            variablesByNumber[number] = variableReplacement
+            nextVarLength = #variableNamer:peekNext()
+
+            -- replace the elements
+            for i=1,#listOfElements do
+                local element = listOfElements[i]
+                element.type = T.IDENTIFIER
+                element.raw = variableReplacement
+            end
+        end
+    end
+
+    -- add the shared variables to the top
+    for number,variable in pairs(variablesByNumber) do
+        newVariable = {type="MINIFY_ADDITION", raw=table.concat({variable,"=",number,";"})}
+        table.insert(tree, 1, newVariable)
+    end
+
+    return tree
 end;
 
 reduceStringDuplicates = function(tree)

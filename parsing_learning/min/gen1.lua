@@ -5,6 +5,9 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+a = 0x123
+b = 0x23444
+c = 0xFFF000
 
 -- F6 To run me!
 

@@ -1,5 +1,27 @@
-23/04/2022 15:12:30 Launching, time stamp.
-23/04/2022 15:12:30 Opening connection on port 14238
-23/04/2022 15:12:30 Now Accepting TCP clients
-23/04/2022 15:12:30 Client accepted - Client Connected: True, beginning Message Loop
-23/04/2022 15:12:30 MainWindow Initialized and running
+23/04/2022 18:36:43 Launching, time stamp.
+23/04/2022 18:36:43 Opening connection on port 14238
+23/04/2022 18:36:43 Now Accepting TCP clients
+23/04/2022 18:36:43 MainWindow Initialized and running
+23/04/2022 18:36:43 Client accepted - Client Connected: True, beginning Message Loop
+
+23/04/2022 18:37:45 SocketConnection - SendMessage (ALIVE) - Exception - Closing Pipe - System.IO.IOException: Unable to write data to the transport connection: An established connection was aborted by the software in your host machine. ---> System.Net.Sockets.SocketException: An established connection was aborted by the software in your host machine
+   at System.Net.Sockets.Socket.Send(Byte[] buffer, Int32 offset, Int32 size, SocketFlags socketFlags)
+   at System.Net.Sockets.NetworkStream.Write(Byte[] buffer, Int32 offset, Int32 size)
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.NetworkStream.Write(Byte[] buffer, Int32 offset, Int32 size)
+   at STORMWORKS_Simulator.SocketConnection.SendMessage(String commandName, Object[] args) in C:\personal\STORMWORKS_VSCodeExtension\CsharpSimulator\STORMWORKS_Simulator\src\SocketConnection.cs:line 117
+
+
+23/04/2022 18:37:45 Pipe_OnPipeClosed - Closing Application
+
+
+23/04/2022 18:37:45 SocketReadTask - Exception - Closing Pipe - Client Connected: False - System.IO.IOException: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine. ---> System.Net.Sockets.SocketException: An established connection was aborted by the software in your host machine
+   at System.Net.Sockets.Socket.Receive(Byte[] buffer, Int32 offset, Int32 size, SocketFlags socketFlags)
+   at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
+   at STORMWORKS_Simulator.SocketConnection.<.ctor>b__13_0() in C:\personal\STORMWORKS_VSCodeExtension\CsharpSimulator\STORMWORKS_Simulator\src\SocketConnection.cs:line 87
+
+
+23/04/2022 18:37:45 Pipe_OnPipeClosed - Closing Application
+

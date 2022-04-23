@@ -1,13 +1,13 @@
--- Author: Nameous Changey
+_=230;-- Author: Nameous Changey
 -- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
 -- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-a = 0x123
-b = 0x23444
-c = 0xFFF000
+a = 291
+b = 144452
+c = 16773120
 
 -- F6 To run me!
 
@@ -16,9 +16,9 @@ require("LifeBoatAPI")              -- Type 'LifeBoatAPI.' and use intellisense 
 
 
 -- color palette, keeping them here makes UI easier to restyle
-color_Highlight = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newGammaCorrected(230, 230, 230)   -- offwhite
+color_Highlight = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newGammaCorrected(_, _, _)   -- offwhite
 color_Inactive  = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newGammaCorrected(100,100,100)     -- grey
-color_Active    = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newGammaCorrected(230,150,0)   -- orangeRed
+color_Active    = LifeBoatAPI.LBColorRGBA:lbcolorrgba_newGammaCorrected(_,150,0)   -- orangeRed
 
 -- define out button
 myButton = LifeBoatAPI.LBTouchScreen:lbtouchscreen_newStyledButton(0, 1, 31, 9, "Toggle", color_Highlight, color_Inactive, color_Active, color_Highlight,color_Inactive) -- using the TouchScreen functionality from LifeBoatAPI - make a simple button
