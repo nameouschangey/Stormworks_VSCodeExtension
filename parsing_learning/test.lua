@@ -34,11 +34,12 @@ convertHexadecimals(minified)
 --    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min2.lua]]),
 --    toString(minified))
 
-local variableRenamer = VariableNamer:new(getSetOfAllIdentifiers(minified))
-reduceDuplicateLiterals(minified, variableRenamer)
-
-LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
-    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]),
-    toString(minified))
-
-__simulator:exit()
+--local variableRenamer = VariableNamer:new(getSetOfAllIdentifiers(minified))
+--reduceDuplicateLiterals(minified, variableRenamer)
+--
+--LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
+--    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]),
+--    toString(minified))
+--
+--__simulator:exit()
+--

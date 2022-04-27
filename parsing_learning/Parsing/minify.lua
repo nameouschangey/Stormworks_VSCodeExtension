@@ -95,6 +95,7 @@ classifyProtectedExternals = function(tree)
     end)
 end;
 
+
 shortenVariables = function(tree)
     -- shorten all identifiers that aren't externals
     -- do we want to protect every use of the word "maths" for example
@@ -143,6 +144,43 @@ findExternals = function(tree, externals)
     return identifiers
 end;
 
+
+-- what do we do if something uses e.g. a function
+-- a.b.c.d().e.f = math - working back from what d() (can) return
+-- could become quite a nightmare to parse through - finding everyway the variables are used
+-- but could allow us to remove unused functions and code
+-- a[1] pairs(a), all resolve the same -> a.ANY we don't try to figure out the index
+
+-- the issue is in that chain, we need to find out what d() is
+-- d might be defined elsewhere
+-- what if d() is defined in a weird way as well
+-- for EVERY variable use, we'd need to re-graph the whole thing
+-- how do we fine the ORIGINAL creation of the value
+-- including if it's unused
+-- or do we start from each function definition -> go forward that way?
+
+-- this seems entirely mental
+-- language is "too" dynamic arguably
+
+-- how does it work
+-- we need some semi-recursive thing to do it
+
+-- start with each assignment
+-- the issue is pass-by-reference into functions 
+
+-- start with all function definitions + the globals
+findAllFunctionDefinitions = function(tree)
+    local result = {}
+    treeForEach(tree,
+        function(current)
+            if current.type == S.FUNCTIONDEF then
+                result[current.raw] = current
+            end
+        end)
+    return result
+end;
+
+-- 
 findAllIdentifiers = function(tree)
     local identifiers = {}
     treeForEach(tree,
@@ -152,6 +190,18 @@ findAllIdentifiers = function(tree)
             end
         end)
     return identifiers
+end;
+
+
+findAllAssignments = function(tree)
+    local result = {}
+    treeForEach(tree,
+        function(current)
+            if current.type == S.ASSIGNMENT then
+                result[current.raw] = current
+            end
+        end)
+    return result
 end;
 
 reduceDuplicateLiterals = function(tree, variableNamer)
