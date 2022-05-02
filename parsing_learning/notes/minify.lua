@@ -212,6 +212,15 @@ reduceDuplicateLiterals = function(tree, variableNamer)
 end;
 
 reduceDuplicateExternals = function(tree, variableNamer)
+    -- this one is slightly harder
+    -- we might have had a solution before, but not sure we do not
+    -- all we're tracking are the fully qualified names
+    -- but what happens if somebody does e.g. a = math
+    -- a.min()
+    -- we can't risk accidentally minifying the word "min"
+    -- on the basic level, we can protect from just these names raw
+    -- but on a better level, we should be looking at building the dependency graph
+
     -- duplicates that are special identifiers
     reduceDuplicatesWhere(tree, variableNamer, 
     function(val)
@@ -314,8 +323,8 @@ removeUnecessaryWhitespaceBlocks = function(tree)
     treeForEach(tree,
         function(current)
             if  (not lastNonWitespace) 
-                or is(current.type, T.BINARY_OP, T.COLONACCESS, T.DOTACCESS, T.MIXED_OP, T.UNARY_OP, T.COMPARISON, T.OPENCURLY,  T.OPENBRACKET,  T.OPENSQUARE,  T.ASSIGN, T.STRING, T.COMMA, T.SEMICOLON, T.VARARGS)
-                or is(lastNonWitespace.type,    T.BINARY_OP, T.COLONACCESS, T.DOTACCESS, T.MIXED_OP, T.UNARY_OP, T.COMPARISON, T.CLOSECURLY, T.CLOSEBRACKET, T.CLOSESQUARE, T.ASSIGN, T.STRING, T.COMMA, T.SEMICOLON, T.VARARGS)
+                or is(current.type, T.BINARY_OP, T.COLONACCESS, T.DOTACCESS, T.MIXED_OP, T.UNARY_OP, T.OPENCURLY,  T.OPENBRACKET,  T.OPENSQUARE,  T.ASSIGN, T.STRING, T.COMMA, T.SEMICOLON, T.VARARGS)
+                or is(lastNonWitespace.type,    T.BINARY_OP, T.COLONACCESS, T.DOTACCESS, T.MIXED_OP, T.UNARY_OP, T.CLOSECURLY, T.CLOSEBRACKET, T.CLOSESQUARE, T.ASSIGN, T.STRING, T.COMMA, T.SEMICOLON, T.VARARGS)
                 then
                 stripWhitespace(current)
             end

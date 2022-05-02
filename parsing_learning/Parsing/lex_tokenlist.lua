@@ -1,32 +1,10 @@
+require("Parsing.utils")
 
---- takes either a list of params, of a table in arg1
-set = function(...)
-    local args = {...}
-    args = type(args[1]) == "table" and args[1] or args 
-
-    local result = {}
-    for i=1,#args do
-        result[args[i]] = true
-    end
-    return result
-end;
-
-is = function(obj, ...)
-    local args = {...}
-    for i=1,#args do
-        if obj == args[i] then
-            return args[i]
-        end
-    end
-    return nil
-end;
-
-
-
----@class LBSymbol
+---@class LBToken
 ---@field type string
 ---@field raw string
-LBSymbol = {
+---@field lineInfo LBLineInfo
+LBToken = {
     new = function(this, type, raw, lineinfo)
         return {
             type = type,
@@ -34,90 +12,107 @@ LBSymbol = {
             lineInfo = lineinfo
         }
     end;
-
-    fromToken = function(this, token)
-        return LBSymbol:new(token.type, token.raw, token.lineInfo)
-    end;
 }
 
-
 LBTokenTypes = {
-    STRING          = "STRING",
-    LBTAG_START     = "LBTAG_START",
-    LBTAG_END       = "LBTAG_END",
     COMMENT         = "COMMENT",
-    OPENBRACKET     = "OPENBRACKET",
-    CLOSEBRACKET    = "CLOSEBRACKET",
-    OPENSQUARE      = "OPENSQUARE",
-    CLOSESQUARE     = "CLOSESQUARE",
-    OPENCURLY       = "OPENCURLY",
-    CLOSECURLY      = "CLOSECURLY",
-    COMMA           = "COMMA",
-    SEMICOLON       = "SEMICOLON",
-    COMPARISON      = "COMPARISON",
-    BINARY_OP       = "BINARY_OP",
-    MIXED_OP        = "MIXED_OP",
-    UNARY_OP        = "UNARY_OP",
-    ASSIGN          = "ASSIGN",
-    DOTACCESS       = "DOTACCESS",
-    COLONACCESS     = "COLONACCESS",
-    IDENTIFIER      = "IDENTIFIER",
-    TYPECONSTANT    = "TYPECONSTANT",
-    NUMBER          = "NUMBER",
-    HEX             = "HEX",
     WHITESPACE      = "WHITESPACE",
-    VARARGS         = "VARARGS",
-    AND             = "AND",
-    BREAK           = "BREAK",
-    DO              = "DO",
-    ELSE            = "ELSE",
-    ELSEIF          = "ELSEIF",
-    END             = "END",
-    FOR             = "FOR",
-    FUNCTION        = "FUNCTION",
-    GOTO            = "GOTO",
-    IF              = "IF",
-    IN              = "IN",
-    LOCAL           = "LOCAL",
-    NOT             = "NOT",
-    OR              = "OR",
-    REPEAT          = "REPEAT",
-    RETURN          = "RETURN",
-    THEN            = "THEN",
-    UNTIL           = "UNTIL",
-    WHILE           = "WHILE",
+
+    STRING          = "STRING",
     FALSE           = "FALSE",
     TRUE            = "TRUE",
     NIL             = "NIL",
+    NUMBER          = "NUMBER",
+    HEX             = "HEX",
+    
+    OPENBRACKET     = "OPENBRACKET",
+    CLOSEBRACKET    = "CLOSEBRACKET",
+
+    OPENSQUARE      = "OPENSQUARE",
+    CLOSESQUARE     = "CLOSESQUARE",
+
+    OPENCURLY       = "OPENCURLY",
+    CLOSECURLY      = "CLOSECURLY",
+
+    COMMA           = "COMMA",
+    SEMICOLON       = "SEMICOLON",
+
+    BINARY_OP       = "BINARY_OP",
+    MIXED_OP        = "MIXED_OP",
+    UNARY_OP        = "UNARY_OP",
+
+    LOCAL           = "LOCAL",
+    IDENTIFIER      = "IDENTIFIER",
+
+    ASSIGN          = "ASSIGN",
+    DOTACCESS       = "DOTACCESS",
+    COLONACCESS     = "COLONACCESS",
+
+    VARARGS         = "VARARGS",
+
+    DO              = "DO",
+    REPEAT          = "REPEAT",
+    UNTIL           = "UNTIL",
+    WHILE           = "WHILE",
+
+    FOR             = "FOR",
+    IN              = "IN",
+
+    IF              = "IF",
+    THEN            = "THEN",
+    ELSEIF          = "ELSEIF",
+    ELSE            = "ELSE",
+
+    FUNCTION        = "FUNCTION",
+
+    END             = "END",
+    
+    AND             = "AND",
+    NOT             = "NOT",
+    OR              = "OR",
+
+    BREAK           = "BREAK",
+    RETURN          = "RETURN",
+
+    GOTO            = "GOTO",
     GOTOMARKER      = "GOTO_LABEL",
-    EOF             = "EOF"}
+
+    EOF             = "EOF",
+    LBTAG_START     = "LBTAG_START",
+}
 
 local T = LBTokenTypes
 
 
 local LBKeywords = {
-    ["and"]             = LBTokenTypes.AND,
-    ["break"]           = LBTokenTypes.BREAK,
-    ["do"]              = LBTokenTypes.DO,
-    ["else"]            = LBTokenTypes.ELSE,
-    ["elseif"]          = LBTokenTypes.ELSEIF,
-    ["end"]             = LBTokenTypes.END,
-    ["for"]             = LBTokenTypes.FOR,
-    ["function"]        = LBTokenTypes.FUNCTION,
-    ["goto"]            = LBTokenTypes.GOTO,
-    ["if"]              = LBTokenTypes.IF,
-    ["in"]              = LBTokenTypes.IN,
-    ["local"]           = LBTokenTypes.LOCAL,
-    ["not"]             = LBTokenTypes.NOT,
-    ["or"]              = LBTokenTypes.OR,
-    ["repeat"]          = LBTokenTypes.REPEAT,
-    ["return"]          = LBTokenTypes.RETURN,
-    ["then"]            = LBTokenTypes.THEN,
-    ["until"]           = LBTokenTypes.UNTIL,
-    ["while"]           = LBTokenTypes.WHILE,
     ["false"]           = LBTokenTypes.FALSE,
     ["true"]            = LBTokenTypes.TRUE,
     ["nil"]             = LBTokenTypes.NIL,
+
+    ["local"]           = LBTokenTypes.LOCAL,
+
+    ["and"]             = LBTokenTypes.AND,
+    ["not"]             = LBTokenTypes.NOT,
+    ["or"]              = LBTokenTypes.OR,
+
+    ["function"]        = LBTokenTypes.FUNCTION,
+    ["goto"]            = LBTokenTypes.GOTO,
+
+    ["if"]              = LBTokenTypes.IF,
+    ["then"]            = LBTokenTypes.THEN,
+    ["elseif"]          = LBTokenTypes.ELSEIF,
+    ["else"]            = LBTokenTypes.ELSE,
+
+    ["repeat"]          = LBTokenTypes.REPEAT,
+    ["until"]           = LBTokenTypes.UNTIL,
+    ["while"]           = LBTokenTypes.WHILE,
+    ["for"]             = LBTokenTypes.FOR,
+    ["in"]              = LBTokenTypes.IN,
+    ["do"]              = LBTokenTypes.DO,
+    ["end"]             = LBTokenTypes.END,
+
+    ["break"]           = LBTokenTypes.BREAK,
+    ["return"]          = LBTokenTypes.RETURN,
 }
 
 local tokenizekeyword = function(keyword)
@@ -181,8 +176,6 @@ tokenize = function(text)
     local lookup_math  = set("*","/","+","%","^","&","|")
     local lookup_ws    = set(" ", "\n", "\r", "\t")
 
-
-
     local tokens = {}
     local nextToken = ""
 
@@ -191,7 +184,11 @@ tokenize = function(text)
     local iText = 1
 
     local getLineInfo = function()
-        return {
+        ---@class LBLineInfo
+        ---@field line number
+        ---@field index number
+        ---@field column number
+        local lineInfo = {
             line = lineNumber,
             index = iText,
             column = 1 + iText - lastLineStartIndex,
@@ -199,6 +196,7 @@ tokenize = function(text)
                 return string.format("line: %d, column: %d, index: %d", this.line, this.column, this.index)
             end
         };
+        return lineInfo
     end;
 
     while iText <= #text do
@@ -210,12 +208,12 @@ tokenize = function(text)
         if nextChar == '"' then
             -- quote (")
             iText, nextToken = getString(lineInfo, text, iText, '"')
-            tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.STRING, nextToken)
 
         elseif nextChar == "'" then
             -- quote (')
             iText, nextToken = getString(lineInfo, text, iText, "'")
-            tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.STRING, nextToken)
 
         elseif (next2Char == "[[" or next2Char == "[=") and nextSectionIs(text, iText, "%[=-%[") then
             -- quote ([[ ]])
@@ -228,17 +226,12 @@ tokenize = function(text)
             end
             closingPattern[#closingPattern+1] = "%]"
             iText, nextToken = LBStr.getTextIncluding(text, iText, table.concat(closingPattern))
-            tokens[#tokens+1] = LBSymbol:new(T.STRING, nextToken)  
-
-        elseif nextSectionEquals(text, iText, "---@lb(end)") then
-            -- preprocessor tag
-            iText, nextToken = iText+11, text:sub(iText, iText+10)
-            tokens[#tokens+1] = LBSymbol:new(T.LBTAG_END, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.STRING, nextToken)  
 
         elseif nextSectionEquals(text, iText, "---@lb") then
             -- preprocessor tag
             iText, nextToken = iText+6, text:sub(iText, iText+5)
-            tokens[#tokens+1] = LBSymbol:new(T.LBTAG_START, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.LBTAG_START, nextToken)
 
         elseif nextSectionEquals(text, iText, "--[") and nextSectionIs(text, iText, "%-%-%[=-%[") then
             -- multi-line comment
@@ -252,145 +245,145 @@ tokenize = function(text)
             closingPattern[#closingPattern+1] = "%]"
 
             iText, nextToken = LBStr.getTextIncluding(text, iText, table.concat(closingPattern))
-            tokens[#tokens+1] = LBSymbol:new(T.COMMENT, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.COMMENT, nextToken)
 
         elseif next2Char == "--" then
             -- single-line comment
             iText, nextToken = LBStr.getTextUntil(text, iText, "\n")
-            tokens[#tokens+1] = LBSymbol:new(T.COMMENT, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.COMMENT, nextToken)
 
         elseif nextChar == ";" then
             -- single-line comment
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.SEMICOLON, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.SEMICOLON, nextToken)
 
         elseif nextChar == "," then
             -- single-line comment
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.COMMA, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.COMMA, nextToken)
 
 
         elseif nextChar == "(" then
             -- regular brackets
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.OPENBRACKET, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.OPENBRACKET, nextToken)
 
         elseif nextChar == "[" then
             -- regular brackets
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.OPENSQUARE, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.OPENSQUARE, nextToken)
 
         elseif nextChar == "{" then
             -- regular brackets
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.OPENCURLY, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.OPENCURLY, nextToken)
 
 
         elseif nextChar == ")" then
             -- regular brackets
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.CLOSEBRACKET, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.CLOSEBRACKET, nextToken)
 
         elseif nextChar == "]" then
             -- regular brackets
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.CLOSESQUARE, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.CLOSESQUARE, nextToken)
 
         elseif nextChar == "}" then
             -- regular brackets
             iText, nextToken = iText+1, text:sub(iText, iText)
-            tokens[#tokens+1] = LBSymbol:new(T.CLOSECURLY, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.CLOSECURLY, nextToken)
 
         elseif next2Char == ">>" or next2Char == "<<" then
             -- comparison
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
 
         elseif next2Char == ">=" or next2Char == "<=" or next2Char == "~=" or next2Char == "==" then
             -- comparison
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
 
         elseif nextChar == ">" or nextChar == "<" then
             -- comparison
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.COMPARISON, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
 
         elseif next2Char == "//" then
             -- floor (one math op not two)
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
 
         elseif nextChar == "#" then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.UNARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.UNARY_OP, nextToken)
         
         elseif nextChar == "~" or nextChar == "-" then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.MIXED_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.MIXED_OP, nextToken)
 
         elseif lookup_math[nextChar] then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
 
 
         elseif nextSectionEquals(text, iText, "...") then
             -- varargs
             iText, nextToken = iText+3, text:sub(iText, iText+2)
-            tokens[#tokens+1] = LBSymbol:new(T.VARARGS, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.VARARGS, nextToken)
 
         elseif next2Char == ".." then
             -- concat
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBSymbol:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
 
         elseif nextChar == "=" then
             -- assignment
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.ASSIGN, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.ASSIGN, nextToken)
 
         elseif lookup_alpha[nextChar] then
             -- keywords & identifier
             iText, nextToken = LBStr.getTextIncluding(text, iText, "[%a_][%w_]*")
             local keyword = tokenizekeyword(nextToken)
             if keyword then
-                tokens[#tokens+1] = LBSymbol:new(keyword, nextToken)
+                tokens[#tokens+1] = LBToken:new(keyword, nextToken)
             else
-                tokens[#tokens+1] = LBSymbol:new(T.IDENTIFIER, nextToken)
+                tokens[#tokens+1] = LBToken:new(T.IDENTIFIER, nextToken)
             end
 
         elseif lookup_ws[nextChar] then --nextSectionIs(text, iText, "%s") then
             -- whitespace
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%s*")
-            tokens[#tokens+1] = LBSymbol:new(T.WHITESPACE, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.WHITESPACE, nextToken)
 
         elseif next2Char == "0x" and nextSectionIs(text, iText, "0x%x+") then
             -- hex 
             iText, nextToken = LBStr.getTextIncluding(text, iText, "0x%x+")
-            tokens[#tokens+1] = LBSymbol:new(T.HEX, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.HEX, nextToken)
 
         elseif lookup_digit[nextChar] and nextSectionIs(text, iText, "%d*%.?%d+") then 
             -- number
             iText, nextToken = LBStr.getTextIncluding(text, iText, "%d*%.?%d+")
-            tokens[#tokens+1] = LBSymbol:new(T.NUMBER, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.NUMBER, nextToken)
 
         elseif nextChar == "." then
             -- chain access
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.DOTACCESS, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.DOTACCESS, nextToken)
 
         elseif next2Char == "::" then
             -- chain access
             iText, nextToken = iText+1, next2Char
-            tokens[#tokens+1] = LBSymbol:new(T.GOTOMARKER, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.GOTOMARKER, nextToken)
 
         elseif nextChar == ":" then
             -- chain access
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBSymbol:new(T.COLONACCESS, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.COLONACCESS, nextToken)
 
         else
             error(lineInfo:toString() .. "\nCan't process symbol \"" .. text:sub(iText, iText+10) .. "...\"\n\n\"" .. text:sub(math.max(0, iText-20), iText+20) .. "...\"")
@@ -415,7 +408,7 @@ tokenize = function(text)
         i=i+1
     end
     -- add the EOF marker
-    tokens[#tokens+1] = LBSymbol:new(T.EOF,nil, getLineInfo())
+    tokens[#tokens+1] = LBToken:new(T.EOF, nil, getLineInfo())
 
     return associateRightWhitespaceAndComments(tokens)
 end;

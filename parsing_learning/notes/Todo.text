@@ -1,0 +1,11 @@
+in order to handle the global variables, such as screen.whatever and math.suchandsuch
+we need to build a dependency graph
+
+we do this by "running" the code; piece by piece
+we really only care about assignments
+conditionals, etc. are fairly safe to ignore
+
+we may need to consider the return values of functions too
+
+
+we could also do with really tying up the dependency graph to make it somewhat cleaner.

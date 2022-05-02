@@ -16,6 +16,7 @@ LifeBoatAPI.Tools.Filepath = {
     ---@param caseSensitive boolean
     ---@param path string
     ---@param cls Filepath
+    ---@overload fun(path:string):Filepath
     new = function(cls, path, caseSensitive)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
 

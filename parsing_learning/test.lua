@@ -1,45 +1,18 @@
-require("Parsing.minify")
+require("Parsing.utils")
+require("Parsing.parse_symboltree")
+require("Parsing.run_scopetree")
 
---local sandboxtext = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\Sandbox.lua]]))
---local parsedSandbox = parse(sandboxtext)
-
-local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
+local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\Workspaces\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
 local parsed = parse(text)
 
+local scopeTree = createScopeTree(parsed)
+
 LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
-    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\gen1.lua]]),
-    toString(parsed))
+    LifeBoatAPI.Tools.Filepath:new([[C:\Workspaces\STORMWORKS_VSCodeExtension\parsing_learning\min\types_printout.lua]]),
+    "a=[[\n" .. printTypeTree(parsed) .. "]]")
 
-local minified = parsed
+LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
+    LifeBoatAPI.Tools.Filepath:new([[C:\Workspaces\STORMWORKS_VSCodeExtension\parsing_learning\min\types_printout_with_comments.lua]]),
+    "a=[[\n" .. printTypeTree(parsed, true) .. "]]")
 
-convertHexadecimals(minified)
-    LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
-    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_hex_converted.lua]]),
-    toString(minified))
-    
---removeComments(minified)
---LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
---    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min3.lua]]),
---    toString(minified))
---
---
---removeUnecessaryWhitespaceBlocks(minified)
---LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
---    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min1.lua]]),
---    toString(minified))
---
---
---shrinkWhitespaceBlocks(minified)
---LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
---    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min2.lua]]),
---    toString(minified))
-
---local variableRenamer = VariableNamer:new(getSetOfAllIdentifiers(minified))
---reduceDuplicateLiterals(minified, variableRenamer)
---
---LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
---    LifeBoatAPI.Tools.Filepath:new([[C:\personal\STORMWORKS_VSCodeExtension\parsing_learning\min\min_var.lua]]),
---    toString(minified))
---
---__simulator:exit()
---
+__simulator:exit()

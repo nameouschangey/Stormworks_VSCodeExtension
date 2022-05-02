@@ -1,12 +1,14 @@
-require("Parsing.minify")
 
-dupes = {}
-renamer = VariableNamer:new()
-for i=1, 5000, 1 do
-    local next = renamer:getNext()
-    if dupes[next] then
-        error("DUPE ON " .. tostring(i) .. " = " .. next)
-    end
-    dupes[next] = true
-    print(tostring(i) .. " : " .. next)
-end
+func = function(a,b)
+    return a,b
+end;
+
+-- multiple returns is the real danger
+-- the last expression in the chain can expand to provide however many values
+-- could really be a nightmare
+
+-- this is all such a horrible idea
+
+local a,b,c = 1,func(5,6)
+
+print(a,b,c)

@@ -1,40 +1,58 @@
-require("Parsing.lex")
-
+require("Parsing.lex_tokenlist")
 local T = LBTokenTypes
 
 
 LBSymbolTypes = {
+    TOKEN               = "TOKEN",
+
+    NAMEDFUNCTIONDEF    = "NAMEDFUNCTIONDEF",
     FUNCTIONDEF         = "FUNCTIONDEF",
+    FUNCTIONDEF_PARAMS  = "FUNCTIONDEF_PARAMS",
+
     FUNCTIONCALL        = "FUNCTIONCALL",
+
     TABLEDEF            = "TABLEDEF",
     WHILE_LOOP          = "WHILE_LOOP",
     FOR_LOOP            = "FOR_LOOP",
     DO_END              = "DO_END",
-    REPEAT_UNTIL        = "REPEAT_UNTIL",
-    SQUARE_BRACKETS     = "SQUARE_BRACKETS",
-    
+    REPEAT_UNTIL        = "REPEAT_UNTIL", 
     IF_STATEMENT        = "IF_STATEMENT",
     IF_CONDITION        = "IF_CONDITION",
-
     ASSIGNMENT          = "ASSIGNMENT",
     PARENTHESIS         = "PARENTHESIS",
     EXPCHAIN            = "EXPCHAIN",
     OPERATORCHAIN       = "OPERATORCHAIN",
+    SQUARE_BRACKETS     = "SQUARE_BRACKETS",
     DECLARE_LOCAL       = "DECLARE_LOCAL",
-    FUNCTIONDEF_PARAMS  = "FUNCTIONDEF_PARAMS",
+    
     PARAM               = "PARAM",
-
     GOTOLABEL           = "GOTOLABEL",
     GOTOSTATEMENT       = "GOTOSTATEMENT",
-
-    LBTAG_SECTION       = "LBTAG_SECTION"
+    LBTAG               = "LBTAG",
     }
 local S = LBSymbolTypes
 
 
+---@class LBSymbol
+---@field type  stringstring
+---@field token LBToken
+LBSymbol = {
+    new = function(this, type, token)
+        return {
+            type = type,
+            token = token
+        }
+    end;
+
+    fromToken = function(this, token)
+        return LBSymbol:new(token.type, token)
+    end;
+}
+
+
 ---@class Parse
 ---@field parent Parse
----@field tokens LBSymbol[]
+---@field tokens LBToken[]
 ---@field symbol LBSymbol
 ---@field i number
 ---@field isReturnableScope boolean defined the type of scope, function or loop or none; for return and break keywords
@@ -43,43 +61,52 @@ local S = LBSymbolTypes
 ---@field cache any
 Parse = {
     ---@return Parse
-    new = function(this, type, tokens, i, parent)
+    new = function(this, symboltype, tokens, i, parent)
         -- hardcoded class instantiation for performance, as it's called very often
         return {
-            new = this.new,
+            -- fields
+            i = i or 1,
+            tokens = tokens,
+            symbol = LBSymbol:new(symboltype),
+            parent = parent,
+            isReturnableScope = parent and parent.isReturnableScope or false,
+            isLoopScope = parent and parent.isLoopScope or false,
+            cache = parent and parent.cache or {},
+
+            -- functions
             branch = this.branch,
             commit = this.commit,
             error = this.error,
             match = this.match,
             consume = this.consume,
             tryConsume = this.tryConsume,
-            tryConsumeRules = this.tryConsumeRules,
-            tryConsumeRulesAs = this.tryConsumeRulesAs,
-
-            i = i or 1,
-            tokens = tokens,
-            symbol = LBSymbol:new(type),
-            parent = parent,
-            isReturnableScope = parent and parent.isReturnableScope or false,
-            isLoopScope = parent and parent.isLoopScope or false,
-            cache = parent and parent.cache or {}
+            tryConsumeAs = this.tryConsumeAs,
         }
     end;
 
     ---@return Parse
-    branch = function(this, type)
-        return Parse:new(type, this.tokens, this.i, this)
+    branch = function(this, symboltype)
+        return Parse:new(symboltype, this.tokens, this.i, this)
     end;
 
     ---@param this Parse
     commit = function(this)
         if this.parent then
-            this.parent.symbol[#this.parent.symbol+1] = this.symbol
+            local parentSymbol = this.parent.symbol
+            local thisSymbol = this.symbol
+            if not thisSymbol.type or parentSymbol.type == thisSymbol.type then
+                for i=1,#thisSymbol do
+                    parentSymbol[#parentSymbol+1] = thisSymbol[i]
+                end
+            else
+                this.parent.symbol[#this.parent.symbol+1] = this.symbol
+            end
             this.parent.i = this.i
         end
         return true
     end;
 
+    ---@param this Parse
     error = function(this, message)
         local lineInfo = this.tokens[this.i].lineInfo
         if (not this.errorObj) or (lineInfo.index > this.errorObj.index) then
@@ -109,42 +136,34 @@ Parse = {
         return is(this.tokens[this.i].type, ...)
     end;
 
-    ---@return boolean
-    consume = function(this, ...)
-        local consumedAny = this:tryConsume(...)
-        while(this:tryConsume(...)) do end
-        return consumedAny
-    end;
-
-    ---@return boolean
-    tryConsume = function(this, ...)
-        if is(this.tokens[this.i].type, ...) then
-            this.symbol[#this.symbol+1] = this.tokens[this.i]
-            this.i = this.i + 1
-            return true
-        else
-            return false
-        end
-    end;
-
     ---@param this Parse
-    tryConsumeRules = function(this, ...)
+    tryConsume = function(this, ...)
         local rules = {...}
         for irules=1, #rules do
             local rule = rules[irules]
 
-            if not this.cache[rule] then
-                this.cache[rule] = {}
-            end
+            if type(rule) == "function" then
+                if not this.cache[rule] then
+                    this.cache[rule] = {}
+                end
 
-            if this.cache[rule][this.i] ~= false then
-                local result = rule(this)
-                
-                if result then
-                    this.cache[rule][this.i] = true
+                if this.cache[rule][this.i] ~= false then
+                    local result = rule(this)
+                    
+                    if result then
+                        this.cache[rule][this.i] = true
+                        return true
+                    else
+                        this.cache[rule][this.i] = false
+                    end
+                end
+            else
+                if is(this.tokens[this.i].type, ...) then
+                    this.symbol[#this.symbol+1] = this.tokens[this.i]
+                    this.i = this.i + 1
                     return true
                 else
-                    this.cache[rule][this.i] = false
+                    return false
                 end
             end
         end
@@ -152,28 +171,25 @@ Parse = {
     end;
 
     ---@param this Parse
-    tryConsumeRulesAs = function(this, name, ...)
-        local branch = this:branch(name)
-        local result = branch:tryConsumeRules(...)
+    tryConsumeAs = function(this, symboltype, ...)
+        local branch = this:branch(symboltype)
+        local result = branch:tryConsume(...)
         if result then
             branch:commit()
-        else
-            branch:error("Failed to parse as " .. tostring(name))
         end
         return result
     end;
 }
 
-local exp
 ---@class Expressions
-exp = {
+LBExpressions = {
     ---@param parse Parse
     Program = function(parse)
         local parse = parse:branch()
 
-        parse:tryConsumeRules(exp.genBody(T.EOF, T.RETURN))
+        parse:tryConsume(LBExpressions.genBody(T.EOF, T.RETURN))
 
-        if parse:tryConsumeRules(exp.ReturnStatement) then
+        if parse:tryConsume(LBExpressions.ReturnStatement) then
             
         end
         if parse:tryConsume(T.EOF) then
@@ -188,20 +204,20 @@ exp = {
         parse = parse:branch(S.STATEMENT)
         if parse:tryConsume(T.SEMICOLON)
         or parse.isLoopScope and parse:tryConsume(T.BREAK)
-        or parse:tryConsumeRules(
-            exp.NamedFunctionDefinition,
-            exp.IfStatement,
-            exp.ForLoopStatement,
-            exp.ForInLoopStatement,
-            exp.WhileLoopStatement,
-            exp.RepeatUntilStatement,
-            exp.DoEndStatement,
-            exp.GotoLabelStatement,
-            exp.GotoStatement,
-            exp.ProcessorLBTagSection,
-            exp.FunctionCallStatement,
-            exp.AssignmentOrLocalDeclaration,
-            parse.isReturnableScope and exp.ReturnStatement or nil
+        or parse:tryConsume(
+            LBExpressions.NamedFunctionDefinition,
+            LBExpressions.IfStatement,
+            LBExpressions.ForLoopStatement,
+            LBExpressions.ForInLoopStatement,
+            LBExpressions.WhileLoopStatement,
+            LBExpressions.RepeatUntilStatement,
+            LBExpressions.DoEndStatement,
+            LBExpressions.GotoLabelStatement,
+            LBExpressions.GotoStatement,
+            LBExpressions.ProcessorLBTagSection,
+            LBExpressions.FunctionCallStatement,
+            LBExpressions.AssignmentOrLocalDeclaration,
+            parse.isReturnableScope and LBExpressions.ReturnStatement or nil
         ) then
             return parse:commit()
         end
@@ -209,12 +225,12 @@ exp = {
         return parse:error("Invalid statement")
     end;
 
-
+    ---@param parse Parse
     SquareBracketsIndex = function(parse)
         parse = parse:branch(S.SQUARE_BRACKETS)
 
         if parse:tryConsume(T.OPENSQUARE)
-            and parse:tryConsumeRules(exp.Expression)
+            and parse:tryConsume(LBExpressions.Expression)
             and parse:tryConsume(T.CLOSESQUARE) then
 
             return parse:commit()
@@ -223,11 +239,12 @@ exp = {
         return parse:error("Invalid square-bracket index")
     end;
 
+    ---@param parse Parse
     ParenthesisExpression = function(parse)
         parse = parse:branch(S.PARENTHESIS)
 
         if parse:tryConsume(T.OPENBRACKET)
-            and parse:tryConsumeRules(exp.Expression)
+            and parse:tryConsume(LBExpressions.Expression)
             and parse:tryConsume(T.CLOSEBRACKET) then
 
             return parse:commit()
@@ -236,14 +253,15 @@ exp = {
         return parse:error("Invalid parenthesis expression")
     end;
 
+    ---@param parse Parse
     TableDef = function(parse)
         parse = parse:branch(S.TABLEDEF)
 
         if parse:tryConsume(T.OPENCURLY) then
             
-            if parse:tryConsumeRules(exp.TableValueInitialization) then
+            if parse:tryConsume(LBExpressions.TableValueInitialization) then
                 while parse:tryConsume(T.COMMA, T.SEMICOLON) do
-                    if not parse:tryConsumeRules(exp.TableValueInitialization) then
+                    if not parse:tryConsume(LBExpressions.TableValueInitialization) then
                         break; -- it's valid to end on a comma/semi-colon
                     end
                 end
@@ -285,12 +303,13 @@ exp = {
         return parse:error("Invalid function-definition parenthesis")
     end;
 
+    ---@param parse Parse
     ExpressionList = function(parse)
         -- a,b,c,d,e comma separated items
         parse = parse:branch()
-        if parse:tryConsumeRules(exp.Expression) then
+        if parse:tryConsume(LBExpressions.Expression) then
             while parse:tryConsume(T.COMMA) do
-                if not parse:tryConsumeRules(exp.Expression) then
+                if not parse:tryConsume(LBExpressions.Expression) then
                     return parse:error("Expression list must not leave trailing ','")
                 end
             end
@@ -306,7 +325,7 @@ exp = {
         if parse:tryConsume(T.RETURN) then
 
             -- optional expression-list
-            parse:tryConsumeRules(exp.ExpressionList)
+            parse:tryConsume(LBExpressions.ExpressionList)
 
             return parse:commit()
         end
@@ -319,11 +338,11 @@ exp = {
         parse = parse:branch(S.FUNCTIONDEF)
 
         if parse:tryConsume(T.FUNCTION) 
-        and parse:tryConsumeRules(exp.FunctionDefParenthesis) then
+        and parse:tryConsume(LBExpressions.FunctionDefParenthesis) then
 
             parse.isReturnableScope = true;
             parse.isLoopScope = false;
-            parse:tryConsumeRules(exp.genBody(T.END))
+            parse:tryConsume(LBExpressions.genBody(T.END))
 
             if parse:tryConsume(T.END) then
                 return parse:commit()
@@ -335,10 +354,12 @@ exp = {
 
     ---@param parse Parse
     NamedFunctionDefinition = function(parse, ...)
-        parse = parse:branch(S.FUNCTIONDEF)
+        parse = parse:branch(S.NAMEDFUNCTIONDEF)
         
         -- optionally local
-        parse:tryConsume(T.LOCAL)
+        if parse:tryConsume(T.LOCAL) then
+            parse.symbol.isLocal = true
+        end
 
         if parse:tryConsume(T.FUNCTION)
             and parse:tryConsume(T.IDENTIFIER) then
@@ -357,11 +378,13 @@ exp = {
                 end
             end
 
-            if parse:tryConsumeRules(exp.FunctionDefParenthesis) then
+            if parse:tryConsume(LBExpressions.FunctionDefParenthesis) then
+                parse.symbol.params = parse.symbol[#parse.symbol]
 
                 parse.isReturnableScope = true;
                 parse.isLoopScope = false;
-                parse:tryConsumeRules(exp.genBody(T.END))
+                parse:tryConsume(LBExpressions.genBody(T.END))
+                parse.symbol.body = parse.symbol[#parse.symbol]
 
                 if parse:tryConsume(T.END) then
                     return parse:commit()
@@ -373,50 +396,34 @@ exp = {
     end;
 
     ---@param parse Parse
-    BinaryExpression = function(parse)
+    OperatorChain = function(parse)
         parse = parse:branch(S.OPERATORCHAIN)
-        if parse:tryConsumeRules(exp.SingleExpression)
-            and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP, T.COMPARISON)
-            and parse:tryConsumeRules(exp.Expression) then
+        if parse:tryConsume(LBExpressions.SingleExpression) 
+            and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP)
+            and parse:tryConsume(LBExpressions.SingleExpression) then
 
+            while parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP) do
+                if not parse:tryConsume(LBExpressions.SingleExpression) then
+                    return parse:error("Invalid operator chain, missing final expression")
+                end
+            end
+            
             return parse:commit()
         end
-
+        
         return parse:error("Invalid binary expression")
     end;
-
-
-    LValue = function(parse)
-        parse = parse:branch() -- no typename; meaning it will simplify out
-
-        -- messy but easier way to handle Lvalues: (saves a lot of duplication)
-        -- easiest thing to do is, check if we can make a valid ExpChain and then make sure the end of it is actually modifiable
-        if parse:tryConsumeRules(exp.ExpressionChainedOperator) then
-            local lastChild = parse.symbol[#parse.symbol]
-            if lastChild
-            and lastChild[#lastChild]
-            and is(lastChild[#lastChild].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
-                parse.symbol.type = S.LVALUE
-                return parse:commit()
-            end
-        end
-
-        return parse:error("Invalid lvalue")
-    end;
-
-
-
+    
     ---@param parse Parse
     FunctionCallStatement = function(parse)
         parse = parse:branch()
 
         -- save a lot of duplication by finding a valid ExpChain and then backtracking
-        if parse:tryConsumeRules(exp.ExpressionChainedOperator) then
+        if parse:tryConsume(LBExpressions.ExpressionChainedOperator) then
             local lastChild = parse.symbol[#parse.symbol]
             if lastChild
             and lastChild[#lastChild]
             and is(lastChild[#lastChild].type, S.FUNCTIONCALL) then
-                parse.symbol.type = S.FUNCTIONCALL
                 return parse:commit()
             end
         end
@@ -429,7 +436,7 @@ exp = {
         -- a = (1+2)()()[1].123 param,func,func,accesschain,accesschain
         -- singleExpressions can chain into infinite function calls, etc.
         parse = parse:branch(S.EXPCHAIN)
-        if parse:tryConsume(T.IDENTIFIER) or parse:tryConsumeRules(exp.ParenthesisExpression) then
+        if parse:tryConsume(T.IDENTIFIER) or parse:tryConsume(LBExpressions.ParenthesisExpression) then
             while true do
                 if parse:tryConsume(T.DOTACCESS) then -- .<name>
                     if not parse:tryConsume(T.IDENTIFIER) then
@@ -437,10 +444,10 @@ exp = {
                     end
                 elseif parse:tryConsume(T.COLONACCESS) then -- :<name>(func) 
                     if not (parse:tryConsume(T.IDENTIFIER)
-                        and parse:tryConsumeRules(exp.FunctionCallParenthesis)) then
+                        and parse:tryConsume(LBExpressions.FunctionCallParenthesis)) then
                         return parse:error("Expected function call after ':'")
                     end
-                elseif parse:tryConsumeRules(exp.SquareBracketsIndex, exp.FunctionCallParenthesis) then -- [123] or (a,b,c)
+                elseif parse:tryConsume(LBExpressions.SquareBracketsIndex, LBExpressions.FunctionCallParenthesis) then -- [123] or (a,b,c)
                     -- all OK
                 else
                     return parse:commit();
@@ -451,6 +458,7 @@ exp = {
         return parse:error("Invalid expression chain")
     end;
 
+    ---@param parse Parse
     SingleExpression = function(parse)
         -- single expression, not lined by binary, e.g. a string, an identifier-chain, etc.
         parse = parse:branch()
@@ -459,11 +467,11 @@ exp = {
         while parse:tryConsume(T.NOT, T.UNARY_OP, T.MIXED_OP) do end
 
         if parse:tryConsume(T.VARARGS, T.STRING, T.NUMBER, T.HEX, T.TRUE, T.FALSE, T.NIL)-- hard-coded value
-        or parse:tryConsumeRules(
-            exp.ParenthesisExpression,
-            exp.ExpressionChainedOperator, -- (exp.index.index.index[index][index](func)(func)(func))
-            exp.TableDef,
-            exp.AnonymousFunctionDef) then
+        or parse:tryConsume(
+            LBExpressions.ParenthesisExpression,
+            LBExpressions.ExpressionChainedOperator, -- (exp.index.index.index[index][index](func)(func)(func))
+            LBExpressions.TableDef,
+            LBExpressions.AnonymousFunctionDef) then
             return parse:commit()
         end
 
@@ -477,9 +485,9 @@ exp = {
         -- parenthesis -> expression
         parse = parse:branch()
 
-        if parse:tryConsumeRules(
-            exp.BinaryExpression, -- (exp op exp) (infinite chain-> single_exp op (exp op exp)) etc.
-            exp.SingleExpression
+        if parse:tryConsume(
+            LBExpressions.OperatorChain, -- (exp op exp) (infinite chain-> single_exp op (exp op exp)) etc.
+            LBExpressions.SingleExpression
         ) then
             return parse:commit()
         end
@@ -495,7 +503,7 @@ exp = {
             parse = parse:branch()
 
             while not parse:match(table.unpack(args)) do
-                if not parse:tryConsumeRules(exp.Statement) then
+                if not parse:tryConsume(LBExpressions.Statement) then
                     return parse:error("Failed to terminate body")
                 end
             end
@@ -510,26 +518,26 @@ exp = {
         parse.isReturnableScope = true
 
         if parse:tryConsume(T.IF) 
-            and parse:tryConsumeRulesAs(S.IF_CONDITION, exp.Expression)
+            and parse:tryConsumeAs(S.IF_CONDITION, LBExpressions.Expression)
             and parse:tryConsume(T.THEN) then
             
             -- statements, if any - may be empty
-            parse:tryConsumeRules(exp.genBody(T.ELSEIF, T.ELSE, T.END))
+            parse:tryConsume(LBExpressions.genBody(T.ELSEIF, T.ELSE, T.END))
 
             -- potential for elseifs (if they exist, must be well structured or return false "badly made thingmy")
             while parse:tryConsume(T.ELSEIF) do
-                if not (parse:tryConsumeRulesAs(S.IF_CONDITION, exp.Expression)
+                if not (parse:tryConsumeAs(S.IF_CONDITION, LBExpressions.Expression)
                     and parse:tryConsume(T.THEN)) then
                     return parse:error("Improperly specified elseif statement")
                 else
                     -- parse statements in the "elseif" section
-                    parse:tryConsumeRules(exp.genBody(T.ELSEIF, T.ELSE, T.END))
+                    parse:tryConsume(LBExpressions.genBody(T.ELSEIF, T.ELSE, T.END))
                 end
             end
 
             -- possible "else" section
             if parse:tryConsume(T.ELSE) then
-                parse:tryConsumeRules(exp.genBody(T.END))
+                parse:tryConsume(LBExpressions.genBody(T.END))
             end
 
             if parse:tryConsume(T.END) then
@@ -543,26 +551,28 @@ exp = {
     ---@param parse Parse
     AssignmentOrLocalDeclaration = function(parse)
         parse = parse:branch(S.ASSIGNMENT)
-        local isLocal = parse:tryConsume(T.LOCAL)
+        parse.symbol.isLocal = parse:tryConsume(T.LOCAL)
         
-        if parse:tryConsumeRules(exp.LValue) then -- check last part of the EXPCHAIN was assignable
+        if parse:tryConsume(LBExpressions.LValue) then -- check last part of the EXPCHAIN was assignable
             
             -- now check repeatedly for the same, with comma separators
             --   return false if a comma is provided, but not a valid assignable value
             while parse:tryConsume(T.COMMA) do
-                if not parse:tryConsumeRules(exp.LValue) then
+                if not parse:tryConsume(LBExpressions.LValue) then
                     return parse:error("Expected lvalue after comma")
                 end
             end
 
             if parse:tryConsume(T.ASSIGN) then -- equals sign "="
                 -- expect a list of expressions to assign
-                if parse:tryConsumeRules(exp.ExpressionList) then
+                if parse:tryConsume(LBExpressions.ExpressionList) then
                     return parse:commit()
                 end
-            elseif isLocal then
+            elseif parse.symbol.isLocal then
                 -- if declared local, can be a simple "local statement" with no value - as rare as that is
-                parse.symbol.type = S.DECLARE_LOCAL
+                
+                -- debatable if we want to call this an ASSIGNMENT (despite no "=" or not)
+                --parse.symbol.type = S.DECLARE_LOCAL
                 return parse:commit()
             end
         end
@@ -570,15 +580,31 @@ exp = {
         return parse:error("Invalid Assignment/Local Declaration")
     end;
 
+    ---@param parse Parse
+    LValue = function(parse)
+        parse = parse:branch() -- no typename; meaning it will simplify out
 
+        -- messy but easier way to handle Lvalues: (saves a lot of duplication)
+        -- easiest thing to do is, check if we can make a valid ExpChain and then make sure the end of it is actually modifiable
+        if parse:tryConsume(LBExpressions.ExpressionChainedOperator) then
+            local lastChild = parse.symbol[#parse.symbol]
+            if lastChild
+            and lastChild[#lastChild]
+            and is(lastChild[#lastChild].type, S.SQUARE_BRACKETS, T.IDENTIFIER) then
+                return parse:commit()
+            end
+        end
+
+        return parse:error("Invalid lvalue")
+    end;
 
     ---@param parse Parse
     FunctionCallParenthesis = function(parse)
-        parse = parse:branch(S.FUNCTIONCALL)
+        parse = parse:branch(S.FUNCTIONCALL) -- remember the parenthesis ARE the actual "function call"
         if  parse:tryConsume(T.OPENBRACKET) then
 
             -- can be empty parens
-            parse:tryConsumeRules(exp.ExpressionList)
+            parse:tryConsume(LBExpressions.ExpressionList)
 
             if parse:tryConsume(T.CLOSEBRACKET) then
                 return parse:commit()
@@ -586,7 +612,7 @@ exp = {
         elseif parse:tryConsume(T.STRING) then
             -- alternate way to call functions, abyssmal addition to the language 
             return parse:commit()
-        elseif parse:tryConsumeRules(exp.TableDef) then
+        elseif parse:tryConsume(LBExpressions.TableDef) then
             -- equally mental way of calling functions, please refrain from this
             return parse:commit()
         end
@@ -594,13 +620,14 @@ exp = {
         return parse:error("Invalid function call parenthesis")
     end;
 
+    ---@param parse Parse
     TableAssignment = function(parse)
         parse = parse:branch(S.ASSIGNMENT)
-        if parse:tryConsumeRules(exp.SquareBracketsIndex)
+        if parse:tryConsume(LBExpressions.SquareBracketsIndex)
             or parse:tryConsume(T.IDENTIFIER) then
 
             if parse:tryConsume(T.ASSIGN) 
-                and parse:tryConsumeRules(exp.Expression) then
+                and parse:tryConsume(LBExpressions.Expression) then
 
                 return parse:commit()
             end
@@ -609,11 +636,12 @@ exp = {
         return parse:error("Invalid table assignment")
     end;
 
+    ---@param parse Parse
     TableValueInitialization = function(parse)
         parse = parse:branch()
-        if parse:tryConsumeRules(
-            exp.TableAssignment,
-            exp.Expression
+        if parse:tryConsume(
+            LBExpressions.TableAssignment,
+            LBExpressions.Expression
         ) then
             return parse:commit()
         end
@@ -631,18 +659,18 @@ exp = {
             -- a,b,c,d,e=1..works
             if parse:tryConsume(T.IDENTIFIER)
                 and parse:tryConsume(T.ASSIGN)
-                and parse:tryConsumeRules(exp.Expression) 
+                and parse:tryConsume(LBExpressions.Expression) 
                 and parse:tryConsume(T.COMMA)
-                and parse:tryConsumeRules(exp.Expression) then
+                and parse:tryConsume(LBExpressions.Expression) then
 
                 -- optional 3rd parameter (step)
                 if parse:tryConsume(T.COMMA)
-                    and not parse:tryConsumeRules(exp.Expression) then
+                    and not parse:tryConsume(LBExpressions.Expression) then
                     return parse:error("Trailing ',' in for-loop definition")
                 end
 
                 if parse:tryConsume(T.DO)
-                and parse:tryConsumeRules(exp.genBody(T.END))
+                and parse:tryConsume(LBExpressions.genBody(T.END))
                 and parse:tryConsume(T.END) then
                     return parse:commit()
                 end
@@ -673,17 +701,17 @@ exp = {
 
                 -- =exp, exp
                 if parse:tryConsume(T.IN)
-                and parse:tryConsumeRules(exp.Expression) then
+                and parse:tryConsume(LBExpressions.Expression) then
 
                     -- can now handle as many additional params as wanted
                     while parse:tryConsume(T.COMMA) do
-                        if not parse:tryConsumeRules(exp.Expression) then
+                        if not parse:tryConsume(LBExpressions.Expression) then
                             return parse:error("Trailing ',' in for-loop definition")
                         end
                     end
 
                     if parse:tryConsume(T.DO)
-                    and parse:tryConsumeRules(exp.genBody(T.END))
+                    and parse:tryConsume(LBExpressions.genBody(T.END))
                     and parse:tryConsume(T.END) then
                         return parse:commit()
                     end
@@ -701,9 +729,9 @@ exp = {
         parse.isReturnableScope = true
         
         if parse:tryConsume(T.WHILE)
-        and parse:tryConsumeRules(exp.Expression)
+        and parse:tryConsume(LBExpressions.Expression)
         and parse:tryConsume(T.DO)
-        and parse:tryConsumeRules(exp.genBody(T.END))
+        and parse:tryConsume(LBExpressions.genBody(T.END))
         and parse:tryConsume(T.END) then
             return parse:commit()
         end
@@ -719,21 +747,22 @@ exp = {
         parse.isReturnableScope = true
         
         if parse:tryConsume(T.REPEAT)
-        and parse:tryConsumeRules(exp.genBody(T.UNTIL))
+        and parse:tryConsume(LBExpressions.genBody(T.UNTIL))
         and parse:tryConsume(T.UNTIL)
-        and parse:tryConsumeRules(exp.Expression) then
+        and parse:tryConsume(LBExpressions.Expression) then
             return parse:commit()
         end
 
         return parse:error("Invalid repeat-until loop");
     end;
 
+    ---@param parse Parse
     DoEndStatement = function(parse)
         parse = parse:branch(S.DO_END)
         parse.isReturnableScope = true
 
         if parse:tryConsume(T.DO)
-        and parse:tryConsumeRules(exp.genBody(T.END))
+        and parse:tryConsume(LBExpressions.genBody(T.END))
         and parse:tryConsume(T.END) then
             return parse:commit()
         end
@@ -764,11 +793,12 @@ exp = {
         return parse:error("Invalid goto ::label::")
     end;
 
+    ---@param parse Parse
     ProcessorLBTagSection = function(parse)
         parse = parse:branch(S.LBTAG_SECTION)
         if parse:tryConsume(T.LBTAG_START) 
-        and parse:tryConsumeRules(exp.FunctionCallParenthesis)
-        and parse:tryConsumeRules(exp.genBody(T.LBTAG_END))
+        and parse:tryConsume(LBExpressions.FunctionCallParenthesis)
+        and parse:tryConsume(LBExpressions.genBody(T.LBTAG_END))
         and parse:tryConsume(T.LBTAG_END) then
             return parse:commit()
         end
@@ -776,7 +806,6 @@ exp = {
         return parse:error("Invalid lb tag setup")
     end;
 }
-
 
 toString = function(tree)
     local result = {}
@@ -787,31 +816,6 @@ toString = function(tree)
     return table.concat(result)
 end;
 
----restructures the tree to be simpler
----@param tree LBSymbol
-simplify = function(tree)
-    local i = 1   
-    while i <= #tree do
-        local child = tree[i]
-
-        if not child.type or (tree.type == child.type) then
-            
-            if child[1] then
-                tree[i] = child[1]
-            end
-            for ichild=2, #child do
-                table.insert(tree, i+ichild-1, child[ichild])
-            end
-        else
-            simplify(tree[i])
-            i = i + 1
-        end 
-    end
-
-    return tree
-end;
-
-
 local s = require("socket")
 parse = function(text)
     local startTime = s.gettime()
@@ -821,14 +825,14 @@ parse = function(text)
 
     startTime = s.gettime()
     local parser = Parse:new(nil, tokens, 1)
-    local result = exp.Program(parser)
+    local result = LBExpressions.Program(parser)
     print("parse time: " .. tostring(s.gettime() - startTime)) -- 0.5665168762207 (improved?)
 
     if not result then
         error(parser.errorObj:toString())
     end
     
-    return simplify(parser.symbol)
+    return parser.symbol
 end;
 
 
