@@ -1,27 +1,25 @@
 a=[[
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(a)
-            COMMENT(-- Author: Nameous Changey)
-            WHITESPACE(\n)
-            COMMENT(-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension)
-            WHITESPACE(\n)
-            COMMENT(-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090)
-            WHITESPACE(\n)
-            COMMENT(--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension))
-            WHITESPACE(\n)
-            COMMENT(--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey)
-            WHITESPACE(\n)
-            COMMENT(------------------------------------------------------------------------------------------------------------------------------------------------------------)
-            WHITESPACE(\n\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(a)
+        COMMENT(-- Author: Nameous Changey)
+        WHITESPACE(\n)
+        COMMENT(-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension)
+        WHITESPACE(\n)
+        COMMENT(-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090)
+        WHITESPACE(\n)
+        COMMENT(--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension))
+        WHITESPACE(\n)
+        COMMENT(--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey)
+        WHITESPACE(\n)
+        COMMENT(------------------------------------------------------------------------------------------------------------------------------------------------------------)
+        WHITESPACE(\n\n)
     ASSIGN(=)
         WHITESPACE( )
     HEX(0x123)
         WHITESPACE( )
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(a)
-            WHITESPACE(\n\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(a)
+        WHITESPACE(\n\n)
     ASSIGN(=)
         WHITESPACE( )
     PARENTHESIS
@@ -43,10 +41,9 @@ ASSIGNMENT
                 CLOSEBRACKET())
             CLOSEBRACKET())
         CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(d)
-            WHITESPACE(\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(d)
+        WHITESPACE(\n)
     ASSIGN(=)
         WHITESPACE( )
     OPERATORCHAIN
@@ -72,14 +69,13 @@ EXPCHAIN
         OPENBRACKET(()
         STRING("LifeBoatAPI")
         CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(color_Highlight)
-            WHITESPACE(              )
-            COMMENT(-- Type 'LifeBoatAPI.' and use intellisense to checkout the new LifeBoatAPI library functions; such as the LBVec vector maths library)
-            WHITESPACE(\n\n)
-            COMMENT(-- color palette, keeping them here makes UI easier to restyle)
-            WHITESPACE(\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(color_Highlight)
+        WHITESPACE(              )
+        COMMENT(-- Type 'LifeBoatAPI.' and use intellisense to checkout the new LifeBoatAPI library functions; such as the LBVec vector maths library)
+        WHITESPACE(\n\n)
+        COMMENT(-- color palette, keeping them here makes UI easier to restyle)
+        WHITESPACE(\n)
     ASSIGN(=)
         WHITESPACE( )
     EXPCHAIN
@@ -99,12 +95,11 @@ ASSIGNMENT
             NUMBER(230)
                 WHITESPACE( )
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(color_Inactive)
-            WHITESPACE(   )
-            COMMENT(-- offwhite)
-            WHITESPACE(\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(color_Inactive)
+        WHITESPACE(   )
+        COMMENT(-- offwhite)
+        WHITESPACE(\n)
     ASSIGN(=)
         WHITESPACE(  )
     EXPCHAIN
@@ -122,12 +117,11 @@ ASSIGNMENT
             COMMA(,)
             NUMBER(100)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(color_Active)
-            WHITESPACE(     )
-            COMMENT(-- grey)
-            WHITESPACE(\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(color_Active)
+        WHITESPACE(     )
+        COMMENT(-- grey)
+        WHITESPACE(\n)
     ASSIGN(=)
         WHITESPACE(    )
     EXPCHAIN
@@ -145,14 +139,13 @@ ASSIGNMENT
             COMMA(,)
             NUMBER(0)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(myButton)
-            WHITESPACE(   )
-            COMMENT(-- orangeRed)
-            WHITESPACE(\n\n)
-            COMMENT(-- define out button)
-            WHITESPACE(\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(myButton)
+        WHITESPACE(   )
+        COMMENT(-- orangeRed)
+        WHITESPACE(\n\n)
+        COMMENT(-- define out button)
+        WHITESPACE(\n)
     ASSIGN(=)
         WHITESPACE( )
     EXPCHAIN
@@ -197,17 +190,16 @@ ASSIGNMENT
             EXPCHAIN
                 IDENTIFIER(color_Inactive)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(ticks)
-            WHITESPACE( )
-            COMMENT(-- using the TouchScreen functionality from LifeBoatAPI - make a simple button)
-            WHITESPACE(\n\n)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(ticks)
+        WHITESPACE( )
+        COMMENT(-- using the TouchScreen functionality from LifeBoatAPI - make a simple button)
+        WHITESPACE(\n\n)
     ASSIGN(=)
         WHITESPACE( )
     NUMBER(0)
         WHITESPACE( )
-NAMEDFUNCTIONDEF
+GLOBAL_NAMEDFUNCTIONDEF
     FUNCTION(function)
         WHITESPACE(\n)
     IDENTIFIER(onTick)
@@ -225,12 +217,11 @@ NAMEDFUNCTIONDEF
         FUNCTIONCALL
             OPENBRACKET(()
             CLOSEBRACKET())
-    ASSIGNMENT
-        EXPCHAIN
-            IDENTIFIER(ticks)
-                WHITESPACE( )
-                COMMENT(-- touchscreen handler provided by LifeBoatAPI. Handles checking for clicks/releases etc.)
-                WHITESPACE(\n    )
+    GLOBAL_ASSIGNMENT
+        IDENTIFIER(ticks)
+            WHITESPACE( )
+            COMMENT(-- touchscreen handler provided by LifeBoatAPI. Handles checking for clicks/releases etc.)
+            WHITESPACE(\n    )
         ASSIGN(=)
             WHITESPACE( )
         OPERATORCHAIN
@@ -248,21 +239,19 @@ NAMEDFUNCTIONDEF
             WHITESPACE(\n    )
             COMMENT(--   then toggle the circle drawing color)
             WHITESPACE(\n    )
-        IF_CONDITION
-            EXPCHAIN
-                IDENTIFIER(myButton)
-                    WHITESPACE( )
-                COLONACCESS(:)
-                IDENTIFIER(lbstyledbutton_isReleased)
-                FUNCTIONCALL
-                    OPENBRACKET(()
-                    CLOSEBRACKET())
+        EXPCHAIN
+            IDENTIFIER(myButton)
+                WHITESPACE( )
+            COLONACCESS(:)
+            IDENTIFIER(lbstyledbutton_isReleased)
+            FUNCTIONCALL
+                OPENBRACKET(()
+                CLOSEBRACKET())
         THEN(then)
             WHITESPACE( )
-        ASSIGNMENT
-            EXPCHAIN
-                IDENTIFIER(isCircleColorToggled)
-                    WHITESPACE(\n        )
+        GLOBAL_ASSIGNMENT
+            IDENTIFIER(isCircleColorToggled)
+                WHITESPACE(\n        )
             ASSIGN(=)
                 WHITESPACE( )
             NOT(not)
@@ -274,7 +263,7 @@ NAMEDFUNCTIONDEF
             WHITESPACE(    \n    )
     END(end)
         WHITESPACE(\n)
-NAMEDFUNCTIONDEF
+GLOBAL_NAMEDFUNCTIONDEF
     FUNCTION(function)
         WHITESPACE(\n\n)
     IDENTIFIER(onDraw)
@@ -289,10 +278,9 @@ NAMEDFUNCTIONDEF
             WHITESPACE(\n    )
             COMMENT(-- Clicking the button, will change between orangeRed and grey)
             WHITESPACE(\n    )
-        IF_CONDITION
-            EXPCHAIN
-                IDENTIFIER(isCircleColorToggled)
-                    WHITESPACE( )
+        EXPCHAIN
+            IDENTIFIER(isCircleColorToggled)
+                WHITESPACE( )
         THEN(then)
             WHITESPACE( )
         EXPCHAIN

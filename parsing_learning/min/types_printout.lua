@@ -1,12 +1,10 @@
 a=[[
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(a)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(a)
     ASSIGN(=)
     HEX(0x123)
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(a)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(a)
     ASSIGN(=)
     PARENTHESIS
         OPENBRACKET(()
@@ -24,9 +22,8 @@ ASSIGNMENT
                 CLOSEBRACKET())
             CLOSEBRACKET())
         CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(d)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(d)
     ASSIGN(=)
     OPERATORCHAIN
         NUMBER(1)
@@ -43,9 +40,8 @@ EXPCHAIN
         OPENBRACKET(()
         STRING("LifeBoatAPI")
         CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(color_Highlight)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(color_Highlight)
     ASSIGN(=)
     EXPCHAIN
         IDENTIFIER(LifeBoatAPI)
@@ -61,9 +57,8 @@ ASSIGNMENT
             COMMA(,)
             NUMBER(230)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(color_Inactive)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(color_Inactive)
     ASSIGN(=)
     EXPCHAIN
         IDENTIFIER(LifeBoatAPI)
@@ -79,9 +74,8 @@ ASSIGNMENT
             COMMA(,)
             NUMBER(100)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(color_Active)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(color_Active)
     ASSIGN(=)
     EXPCHAIN
         IDENTIFIER(LifeBoatAPI)
@@ -97,9 +91,8 @@ ASSIGNMENT
             COMMA(,)
             NUMBER(0)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(myButton)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(myButton)
     ASSIGN(=)
     EXPCHAIN
         IDENTIFIER(LifeBoatAPI)
@@ -134,12 +127,11 @@ ASSIGNMENT
             EXPCHAIN
                 IDENTIFIER(color_Inactive)
             CLOSEBRACKET())
-ASSIGNMENT
-    EXPCHAIN
-        IDENTIFIER(ticks)
+GLOBAL_ASSIGNMENT
+    IDENTIFIER(ticks)
     ASSIGN(=)
     NUMBER(0)
-NAMEDFUNCTIONDEF
+GLOBAL_NAMEDFUNCTIONDEF
     FUNCTION(function)
     IDENTIFIER(onTick)
     FUNCTIONDEF_PARAMS
@@ -154,9 +146,8 @@ NAMEDFUNCTIONDEF
         FUNCTIONCALL
             OPENBRACKET(()
             CLOSEBRACKET())
-    ASSIGNMENT
-        EXPCHAIN
-            IDENTIFIER(ticks)
+    GLOBAL_ASSIGNMENT
+        IDENTIFIER(ticks)
         ASSIGN(=)
         OPERATORCHAIN
             EXPCHAIN
@@ -165,25 +156,23 @@ NAMEDFUNCTIONDEF
             NUMBER(1)
     IF_STATEMENT
         IF(if)
-        IF_CONDITION
-            EXPCHAIN
-                IDENTIFIER(myButton)
-                COLONACCESS(:)
-                IDENTIFIER(lbstyledbutton_isReleased)
-                FUNCTIONCALL
-                    OPENBRACKET(()
-                    CLOSEBRACKET())
+        EXPCHAIN
+            IDENTIFIER(myButton)
+            COLONACCESS(:)
+            IDENTIFIER(lbstyledbutton_isReleased)
+            FUNCTIONCALL
+                OPENBRACKET(()
+                CLOSEBRACKET())
         THEN(then)
-        ASSIGNMENT
-            EXPCHAIN
-                IDENTIFIER(isCircleColorToggled)
+        GLOBAL_ASSIGNMENT
+            IDENTIFIER(isCircleColorToggled)
             ASSIGN(=)
             NOT(not)
             EXPCHAIN
                 IDENTIFIER(isCircleColorToggled)
         END(end)
     END(end)
-NAMEDFUNCTIONDEF
+GLOBAL_NAMEDFUNCTIONDEF
     FUNCTION(function)
     IDENTIFIER(onDraw)
     FUNCTIONDEF_PARAMS
@@ -191,9 +180,8 @@ NAMEDFUNCTIONDEF
         CLOSEBRACKET())
     IF_STATEMENT
         IF(if)
-        IF_CONDITION
-            EXPCHAIN
-                IDENTIFIER(isCircleColorToggled)
+        EXPCHAIN
+            IDENTIFIER(isCircleColorToggled)
         THEN(then)
         EXPCHAIN
             IDENTIFIER(color_Active)

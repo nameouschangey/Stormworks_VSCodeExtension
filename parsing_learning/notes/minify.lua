@@ -197,7 +197,7 @@ findAllAssignments = function(tree)
     local result = {}
     treeForEach(tree,
         function(current)
-            if current.type == S.ASSIGNMENT then
+            if current.type == S.GLOBAL_ASSIGNMENT then
                 result[current.raw] = current
             end
         end)
@@ -262,7 +262,7 @@ reduceDuplicatesWhere = function(tree, variableNamer, condition)
     -- add the shared variables to the top
     for value,variable in pairs(variablesByValue) do
         --raw=table.concat({variable,"=",number,";"})
-        newVariable = {type=S.ASSIGNMENT,
+        newVariable = {type=S.GLOBAL_ASSIGNMENT,
                             {type=T.IDENTIFIER,     raw=variable.replacement},
                             {type=T.ASSIGN,         raw="="},
                             {type=variable.type,    raw=value},

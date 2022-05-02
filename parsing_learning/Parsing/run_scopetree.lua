@@ -281,11 +281,11 @@ walkScopeTree = function(tree, scope)
 
     for i=1,#tree do
         local val = tree[i]
-        if is(val.symbol.type, S.ASSIGNMENT) then
+        if is(val.symbol.type, S.GLOBAL_ASSIGNMENT) then
             -- some variable is being set in some scope
             resolveAssignmentChain(val, scope)
 
-        elseif is(val.symbol.type, S.NAMEDFUNCTIONDEF) then
+        elseif is(val.symbol.type, S.GLOBAL_NAMEDFUNCTIONDEF) then
             -- some variable is being set in some scope
             resolveNamedFunction(val, scope)
             
@@ -295,6 +295,7 @@ walkScopeTree = function(tree, scope)
         end
     end
 end;
+
 
 ---@param scope Scope
 ---@param tree ScopedTree

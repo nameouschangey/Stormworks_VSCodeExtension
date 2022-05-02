@@ -3,28 +3,30 @@ local T = LBTokenTypes
 
 
 LBSymbolTypes = {
-    TOKEN               = "TOKEN",
+    GLOBAL_NAMEDFUNCTIONDEF     = "GLOBAL_NAMEDFUNCTIONDEF",
+    LOCAL_NAMEDFUNCTIONDEF      = "LOCAL_NAMEDFUNCTIONDEF",
 
-    NAMEDFUNCTIONDEF    = "NAMEDFUNCTIONDEF",
-    FUNCTIONDEF         = "FUNCTIONDEF",
+    GLOBAL_ASSIGNMENT           = "GLOBAL_ASSIGNMENT",
+    LOCAL_ASSIGNMENT            = "LOCAL_ASSIGNMENT",
+
+    FUNCTIONDEF         = "ANON_FUNCTIONDEF",
     FUNCTIONDEF_PARAMS  = "FUNCTIONDEF_PARAMS",
 
-    FUNCTIONCALL        = "FUNCTIONCALL",
-
     TABLEDEF            = "TABLEDEF",
+
     WHILE_LOOP          = "WHILE_LOOP",
     FOR_LOOP            = "FOR_LOOP",
     DO_END              = "DO_END",
     REPEAT_UNTIL        = "REPEAT_UNTIL", 
     IF_STATEMENT        = "IF_STATEMENT",
     IF_CONDITION        = "IF_CONDITION",
-    ASSIGNMENT          = "ASSIGNMENT",
+    
     PARENTHESIS         = "PARENTHESIS",
     EXPCHAIN            = "EXPCHAIN",
     OPERATORCHAIN       = "OPERATORCHAIN",
     SQUARE_BRACKETS     = "SQUARE_BRACKETS",
-    DECLARE_LOCAL       = "DECLARE_LOCAL",
-    
+    FUNCTIONCALL        = "FUNCTIONCALL",
+
     PARAM               = "PARAM",
     GOTOLABEL           = "GOTOLABEL",
     GOTOSTATEMENT       = "GOTOSTATEMENT",
@@ -205,7 +207,8 @@ LBExpressions = {
         if parse:tryConsume(T.SEMICOLON)
         or parse.isLoopScope and parse:tryConsume(T.BREAK)
         or parse:tryConsume(
-            LBExpressions.NamedFunctionDefinition,
+            LBExpressions.LocalNamedFunctionDefinition,
+            LBExpressions.GlobalNamedFunctionDefinition,
             LBExpressions.IfStatement,
             LBExpressions.ForLoopStatement,
             LBExpressions.ForInLoopStatement,
@@ -216,7 +219,8 @@ LBExpressions = {
             LBExpressions.GotoStatement,
             LBExpressions.ProcessorLBTagSection,
             LBExpressions.FunctionCallStatement,
-            LBExpressions.AssignmentOrLocalDeclaration,
+            LBExpressions.GlobalAssignmentStatement,
+            LBExpressions.LocalAssignmentStatement,
             parse.isReturnableScope and LBExpressions.ReturnStatement or nil
         ) then
             return parse:commit()
@@ -353,14 +357,9 @@ LBExpressions = {
     end;
 
     ---@param parse Parse
-    NamedFunctionDefinition = function(parse, ...)
-        parse = parse:branch(S.NAMEDFUNCTIONDEF)
+    GlobalNamedFunctionDefinition = function(parse, ...)
+        parse = parse:branch(S.GLOBAL_NAMEDFUNCTIONDEF)
         
-        -- optionally local
-        if parse:tryConsume(T.LOCAL) then
-            parse.symbol.isLocal = true
-        end
-
         if parse:tryConsume(T.FUNCTION)
             and parse:tryConsume(T.IDENTIFIER) then
 
@@ -379,12 +378,36 @@ LBExpressions = {
             end
 
             if parse:tryConsume(LBExpressions.FunctionDefParenthesis) then
-                parse.symbol.params = parse.symbol[#parse.symbol]
-
                 parse.isReturnableScope = true;
                 parse.isLoopScope = false;
                 parse:tryConsume(LBExpressions.genBody(T.END))
-                parse.symbol.body = parse.symbol[#parse.symbol]
+
+                if parse:tryConsume(T.END) then
+                    return parse:commit()
+                end
+            end
+        end
+
+        return parse:error("Invalid named-function definition")
+    end;
+
+    ---@param parse Parse
+    LocalNamedFunctionDefinition = function(parse, ...)
+        parse = parse:branch(S.LOCAL_NAMEDFUNCTIONDEF)
+        
+        -- optionally local
+        if parse:tryConsume(T.LOCAL) and
+           parse:tryConsume(T.FUNCTION)
+            and parse:tryConsume(T.IDENTIFIER) then
+
+            if parse:match(T.DOTACCESS, T.COLONACCESS) then
+                return parse:error("Local function definition must only be simple identifier (no '.'/':') ")
+            end
+
+            if parse:tryConsume(LBExpressions.FunctionDefParenthesis) then
+                parse.isReturnableScope = true;
+                parse.isLoopScope = false;
+                parse:tryConsume(LBExpressions.genBody(T.END))
 
                 if parse:tryConsume(T.END) then
                     return parse:commit()
@@ -518,7 +541,7 @@ LBExpressions = {
         parse.isReturnableScope = true
 
         if parse:tryConsume(T.IF) 
-            and parse:tryConsumeAs(S.IF_CONDITION, LBExpressions.Expression)
+            and parse:tryConsume(LBExpressions.Expression)
             and parse:tryConsume(T.THEN) then
             
             -- statements, if any - may be empty
@@ -526,7 +549,7 @@ LBExpressions = {
 
             -- potential for elseifs (if they exist, must be well structured or return false "badly made thingmy")
             while parse:tryConsume(T.ELSEIF) do
-                if not (parse:tryConsumeAs(S.IF_CONDITION, LBExpressions.Expression)
+                if not (parse:tryConsume(LBExpressions.Expression)
                     and parse:tryConsume(T.THEN)) then
                     return parse:error("Improperly specified elseif statement")
                 else
@@ -549,11 +572,10 @@ LBExpressions = {
     end;
 
     ---@param parse Parse
-    AssignmentOrLocalDeclaration = function(parse)
-        parse = parse:branch(S.ASSIGNMENT)
-        parse.symbol.isLocal = parse:tryConsume(T.LOCAL)
-        
-        if parse:tryConsume(LBExpressions.LValue) then -- check last part of the EXPCHAIN was assignable
+    GlobalAssignmentStatement = function(parse)
+        parse = parse:branch(S.GLOBAL_ASSIGNMENT)
+
+        if parse:tryConsume(T.IDENTIFIER) then -- check last part of the EXPCHAIN was assignable
             
             -- now check repeatedly for the same, with comma separators
             --   return false if a comma is provided, but not a valid assignable value
@@ -567,16 +589,42 @@ LBExpressions = {
                 -- expect a list of expressions to assign
                 if parse:tryConsume(LBExpressions.ExpressionList) then
                     return parse:commit()
+                else
+                    parse:error("Expected expression following '=' assignment.")
                 end
-            elseif parse.symbol.isLocal then
-                -- if declared local, can be a simple "local statement" with no value - as rare as that is
-                
-                -- debatable if we want to call this an ASSIGNMENT (despite no "=" or not)
-                --parse.symbol.type = S.DECLARE_LOCAL
+            end
+        end
+        return parse:error("Invalid Assignment/Local Declaration")
+    end;
+
+    ---@param parse Parse
+    LocalAssignmentStatement = function(parse)
+        parse = parse:branch(S.LOCAL_ASSIGNMENT)
+
+        if parse:tryConsume(T.LOCAL)
+            and parse:tryConsume(T.IDENTIFIER) then -- check last part of the EXPCHAIN was assignable
+            
+            -- now check repeatedly for the same, with comma separators
+            --   return false if a comma is provided, but not a valid assignable value
+            while parse:tryConsume(T.COMMA) do
+                if not parse:tryConsume(T.IDENTIFIER) then
+                    return parse:error("Expected lvalue after comma")
+                end
+            end
+
+            if parse:tryConsume(T.ASSIGN) then -- equals sign "="
+                -- expect a list of expressions to assign
+                if parse:tryConsume(LBExpressions.ExpressionList) then
+                    return parse:commit()
+                else
+                    parse:error("Expected expression following '=' assignment.")
+                end
+            else
+                -- local statement can be without an assignment
                 return parse:commit()
             end
         end
-
+        
         return parse:error("Invalid Assignment/Local Declaration")
     end;
 
@@ -622,7 +670,7 @@ LBExpressions = {
 
     ---@param parse Parse
     TableAssignment = function(parse)
-        parse = parse:branch(S.ASSIGNMENT)
+        parse = parse:branch(S.GLOBAL_ASSIGNMENT)
         if parse:tryConsume(LBExpressions.SquareBracketsIndex)
             or parse:tryConsume(T.IDENTIFIER) then
 
