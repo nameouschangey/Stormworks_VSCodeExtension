@@ -33,7 +33,9 @@
     ],
     "lua.debug.settings.cpath": [
         "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/socket/core.dll",
-        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/mime/core.dll"
+        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/mime/core.dll",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/luasocket/dll/socket/core.dll",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/luasocket/dll/mime/core.dll"
     ],
     "lua.debug.settings.path": [
         "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/?.lua",

@@ -9,7 +9,7 @@ LBToken = {
         return {
             type = type,
             raw = raw,
-            lineInfo = lineinfo
+            lineInfo = lineinfo or {line=-1,column=-1,index=-1}
         }
     end;
 }

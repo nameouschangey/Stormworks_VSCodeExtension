@@ -43,50 +43,79 @@ ValueTypes = {
     BOOL = "BOOL",
     NIL = "NIL" -- even though "nil" isn't really a value, anthing that's only nil at the end can kinda be killed
 }
+local V = ValueTypes
 
 ---@class Value
 ---@field type string
----@field symbol LBSymbol
+---@field symbol LBToken
 Value = {
     new = function(this, type, symbol)
-        this.type = type
-        this.symbol = symbol
+        return {
+            type = type,
+            symbol = symbol
+        }
     end;
 }
 
+local ANYNUMBER = "ANYNUMBER"
 
+---@class TableValue : Value
+---@field fields Variable[]
+TableValue = {
+    new = function(this, symbol)
+        return {
+            type = V.TABLE,
+            symbol = symbol,
+            fields = {}
+        }
+    end;
 
--- how does this even work?
--- do we just find every lvalue and that's a variable?
--- even local a; is an "assignment" of sorts, but assigns the value nil
-
--- the main thing is we 1) need to parse the symbol tree into a scoped tree
--- we then need to run through the code line by line, as if we were running it
---  and just handle each type of statement
-
--- we need some way to handle branching the execution
--- so every ifstatement runs both ways, etc.
--- if we even need that, because we just have "possible values"
--- and operator_chains resolve into a list of possibles, not one type
--- same with most things; we're not trying simplify dead code, just uncalled "library" code
--- we're not try to figure out if a conditional is try or not
-
-
+    get = function(this, name)
+        if this.fields[name] then
+            return this.fields[name]
+        end
+    end;
+}
 
 ---@class Variable
+---@field name string
 ---@field scope Scope
 ---@field isLocal boolean
 ---@field possibleValues Value[]
 Variable = {
     new = function(this, name, scope, isLocal)
-        this.name = name
-        this.scope = scope
-        this.isLocal = isLocal
-        this.possibleValues = {}
+        return {
+            name = name,
+            scope = scope,
+            isLocal = isLocal,
+            possibleValues = {},
+
+            -- functions
+            assign = this.assign
+        }
+    end;
+
+    valuesOfType = function(this, ...)
+        local values = {}
+        for i=1, #this.possibleValues do
+            if is(this.possibleValues[i].type, ...) then
+                values[#values+1] = this.possibleValues[i]
+            end
+        end
+        return values
+    end;
+
+    is = function(this, ...)
+        for i=1, #this.possibleValues do
+            if is(this.possibleValues[i].type, ...) then
+                return true
+            end
+        end
+        return false
     end;
 
     assign = function(this, value)
-        this.possibleValues[value.identifier] = value
+        this.possibleValues[#this.possibleValues+1] = value
     end;
 }
 
@@ -95,18 +124,49 @@ Variable = {
 ---@field locals table<string,Variable>
 ---@field globals table<string,Variable>
 Scope = {
-    new = function(this, parent)
-        this.parent = parent
-        this.locals = {}
-        this.globals = parent and parent.globals or {}
+    ---@param this Scope
+    ---@return Scope
+    new = function(this)
+        return {
+            parent = nil,
+            locals = {},
+            globals = {},
+
+            --functions
+            newLocal = this.newLocal,
+            get = this.get,
+        }
     end;
 
+    ---@param this Scope
+    ---@return Scope
+    newChildScope = function(this)
+        local scope = {
+            parent = this,
+            locals = {},
+            globals = this.globals or {},
+
+            --functions
+            newLocal = this.newLocal,
+            get = this.get,
+        }
+
+        this[#this+1] = scope
+        return scope
+    end;
+
+    ---@param this Scope
+    ---@param name string
+    ---@return Variable
     newLocal = function(this, name)
         local var = Variable:new(name, this, true)
         this.locals[var.name] = var
         return var
     end;
 
+    ---@param this Scope
+    ---@param name string
+    ---@return Variable
     get = function(this, name)
         if this.locals[name] then
             return this.locals[name]
@@ -132,7 +192,7 @@ Scope = {
 ---@class ScopedTree
 ---@field parent ScopedTree
 ---@field parentIndex number
----@field symbol LBSymbol
+---@field symbol LBToken
 ---@field [number] ScopedTree
 ScopedTree = {
     ---@param this ScopedTree
@@ -145,11 +205,12 @@ ScopedTree = {
             symbol = symbol,
 
             -- functions
-            replaceSelf = this.replaceSelf,
-            sibling = this.sibling,
-            siblingsUntil = this.siblingsUntil,
-            next = this.next,
-            nextUntil = this.nextUntil
+            replaceSelf     = this.replaceSelf,
+            sibling         = this.sibling,
+            siblingsUntil   = this.siblingsUntil,
+            next            = this.next,
+            nextInstanceOf  = this.nextInstanceOf,
+            nextUntil       = this.nextUntil
         }
 
         for i=1,#this.symbol do
@@ -160,9 +221,20 @@ ScopedTree = {
     end;
 
     ---@param this ScopedTree
-    ---@param replacementSymbol LBSymbol
+    ---@param replacementSymbol LBToken
     replaceSelf = function(this, replacementSymbol)
         this.parent.symbol[this.parentIndex] = replacementSymbol
+    end;
+
+    --- Enters the child chain, just *before* the first element
+    --- Makes it easier to iterate the child nodes
+    ---@param this ScopedTree
+    ---@return ScopedTree
+    getChildSiblingStart = function(this)
+        if #this then
+            return ScopedTree:newFromSymbol(LBToken:new("NONE"), this, 0)
+        end
+        return nil
     end;
 
     ---@param this ScopedTree
@@ -185,14 +257,45 @@ ScopedTree = {
     end;
 
     ---@param this ScopedTree
-    ---@return ScopedTree
+    ---@return ScopedTree[]
     nextUntil = function(this, ...)
+        local _nextUntil;
+        _nextUntil = function(this, found, ...)
+            if is(this.symbol.type, ...) then
+                return found, true
+            else
+                found[#found+1] = this
+
+                for iChildren=1, #this do
+                    local childrenFound, wasFound = _nextUntil(this[iChildren], found, ...)
+
+                    if wasFound then
+                        return found, true
+                    end
+                end
+                return found, false
+            end
+        end;
+
+        local result = _nextUntil(this, {}, ...)
+
+        -- clip off self from the front of the list, as we're only wanting the "next" stuff
+        if #result > 1 then
+            table.remove(result, 1)    
+        end
+        return result
+    end;
+    
+
+    ---@param this ScopedTree
+    ---@return ScopedTree
+    nextInstanceOf = function(this, ...)
         if is(this.symbol.type, ...) then
             return this
         else
             local found
             for iChildren=1, #this do
-                found = next(this[iChildren])
+                found = this[iChildren]:nextInstanceOf(...)
                 if found then
                     return found
                 end
@@ -209,75 +312,26 @@ ScopedTree = {
     end;
 
     ---@param this ScopedTree
-    ---@return ScopedTree
+    ---@return ScopedTree[]
     siblingsUntil = function(this, ...)
         local siblings = {}
         for i=this.parentIndex+1, #this.parent do
             if not is(this.parent[i].symbol.type, ...) then
                 siblings[#siblings+1] = this.parent[i]
             else
-                return siblings
+                return siblings, this.parent[i]
             end
         end
-        return siblings
+        return siblings, nil
     end;
 }
 
 
-deepCopyTree = function(tree)
-    local result = {}
-    for k,v in pairs(tree) do
-        if type(v) == "table" then
-            result[k] = deepCopyTree(v)
-        end
-        result[k] = v
-    end
-    return result
-end;
-
-
--- useful for being able to remove items from the tree
-addParentRelationships = function(tree, parent)
-    tree.parent = parent
-
-    tree.replaceSelf = function(this, replacement)
-        for i=1,#this.parent do
-            if this.parent[i] == this then
-                this.parent[i] = replacement
-                return
-            end
-        end
-    end;
-
-    for i=1,#tree do
-        tree[i].parentIndex = i
-        addParentRelationships(tree[i])
-    end
-end;
-
--- what's the point in this?
-createScopeTree = function(tree, currentScope)
-    currentScope = currentScope or Scope:new()
-
-    local result = {}
-    result.symbol = tree
-    result.scope = currentScope
-    result.timesCalled = 0
-
-    for i=1,#tree do
-        if is(tree[i].type, S.FUNCTIONDEF, S.IF_STATEMENT, S.DO_END, S.WHILE_LOOP, S.FOR_LOOP, S.REPEAT_UNTIL) then
-            -- new scope
-            result[#result+1] = createScopeTree(tree[i], Scope:new(currentScope))
-        end
-    end
-
-    return result
-end;
 
 ---@param scope Scope
 ---@param tree ScopedTree
-walkScopeTree = function(tree, scope)
-    scope = scope or Scope:new()
+resolveBody = function(tree, scope)
+    local returnValues = {}
 
     for i=1,#tree do
         local val = tree[i]
@@ -287,39 +341,145 @@ walkScopeTree = function(tree, scope)
 
         elseif is(val.symbol.type, S.GLOBAL_NAMEDFUNCTIONDEF) then
             -- some variable is being set in some scope
-            resolveNamedFunction(val, scope)
-            
+            resolveNamedFunctionDef(val, scope)
+
+        elseif is(val.symbol.type, S.LOCAL_NAMEDFUNCTIONDEF) then
+            -- some variable is being set in some scope
+            resolveLocalNamedFunctionDef(val, scope)
+
+        elseif is(val.symbol.type, S.LOCAL_ASSIGNMENT) then
+            -- some variable is being set in some scope
+            resolveLocalAssignmentChain(val, scope)
+
         elseif is(val.symbol.type, S.FOR_LOOP, S.IF_STATEMENT, S.WHILE_LOOP, S.REPEAT_UNTIL, S.DO_END) then
             -- new local scope
-            walkScopeTree(val, Scope:new(scope))
+            --returnValues:combine(resolveBody(val, scope:branch()))
+        elseif is(val.symbol.type, T.RETURN) then
+            -- add the return values to the things we're returning
         end
     end
+
+    return returnValues
+end;
+
+--[[
+if we branch each time, then we only have 1 value per variable
+    but...doesn't that make some things less reliable?
+    what happens to functions with and/or, do we need to branch each of those too?
+    we'd potentially get multiple warnings for each statement
+        the benefit is something or other?
+    it may also be a significantly less productive way to do things
+        BUT it means if we ever found unreachable branches, that could be doable.
+
+    how do we handle side-effects?
+        just naturally?
+
+    how do we handle recursion?
+    
+    what about branches that wouldn't ever *actually* happen?
+
+    let's give it a try, it might be easier?
+    every and & or statement either needs resolved or branched
+    
+    conditionals can be "skipped"?
+
+    if we handle "multiple vals" then in many ways easier?
+
+    +/-/^ etc. all just generate numbers
+
+    conditionals always create bools
+
+    it's a BIG can of worms
+
+    are the simplifications making life easier or harder?
+
+    the and, or, is a right pain (not can be ignored, it's just a modifier)
+    resolve and before or
+    why is ^ higher priority than unary?
+]]
+
+
+
+---@param scope Scope
+---@param tree ScopedTree
+resolveNamedFunctionDef = function(tree, scope)
+    -- sets variable value to the function
+    local functionKeyword = tree:nextInstanceOf(T.FUNCTION)
+    local identchain = functionKeyword:siblingsUntil(S.FUNCTIONDEF_PARAMS)
+
+    -- note, in named functions identchain is always just identifiers + (./:) access, no expression
+    local isSelf = #identchain > 1 and identchain[#identchain-1].symbol.type == T.COLONACCESS
+
+    -- this is the actual variable (if it's a chain, this must be a table)
+    local baseVariable = scope:get(identchain[1].symbol.raw)
+    if baseVariable.is(V.TABLE) then
+        local tableVals = baseVariable.valuesOfType(V.TABLE) -- TODO: write a wrapper that avoids insane duplication (lots of inner loops)
+        
+        -- we kind of need to branch here, for each variable that's in the table; no?
+        -- or we need to handle this in a more sensible way somehow
+        -- we can't force type checking, if we don't know for sure what value is in this
+        -- or do we handle tables as just another scope?
+        -- and variables like some kind of chainable thing?
+        -- or we keep it "simple" and concat the names, into the global table?
+        -- so everything is still a flat style value
+        -- the issue, is putting that all back together
+
+        -- on table definitions, we need to make a new table
+        -- we need to share the instance of that table/find where it's used etc.
+        local vars = tableVals:get()
+        for i=3, #identchain,2 do
+            if identchain[i].symbol.type == T.IDENTIFIER then
+    
+            end
+        end
+
+    else
+        if #identchain > 1 then
+            error("cannot use . notation on non-table value " .. baseVariable.name)
+        end
+
+
+    end
+end;
+
+---@param scope Scope
+---@param tree ScopedTree
+resolveLocalNamedFunctionDef = function(tree, scope)
+    -- sets variable value to the function
+    local functionKeyword = tree:nextInstanceOf(T.FUNCTION)
+    local identifier = functionKeyword:nextInstanceOf(T.IDENTIFIER)
+
+    local identname = identifier.symbol.raw
+    local variable = scope:newLocal(identname)
+
+    variable:assign("FUNCTIONDEF", tree)
 end;
 
 
 ---@param scope Scope
 ---@param tree ScopedTree
-resolveNamedFunction = function(tree, scope)
-    -- sets variable value to the function
-    local isLocal = tree:next().symbol.type == T.LOCAL
+resolveAssignmentChain = function(tree, scope)
+    -- sets variable value
+    local lvalues = tree:nextUntil(T.ASSIGN)
+end;
 
-    local functionKeyword = tree:nextUntil(T.FUNCTION)
-    local identifiers = functionKeyword:siblingsUntil(S.FUNCTIONDEF_PARAMS)
+---@param scope Scope
+---@param tree ScopedTree
+resolveLocalAssignmentChain = function(tree, scope)
+    -- sets variable value
+    local identChain = tree:nextInstanceOf(T.LOCAL):siblingsUntil(T.ASSIGN)
 
-    local isSelf = identifiers[#identifiers-1].symbol.type == T.COLONACCESS
+    local variablesToAssign = {}
+    for i=1,#identChain do
+        if identChain[i].symbol.type == T.IDENTIFIER then
+            local identName = identChain[i].symbol.raw
+            variablesToAssign[#variablesToAssign+1] = scope:newLocal(identName)
+        end
+    end
 
-    for i=1, #identifiers do
-        local variable = scope:get(identifiers[i].symbol.token.raw)
+    local assign = identChain[#identChain]:nextInstanceOf(T.ASSIGN)
+    if assign then
+        local rvalues = identChain:siblingsUntil()
+
     end
 end;
-
-resolveAssignmentChain = function(symbol, scope)
-    -- sets variable value
-end;
-
--- this is so much damn work
--- all we're trying to do is handle some real basic shit
-
-
-
-

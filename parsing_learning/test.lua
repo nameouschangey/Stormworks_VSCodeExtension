@@ -5,7 +5,9 @@ require("Parsing.run_scopetree")
 local text = LifeBoatAPI.Tools.FileSystemUtils.readAllText(LifeBoatAPI.Tools.Filepath:new([[C:\Workspaces\STORMWORKS_VSCodeExtension\parsing_learning\MyMicrocontroller.lua]]))
 local parsed = parse(text)
 
-local scopeTree = createScopeTree(parsed)
+local fileScope = Scope:new()
+local scopeTree = ScopedTree:newFromSymbol(parsed)
+--resolveBody(scopeTree, fileScope)
 
 LifeBoatAPI.Tools.FileSystemUtils.writeAllText(
     LifeBoatAPI.Tools.Filepath:new([[C:\Workspaces\STORMWORKS_VSCodeExtension\parsing_learning\min\types_printout.lua]]),

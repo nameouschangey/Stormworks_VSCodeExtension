@@ -23,7 +23,16 @@ LBSymbolTypes = {
     
     PARENTHESIS         = "PARENTHESIS",
     EXPCHAIN            = "EXPCHAIN",
+
     OPERATORCHAIN       = "OPERATORCHAIN",
+    ORCHAIN             = "ORCHAIN",
+    ANDCHAIN            = "ANDCHAIN",
+    VALUECHAIN          = "VALUECHAIN",
+    NUMCHAIN            = "NUMCHAIN",
+    STRINGCHAIN         = "STRINGCONCAT",
+    BOOLEANCHAIN        = "BOOLEANCHAIN",
+    
+
     SQUARE_BRACKETS     = "SQUARE_BRACKETS",
     FUNCTIONCALL        = "FUNCTIONCALL",
 
@@ -34,28 +43,10 @@ LBSymbolTypes = {
     }
 local S = LBSymbolTypes
 
-
----@class LBSymbol
----@field type  stringstring
----@field token LBToken
-LBSymbol = {
-    new = function(this, type, token)
-        return {
-            type = type,
-            token = token
-        }
-    end;
-
-    fromToken = function(this, token)
-        return LBSymbol:new(token.type, token)
-    end;
-}
-
-
 ---@class Parse
 ---@field parent Parse
 ---@field tokens LBToken[]
----@field symbol LBSymbol
+---@field symbol LBToken
 ---@field i number
 ---@field isReturnableScope boolean defined the type of scope, function or loop or none; for return and break keywords
 ---@field isLoopScope boolean
@@ -69,7 +60,7 @@ Parse = {
             -- fields
             i = i or 1,
             tokens = tokens,
-            symbol = LBSymbol:new(symboltype),
+            symbol = LBToken:new(symboltype),
             parent = parent,
             isReturnableScope = parent and parent.isReturnableScope or false,
             isLoopScope = parent and parent.isLoopScope or false,
@@ -419,22 +410,109 @@ LBExpressions = {
     end;
 
     ---@param parse Parse
-    OperatorChain = function(parse)
+    --[[OperatorChain = function(parse)
         parse = parse:branch(S.OPERATORCHAIN)
         if parse:tryConsume(LBExpressions.SingleExpression) 
-            and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP)
-            and parse:tryConsume(LBExpressions.SingleExpression) then
+            and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP) then
 
-            while parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP) do
-                if not parse:tryConsume(LBExpressions.SingleExpression) then
-                    return parse:error("Invalid operator chain, missing final expression")
-                end
+            -- recategorize MIXED_OPs as BINARY_OP now we've got context
+            if parse.symbol[#parse.symbol].type == T.MIXED_OP then
+                parse.symbol[#parse.symbol].type = T.BINARY_OP
             end
-            
-            return parse:commit()
+
+            if parse:tryConsume(LBExpressions.SingleExpression) then
+
+                while parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP) do
+                    if parse.symbol[#parse.symbol].type == T.MIXED_OP then
+                        parse.symbol[#parse.symbol].type = T.BINARY_OP
+                    end
+                    
+                    if not parse:tryConsume(LBExpressions.SingleExpression) then
+                        return parse:error("Invalid operator chain, missing final expression")
+                    end
+                end
+                
+                return parse:commit()
+            end
         end
         
         return parse:error("Invalid binary expression")
+    end;
+    ]]
+
+    ---@param parse Parse
+    OperatorChain = function(parse)
+        parse = parse:branch(S.OPERATORCHAIN)
+        
+        if parse:tryConsume(LBExpressions.OrChain, LBExpressions.AndChain, LBExpressions.ValueChain) then
+            return parse:commit()
+        end
+        
+        return parse:error("Invalid operator chain")
+    end;
+    
+
+    OrChain = function(parse)
+        parse = parse:branch(S.ORCHAIN)
+        if parse:tryConsume(LBExpressions.AndChain, LBExpressions.ValueChain, LBExpressions.SingleExpression)
+            and parse:tryConsume(T.OR)
+            and parse:tryConsume(LBExpressions.AndChain, LBExpressions.ValueChain, LBExpressions.SingleExpression) then
+
+            while parse:tryConsume(T.OR) do
+                if not parse:tryConsume(LBExpressions.AndChain, LBExpressions.ValueChain, LBExpressions.SingleExpression) then
+                    return parse:error("Expected expression following OR")
+                end
+            end
+            return parse:commit()
+        end
+        
+        return parse:error("Not Or Chain")
+    end;
+
+    AndChain = function(parse)
+        parse = parse:branch(S.ANDCHAIN)
+        if parse:tryConsume(LBExpressions.ValueChain, LBExpressions.SingleExpression)
+            and parse:tryConsume(T.AND)
+            and parse:tryConsume(LBExpressions.ValueChain, LBExpressions.SingleExpression) then
+
+            while parse:tryConsume(T.AND) do
+                if not parse:tryConsume(LBExpressions.ValueChain, LBExpressions.SingleExpression) then
+                    return parse:error("Expected expression following AND")
+                end
+            end
+            return parse:commit()
+        end
+        
+        return parse:error("Not And Chain")
+    end;
+
+    ValueChain = function(parse)
+        parse = parse:branch(S.VALUECHAIN)
+        if parse:tryConsume(LBExpressions.SingleExpression) 
+            and parse:tryConsume(T.MIXED_OP, T.BINARY_OP) then
+
+            -- recategorize MIXED_OPs as BINARY_OP now we've got context
+            if parse.symbol[#parse.symbol].type == T.MIXED_OP then
+                parse.symbol[#parse.symbol].type = T.BINARY_OP
+            end
+
+            if parse:tryConsume(LBExpressions.SingleExpression) then
+
+                while parse:tryConsume(T.MIXED_OP, T.BINARY_OP) do
+                    if parse.symbol[#parse.symbol].type == T.MIXED_OP then
+                        parse.symbol[#parse.symbol].type = T.BINARY_OP
+                    end
+                    
+                    if not parse:tryConsume(LBExpressions.SingleExpression) then
+                        return parse:error("Invalid operator chain, missing final expression")
+                    end
+                end
+                
+                return parse:commit()
+            end
+        end
+        
+        return parse:error("Invalid value chain")
     end;
     
     ---@param parse Parse
@@ -487,7 +565,12 @@ LBExpressions = {
         parse = parse:branch()
 
         -- clear any unary operators from the front
-        while parse:tryConsume(T.NOT, T.UNARY_OP, T.MIXED_OP) do end
+        while parse:tryConsume(T.NOT, T.UNARY_OP, T.MIXED_OP) do
+            local symbolJustAdded = parse.symbol[#parse.symbol]
+            if symbolJustAdded.type == T.MIXED_OP then
+                symbolJustAdded.type = T.UNARY_OP -- categorize mixed as unary, now we know the context
+            end
+        end
 
         if parse:tryConsume(T.VARARGS, T.STRING, T.NUMBER, T.HEX, T.TRUE, T.FALSE, T.NIL)-- hard-coded value
         or parse:tryConsume(
