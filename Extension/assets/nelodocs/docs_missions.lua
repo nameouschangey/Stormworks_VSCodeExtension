@@ -1034,13 +1034,19 @@ function server.getTilePurchased(matrix) end
 --- @return boolean is_in_area
 function server.isInTransformArea(matrix_object, matrix_zone, zone_size_x, zone_size_y, zone_size_z) end
 
---- Returns a table of ocean tile waypoints that form a path from start to end
+--- Returns a table of waypoints that form a path from start to end, tags should be seperated by commas with no spaces.
+--- @param matrix_start SWMatrix The starting point of the path. Refer to World Space https://cutt.ly/smc3L3C
+--- @param matrix_end SWMatrix The ending point of the path. Refer to World Space https://cutt.ly/smc3L3C
+--- @param required_tags string The tags a graph node must have to be used.
+--- @param avoided_tags string The tags it will avoid if a graph node has it. (To omit provide a empty string "")
+--- @return table<number, SWPathFindPoint> position_list
+function server.pathfind(matrix_start, matrix_end, required_tags, avoided_tags) end
+
+--- Returns a table of waypoints tagged with ocean_path, that form a path from start to end. This functions the same as passing "ocean_path" as a required tag to server.pathfind().
 --- @param matrix_start SWMatrix The starting point of the path. Refer to World Space https://cutt.ly/smc3L3C
 --- @param matrix_end SWMatrix The ending point of the path. Refer to World Space https://cutt.ly/smc3L3C
 --- @return table<number, SWPathFindPoint> position_list
 function server.pathfindOcean(matrix_start, matrix_end) end
-
-
 
 
 
@@ -1120,6 +1126,10 @@ function server.getVideoTutorial() end
 --- Returns true of the host player is a developer of the game.
 --- @return boolean is_dev
 function server.isDev() end
+
+--- Returns true if the server has the weapons DLC active.
+--- @return boolean is_enabled
+function server.dlcWeapons() end
 
 --- Log a message to the console output
 --- @param message string The string to log
