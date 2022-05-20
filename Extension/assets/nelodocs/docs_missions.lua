@@ -12,15 +12,200 @@ matrix = {}
 debug = {}
 g_savedata = {}
 
+---------------------------------------------------------------------------------------------------------------------
+-- CALLBACKS
+---------------------------------------------------------------------------------------------------------------------
 
+--- called every game tick
+--- @param game_ticks number the number of ticks since the last onTick call (normally 1, while sleeping 400.)
+function onTick(game_ticks) end
 
+--- Called when the script is initialized (whenever creating or loading a world.)
+--- @param is_world_create boolean Only returns true when the world is first created.
+function onCreate(is_world_create) end
 
+--- Called when the world is exited.
+function onDestroy() end
 
+--- Called when a command is entered into chat, does not trigger if sent by server.
+--- @param full_message string The full message that was sent
+--- @param peer_id number The peer ID of the player who sent the message
+--- @param is_admin boolean If the player who entered the command has admin
+--- @param is_auth boolean If the player who entered the command is authenticated
+--- @param command string The command the player sent (ex: player entered "?help me", command will be "?help")
+--- @param ... string The rest of the args of the command, can be packed into a table with "arg = table.pack(...)" and referenced with "arg[1]", "arg[2]", ect
+function onCustomCommand(full_message, peer_id, is_admin, is_auth, command, ...) end
 
+--- Called when a message is sent to the chat, does not trigger if sent by server.
+--- @param peer_id number The peer ID of the player who sent the message
+--- @param sender_name string The name of the player who sent the message
+--- @param message string The message that was sent
+function onChatMessage(peer_id, sender_name, message) end
 
+--- Called when a player joins the game.
+--- @param steam_id number The player's Steam ID (convert to string as soon as possible to prevent loss of data)
+--- @param name string The player's name
+--- @param peer_id number The player's peer ID
+--- @param is_admin boolean If the player has admin
+--- @param is_auth boolean If the player is authenticated
+function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth) end
 
+--- Called when a player sits in a seat.
+--- @param peer_id number The peer ID of the player who sat in the seat
+--- @param vehicle_id number The vehicle ID of the vehicle which the seat belongs to
+--- @param seat_name string The name of the seat
+function onPlayerSit(peer_id, vehicle_id, seat_name) end
 
+--- Called when a player gets out of the seat.
+---@param peer_id number The peer ID of the player who got out of the seat
+---@param vehicle_id number The vehicle ID of the vehicle which the seat belongs to
+---@param seat_name string The name of the seat
+function onPlayerUnsit(peer_id, vehicle_id, seat_name) end
 
+--- Called when any character (including players) sits in a seat.
+--- @param object_id number The object ID of the character which sat in the seat
+--- @param vehicle_id number The vehicle ID of the vehicle which the seat belongs to
+--- @param seat_name string The name of the seat
+function onCharacterSit(object_id, vehicle_id, seat_name) end
+
+--- Called when any character (including players) sits in a seat.
+--- @param object_id number The object ID of the character which sat in the seat
+--- @param vehicle_id number The vehicle ID of the vehicle which the seat belongs to
+--- @param seat_name string The name of the seat
+function onCharacterUnsit(object_id, vehicle_id, seat_name) end
+
+--- Called whenever a player respawns.
+--- @param peer_id number The peer ID of the player who respawned
+function onPlayerRespawn(peer_id) end
+
+--- Called when a player leaves the game.
+--- @param steam_id number The player's Steam ID (convert to string as soon as possible to prevent loss of data.)
+--- @param name string The player's name.
+--- @param peer_id number The player's peer ID.
+--- @param is_admin boolean If the player had admin.
+--- @param is_auth boolean If the player was authenticated.
+function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth) end
+
+--- Called when a player opens/closes the map.
+--- @param peer_id number The player's peer ID
+--- @param is_open boolean false if the map was closed, true if the map was opened
+function onToggleMap(peer_id, is_open) end
+
+--- Called when a player dies.
+--- @param steam_id number The player's Steam ID (convert to string as soon as possible to prevent loss of data.)
+--- @param name string The player's name.
+--- @param peer_id number The player's peer ID.
+--- @param is_admin boolean If the player has admin.
+--- @param is_auth boolean If the player is authenticated.
+function onPlayerDie(steam_id, name, peer_id, is_admin, is_auth) end
+
+--- Called when a vehicle is spawned.
+--- @param vehicle_id number The vehicle ID of the vehicle that was spawned.
+--- @param peer_id number The peer ID of the player who spawned the vehicle, -1 if spawned by the server.
+--- @param x number The x coordinate of the vehicle's spawn location relative to world space.
+--- @param y number The y coordinate of the vehicle's spawn location relative to world space.
+--- @param z number The z coordinate of the vehicle's spawn location relative to world space.
+--- @param cost number The cost of the vehicle. Only calculated for player spawned vehicles.
+function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost) end
+
+--- Called when a vehicle is despawned.
+--- @param vehicle_id number the vehicle ID of the vehicle that was despawned.
+--- @param peer_id number The peer ID of the player who despawned the vehicle, -1 if despawned by the server.
+function onVehicleDespawn(vehicle_id, peer_id) end
+
+--- Called when a vehicle is loaded and is ready to be simulated.
+--- @param vehicle_id number The vehicle ID of the vehicle that was loaded.
+function onVehicleLoad(vehicle_id) end
+
+--- Called when a vehicle is unloaded and is no longer simulating.
+--- @param vehicle_id number The vehicle ID of the vehicle that was unloaded.
+function onVehicleUnload(vehicle_id) end
+
+--- Called when a vehicle is teleported or returned to the workbench.
+--- @param vehicle_id number The vehicle ID of the vehicle that was teleported.
+--- @param peer_id number The peer ID of the player who teleported the vehicle, -1 if teleported by the server.
+--- @param x number The x coordinate of the vehicle's spawn location relative to world space.
+--- @param y number The y coordinate of the vehicle's spawn location relative to world space.
+--- @param z number The z coordinate of the vehicle's spawn location relative to world space.
+function onVehicleTeleport(vehicle_id, peer_id, x, y, z) end
+
+--- Called when an object (character/prop/animal) has loaded and is ready to simulate.
+--- @param object_id number The object ID of the object that was loaded.
+function onObjectLoad(object_id) end
+
+--- Called when an object (character/prop/animal) is unloaded and is no longer simulating.
+--- @param object_id number The object ID of the object that was unloaded.
+function onObjectUnload(object_id) end
+
+--- Called when a button is interacted with (still triggers for locked buttons). For getting a button's current state use server.getVehicleButton() instead. Does not trigger if the button was interacted with by the server.
+--- @param vehicle_id number The vehicle ID of the vehicle that the button belongs to.
+--- @param peer_id number The peer ID of the player who interacted with the button.
+--- @param button_name string The name of the button that was interacted with.
+function onButtonPress(vehicle_id, peer_id, button_name) end
+
+--- Called when a vehicle or object is spawned by a script.
+--- @param vehicle_or_object_id number The vehicle ID or object ID that was spawned.
+--- @param component_name string The display name of the component that was spawned.
+--- @param TYPE_STRING TYPE_STRING The type of the component as a string ("zone", "object", "character", "vehicle", "flare", "fire", "loot", "button", "animal", "ice")
+--- @param addon_index number The internal index of the addon which spawned the vehicle or object.
+function onSpawnAddonComponent(vehicle_or_object_id, component_name, TYPE_STRING, addon_index) end
+
+--- Called whenever a vehicle is damaged or repaired.
+--- @param vehicle_id number The vehicle ID of the vehicle that was damaged or repaired.
+--- @param damage_amount number The amount of damage that was done to the vehicle, Negative when its repaired.
+--- @param voxel_x number 0,0,0 is the center of the vehicle (viewable with the move tool). Each "block" or 0.25m is a different voxel. 0,0.25,0 is one block above the start point.
+--- @param voxel_y number
+--- @param voxel_z number
+--- @param body_index number the body index which was damaged, 0 is the main body, useful for ignoring damage to missiles (body index can be seen via merge view in the editor, {0 = red, green, blue, yellow, magenta, cyan, orange,...})
+function onVehicleDamaged(vehicle_id, damage_amount, voxel_x, voxel_y, voxel_z, body_index) end
+
+---+ Called when a HTTP request has been returned. The callback details the request and recieved reply.
+--- @param port number The port the request was recieved from.
+--- @param request string The request that was recieved.
+--- @param reply string The reply that was recieved from the request.
+function httpReply(port, request, reply) end
+
+--- Called when a fire is extinguished.
+--- @param fire_x number The x coordinate of the fire which was extinguished in world space.
+--- @param fire_y number The y coordinate of the fire which was extinguished in world space.
+--- @param fire_z number The z coordinate of the fire which was extinguished in world space.
+function onFireExtinguished(fire_x, fire_y, fire_z) end
+
+--- Called when 5 or more trees have been detected to be on fire within a small radius.
+--- @param fire_objective_id number The fire objective ID of the forest fire, used to tell apart multiple forest fires.
+--- @param fire_x number The x coordinate of the forest fire which was detected in world space.
+--- @param fire_y number The y coordinate of the forest fire which was detected in world space.
+--- @param fire_z number The z coordinate of the forest fire which was detected in world space.
+function onForestFireSpawned(fire_objective_id, fire_x, fire_y, fire_z) end
+
+--- Called when a forest fire is extinguished.
+--- @param fire_objective_id number The fire objective ID of the forest fire, used to tell apart multiple forest fires.
+--- @param fire_x number The x coordinate of the forest fire which was extinguished in world space.
+--- @param fire_y number The y coordinate of the forest fire which was extinguished in world space.
+--- @param fire_z number The z coordinate of the forest fire which was extinguished in world space.
+function onForestFireExtinguised(fire_objective_id, fire_x, fire_y, fire_z) end
+
+--- Called when a Tornado is spawned.
+--- @param transform SWMatrix Where the Tornado was spawned.
+function onTornado(transform) end
+
+--- Called when a Meteor is spawned.
+--- @param transform SWMatrix Where the Meteor was spawned.
+function onMeteor(transform, magnitude) end
+
+--- Called when a Tsunami is spawned.
+--- @param transform SWMatrix Where the Tsunami was spawned.
+--- @param magnitude number The magnitude of the Tsunami. (0-1)
+function onTsunami(transform, magnitude) end
+
+--- Called when a Whirlpool is spawned.
+--- @param transform SWMatrix Where the Whirlpool was spawned.
+--- @param magnitude number The magnitude of the Whirlpool. (0-1)
+function onWhirlpool(transform, magnitude) end
+
+--- Called when a Volcano erupts.
+--- @param transform SWMatrix Where the Volcano was spawned.
+function onVolcano(transform) end
 
 ---------------------------------------------------------------------------------------------------------------------
 -- MATRICES
