@@ -20,4 +20,8 @@ LBWorldTiles = {
     pathFindOcean = function ()
         
     end;
+
+    pathfind = function ()
+        
+    end;
 }
