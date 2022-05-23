@@ -3,6 +3,11 @@ Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issu
 
 #### [0.0.13] - 25th February 2022
 **major**
+- Quick fix for "existing.push is not a function"
+- Updated documentation by Toastery
+
+#### [0.0.13] - 25th February 2022
+**major**
 - Added hexadecimal support, as game does not support 0xAAA -> 0xFFF, converts to decimal
 - Fixed issue with spaces and other characters in filepaths, prevent Simulator working for some people
 - Fixed first-time opening issue, where intellisense doesn't immediately load
