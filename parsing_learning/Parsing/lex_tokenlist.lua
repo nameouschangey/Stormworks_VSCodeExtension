@@ -37,9 +37,14 @@ LBTokenTypes = {
     COMMA           = "COMMA",
     SEMICOLON       = "SEMICOLON",
 
-    BINARY_OP       = "BINARY_OP",
-    MIXED_OP        = "MIXED_OP",
-    UNARY_OP        = "UNARY_OP",
+    MATHOP          = "MATHOP",
+    UNARY_MATHOP    = "MATHOP_UNARY",
+    MIXED_MATHOP    = "MATHOP_MIXED",
+    
+    STRING_CONCAT   = "STRINGOP",
+
+    COMPARISON      = "BOOLOP",
+
 
     LOCAL           = "LOCAL",
     IDENTIFIER      = "IDENTIFIER",
@@ -208,12 +213,16 @@ tokenize = function(text)
         if nextChar == '"' then
             -- quote (")
             iText, nextToken = getString(lineInfo, text, iText, '"')
-            tokens[#tokens+1] = LBToken:new(T.STRING, nextToken)
+            local stringToken = LBToken:new(T.STRING, nextToken)
+            stringToken.stringContent = nextToken:sub(2,-2)
+            tokens[#tokens+1] = stringToken
 
         elseif nextChar == "'" then
             -- quote (')
             iText, nextToken = getString(lineInfo, text, iText, "'")
-            tokens[#tokens+1] = LBToken:new(T.STRING, nextToken)
+            local stringToken = LBToken:new(T.STRING, nextToken)
+            stringToken.stringContent = nextToken:sub(2,-2)
+            tokens[#tokens+1] = stringToken
 
         elseif (next2Char == "[[" or next2Char == "[=") and nextSectionIs(text, iText, "%[=-%[") then
             -- quote ([[ ]])
@@ -225,8 +234,10 @@ tokenize = function(text)
                 closingPattern[#closingPattern+1] = "="
             end
             closingPattern[#closingPattern+1] = "%]"
-            iText, nextToken = LBStr.getTextIncluding(text, iText, table.concat(closingPattern))
-            tokens[#tokens+1] = LBToken:new(T.STRING, nextToken)  
+            iText, nextToken = LBStr.getTextUntil(text, iText, table.concat(closingPattern))
+            local stringToken = LBToken:new(T.STRING, nextToken)  
+            stringToken.stringContent = nextToken:sub(#closingPattern, -#closingPattern)
+            tokens[#tokens+1] = stringToken
 
         elseif nextSectionEquals(text, iText, "---@lb") then
             -- preprocessor tag
@@ -297,37 +308,37 @@ tokenize = function(text)
         elseif next2Char == ">>" or next2Char == "<<" then
             -- comparison
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.MATHOP, nextToken)
 
         elseif next2Char == ">=" or next2Char == "<=" or next2Char == "~=" or next2Char == "==" then
             -- comparison
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.COMPARISON, nextToken)
 
         elseif nextChar == ">" or nextChar == "<" then
             -- comparison
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.COMPARISON, nextToken)
 
         elseif next2Char == "//" then
             -- floor (one math op not two)
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.MATHOP, nextToken)
 
         elseif nextChar == "#" then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBToken:new(T.UNARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.UNARY_MATHOP, nextToken)
         
         elseif nextChar == "~" or nextChar == "-" then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBToken:new(T.MIXED_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.MIXED_MATHOP, nextToken)
 
         elseif lookup_math[nextChar] then
             -- all other math ops
             iText, nextToken = iText+1, nextChar
-            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.MATHOP, nextToken)
 
 
         elseif nextSectionEquals(text, iText, "...") then
@@ -338,7 +349,7 @@ tokenize = function(text)
         elseif next2Char == ".." then
             -- concat
             iText, nextToken = iText+2, next2Char
-            tokens[#tokens+1] = LBToken:new(T.BINARY_OP, nextToken)
+            tokens[#tokens+1] = LBToken:new(T.STRING_CONCAT, nextToken)
 
         elseif nextChar == "=" then
             -- assignment

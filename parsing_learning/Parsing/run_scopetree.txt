@@ -1,47 +1,18 @@
 require("Parsing.parse_symboltree")
 local S = LBSymbolTypes
 local T = LBTokenTypes
+
 --[[
-bit confused about how we should be handling these symbols etc.
-    - should we be handling each one
-
-    - what about values created from operator-chains
-    - and expression-chains
-    - it becomes a nightmare doesn't it
-
-    - what are we even trying to do?
-    - are we just trying to mark when things are used?
-    - do we care about any type of value other than table? maybe?
-    - string table is the only built-in we need to care for ("hello"):(a,b,c)
-
-    - the thing we're trying to find, is whether any functions aren't use
-    - and if any tables aren't used?
-    - any assignments unused?
-
-    - the unused assignments is what we want
-    - because then we can just remove them entirely
-    - the issue is, what about circular references; a = 1, b = a, a = b - not "needed"
-    - - but just doing that will resolve that both variables are used, despite them having the same values
-    - - an operator chain just creates one value
-
-    - is an expression chain a value?
-    - no, we need to resolve each part
-
-    - similarly, we need to resolve every part of the operator chain, if it contains any function-calls
-
-    - but the "value" that comes out of it, is the operator-chain itself
-    - the type of value, we can somehow resolve?
 
     
 ]]
 
 ValueTypes = {
     TABLE = "TABLE",
-    STRING = "STRING",
     FUNCTION = "FUNCTION",
+    STRING = "STRING",
     NUMBER = "NUMBER",
     BOOL = "BOOL",
-    NIL = "NIL" -- even though "nil" isn't really a value, anthing that's only nil at the end can kinda be killed
 }
 local V = ValueTypes
 
@@ -49,6 +20,7 @@ local V = ValueTypes
 ---@field type string
 ---@field symbol LBToken
 Value = {
+    ---@return Value
     new = function(this, type, symbol)
         return {
             type = type,
@@ -57,85 +29,169 @@ Value = {
     end;
 }
 
-local ANYNUMBER = "ANYNUMBER"
+local K = {
+    UNDEFINED_KEY = "__lbundefinedkeytype__",
+    VALUE_KEY = "__lbvaluekeytype__",
+    STRING_KEY = "__"
+}
 
 ---@class TableValue : Value
----@field fields Variable[]
+---@field fields table<string, ValueCollection>
 TableValue = {
+    ---@return TableValue
     new = function(this, symbol)
         return {
             type = V.TABLE,
             symbol = symbol,
-            fields = {}
+            fields = {},
+            get = this.get,
+            set = this.set
         }
     end;
 
-    get = function(this, name)
-        if this.fields[name] then
-            return this.fields[name]
+    ---@return ValueCollection
+    get = function(this, key)
+        if not this.fields[key] then
+            this.fields[key] = ValueCollection:new()
         end
+        return this.fields[key]
+    end;
+
+    ---@param this TableValue
+    ---@param value Value
+    setKey = function(this, key, value)
+        if not this.fields[key] then
+            this.fields[key] = ValueCollection:new()
+        end
+        this.fields[key]:set(value)
     end;
 }
 
----@class Variable
+---@class ValueCollection
 ---@field name string
 ---@field scope Scope
 ---@field isLocal boolean
----@field possibleValues Value[]
-Variable = {
-    new = function(this, name, scope, isLocal)
+---@field fields Value[]
+---@field symbolsLookup table<LBToken, boolean>
+ValueCollection = {
+    ---@return ValueCollection
+    new = function(this)
         return {
-            name = name,
-            scope = scope,
-            isLocal = isLocal,
-            possibleValues = {},
+            symbolsLookup = {},
 
             -- functions
-            assign = this.assign
+            isNil = this.isNil,
+            isValueType = this.isValueType,
+            assignTableKey = this.assignTableKey,
+            getTablesWithKey = this.getTablesWithKey,
+            getFunctions = this.getFunctions,
+            getTables = this.getTables,
+            combine = this.combine
         }
     end;
 
-    valuesOfType = function(this, ...)
-        local values = {}
-        for i=1, #this.possibleValues do
-            if is(this.possibleValues[i].type, ...) then
-                values[#values+1] = this.possibleValues[i]
-            end
+    ---@param value Value
+    ---@param this ValueCollection
+    set = function(this, value)
+        if not this.symbolsLookup[value.symbol] then
+            this.symbolsLookup[value.symbol] = true
+            this[#this+1] = value
         end
-        return values
+        this[#this+1] = value
     end;
 
-    is = function(this, ...)
-        for i=1, #this.possibleValues do
-            if is(this.possibleValues[i].type, ...) then
-                return true
+    ---@param value Value
+    ---@return ValueCollection
+    setKey = function(this, key, value)
+        for i=1,#this do
+            local val = this[i]
+            if val.type == V.TABLE then
+                val.set(key, value)
             end
         end
-        return false
     end;
 
-    assign = function(this, value)
-        this.possibleValues[#this.possibleValues+1] = value
+
+
+    ---@return boolean
+    isNil = function(this)
+        return #this == 0
+    end;
+
+    ---@return boolean
+    isValueType = function(this)
+        for i=1,#this do
+            if this[i].type == V.FUNCTION or this[i].type == V.TABLE then
+                return false
+            end
+        end
+        return true
+    end;
+
+    ---@return ValueCollection
+    getTables = function(this)
+        local result = ValueCollection:new()
+        for i=1,#this do
+            local val = this[i]
+            if val.type == V.TABLE then
+                result:set(val)
+            end
+        end
+        return result
+    end;
+
+    ---@return ValueCollection
+    getTablesWithKey = function(this, key)
+        local result = ValueCollection:new()
+        for i=1,#this do
+            local val = this[i]
+            if val.type == V.TABLE and val.get(key) then
+                result:set(val)
+            end
+        end
+        return result
+    end;
+
+    ---@return ValueCollection
+    getFunctions = function(this)
+        local result = ValueCollection:new()
+        for i=1,#this do
+            local val = this[i]
+            if val.type == V.FUNCTION then
+                result:set(val)
+            end
+        end
+        return result
+    end;
+
+    ---@param this ValueCollection
+    ---@return ValueCollection
+    combine = function(this, valueCollection)
+        for i=1,#valueCollection do
+            this:set(valueCollection[i])
+        end
+        return this
     end;
 }
 
----@class Scope
+---@class Scope : TableValue
 ---@field parent Scope
----@field locals table<string,Variable>
----@field globals table<string,Variable>
+---@field locals TableValue
+---@field _ENVCollection ValueCollection collection of all the values _ENV can be (can be not a table too)
 Scope = {
     ---@param this Scope
     ---@return Scope
     new = function(this)
-        return {
+        local scope = {
             parent = nil,
-            locals = {},
-            globals = {},
+            locals = TableValue:new(),
+            _ENVCollection = ValueCollection:new(), -- env itself can be redefined, which would be a real PITA
 
             --functions
-            newLocal = this.newLocal,
+            newChildScope = this.newChildScope,
             get = this.get,
         }
+        scope._ENV[#scope._ENV+1] = TableValue:new()
     end;
 
     ---@param this Scope
@@ -144,10 +200,8 @@ Scope = {
         local scope = {
             parent = this,
             locals = {},
-            globals = this.globals or {},
 
             --functions
-            newLocal = this.newLocal,
             get = this.get,
         }
 
@@ -156,37 +210,40 @@ Scope = {
     end;
 
     ---@param this Scope
-    ---@param name string
-    ---@return Variable
-    newLocal = function(this, name)
-        local var = Variable:new(name, this, true)
-        this.locals[var.name] = var
-        return var
+    ---@param key string
+    ---@return ValueCollection
+    get = function(this, key)
+        if this.locals[key] then
+            return this.locals[key]
+        elseif this.parent then
+            return this.parent:get(key)
+        end
+
+        -- no parent, so is a global from _ENV
+        if key == "_ENV" then
+            return this._ENVCollection -- request for the _ENV table directly
+        else
+            return this._ENVCollection:getTablesWithKey(key)
+        end
+        -- note, expected use is:
+        --      e.g. a.b.c = 123
+        --      => get(a).get(b).set(c, 123)
+
+        -- or,
+        --      a = 123
+        --      => set(a, 123)
+    end;
+
+    set = function(this, key, valueCollection)
+        this._ENVCollection:getTables():set(key, valueCollection)
     end;
 
     ---@param this Scope
-    ---@param name string
-    ---@return Variable
-    get = function(this, name)
-        if this.locals[name] then
-            return this.locals[name]
-        elseif this.parent then
-            local upvalue = this.parent:get(name)
-            if upvalue then
-                return upvalue
-            end
-        end
-
-        local global = this.globals[name] -- or nil
-        if global then
-            return global
-        else
-            global = Variable:new(name, this, false)
-            this.globals[name] = global
-            return global
-        end
+    setLocal = function(this, key, valueCollection)
+        this.locals:set(key, valueCollection)
     end;
 }
+
 
 -- the reason we want this, over the other one?
 ---@class ScopedTree
@@ -220,10 +277,25 @@ ScopedTree = {
         return this;
     end;
 
+    is = function(this, ...)
+        return is(this.symbol.type, ...)
+    end;
+
     ---@param this ScopedTree
     ---@param replacementSymbol LBToken
     replaceSelf = function(this, replacementSymbol)
         this.parent.symbol[this.parentIndex] = replacementSymbol
+    end;
+
+    ---@param this ScopedTree
+    ---@return ScopedTree
+    has = function(this, ...)
+        for i=1, #this do
+            if is(this[i].symbol.type, ...) then
+                return this[i]
+            end
+        end
+        return nil
     end;
 
     --- Enters the child chain, just *before* the first element
@@ -330,7 +402,7 @@ ScopedTree = {
 
 ---@param scope Scope
 ---@param tree ScopedTree
-resolveBody = function(tree, scope)
+walkBody = function(tree, scope)
     local returnValues = {}
 
     for i=1,#tree do
@@ -338,6 +410,9 @@ resolveBody = function(tree, scope)
         if is(val.symbol.type, S.GLOBAL_ASSIGNMENT) then
             -- some variable is being set in some scope
             resolveAssignmentChain(val, scope)
+        elseif is(val.symbol.type, S.EXPCHAIN) then
+            walkSideEffectsOnly(val, scope)
+
 
         elseif is(val.symbol.type, S.GLOBAL_NAMEDFUNCTIONDEF) then
             -- some variable is being set in some scope
@@ -346,6 +421,7 @@ resolveBody = function(tree, scope)
         elseif is(val.symbol.type, S.LOCAL_NAMEDFUNCTIONDEF) then
             -- some variable is being set in some scope
             resolveLocalNamedFunctionDef(val, scope)
+
 
         elseif is(val.symbol.type, S.LOCAL_ASSIGNMENT) then
             -- some variable is being set in some scope
@@ -362,43 +438,54 @@ resolveBody = function(tree, scope)
     return returnValues
 end;
 
---[[
-if we branch each time, then we only have 1 value per variable
-    but...doesn't that make some things less reliable?
-    what happens to functions with and/or, do we need to branch each of those too?
-    we'd potentially get multiple warnings for each statement
-        the benefit is something or other?
-    it may also be a significantly less productive way to do things
-        BUT it means if we ever found unreachable branches, that could be doable.
+walkSideEffectsOnly = function(tree, scope)
+    local returnValues = ValueCollection:new()
 
-    how do we handle side-effects?
-        just naturally?
-
-    how do we handle recursion?
-    
-    what about branches that wouldn't ever *actually* happen?
-
-    let's give it a try, it might be easier?
-    every and & or statement either needs resolved or branched
-    
-    conditionals can be "skipped"?
-
-    if we handle "multiple vals" then in many ways easier?
-
-    +/-/^ etc. all just generate numbers
-
-    conditionals always create bools
-
-    it's a BIG can of worms
-
-    are the simplifications making life easier or harder?
-
-    the and, or, is a right pain (not can be ignored, it's just a modifier)
-    resolve and before or
-    why is ^ higher priority than unary?
-]]
+    for i=1,#tree do
+        local child = tree[i]
+        if is(child.symbol.type, S.EXPCHAIN) then
+            resolveExpChain(child, scope) -- ignore the return value
+        end
+        walkSideEffectsOnly(child)
+    end
+    return returnValues
+end;
 
 
+-- walk means "run through these"
+-- resolve means "get me the return type"?
+-- do we need it for everything?
+-- is an operator chain still needed?
+
+-- why are we handling named functs differently from each other
+
+
+-- resolves the value type for inner square brackets
+---@param tree ScopedTree
+---@return Value
+getKeyFromSquareBrackets = function (tree, scope)
+    local innerSymbol = tree:next(2)
+    if innerSymbol:is(T.STRING) then
+        return innerSymbol.symbol.stringContent
+
+    elseif innerSymbol:is(S.STRINGCHAIN) then
+        return K.UNDEFINED_KEY -- could be any string key
+
+    elseif innerSymbol:is(S.NUMCHAIN, T.NUMBER, S.BOOLCHAIN, T.TRUE, T.FALSE) then
+        return K.VALUE_KEY
+
+    else
+        local resolvedValues = resolveValueElement(innerSymbol, scope)
+
+        -- if we end up with *just* value types, then we're ok
+        -- if we end up with unreliable types, then we're 
+        if resolvedValues:isHomogenous() then
+            -- something
+        else
+            return K.UNDEFINED_KEY
+        end
+    end
+end
 
 ---@param scope Scope
 ---@param tree ScopedTree
@@ -412,6 +499,16 @@ resolveNamedFunctionDef = function(tree, scope)
 
     -- this is the actual variable (if it's a chain, this must be a table)
     local baseVariable = scope:get(identchain[1].symbol.raw)
+    for i=2,#identchain do
+        local ident = identchain[i]
+        if ident.symbol.type == T.IDENTIFIER then
+        elseif ident.symbol.type == T.DOTACCESS then
+        elseif ident.symbol.type == S.SQUARE_BRACKETS then
+            local key = getKeyFromSquareBrackets(ident)
+        end
+    end
+
+
     if baseVariable.is(V.TABLE) then
         local tableVals = baseVariable.valuesOfType(V.TABLE) -- TODO: write a wrapper that avoids insane duplication (lots of inner loops)
         
@@ -454,6 +551,64 @@ resolveLocalNamedFunctionDef = function(tree, scope)
 
     variable:assign("FUNCTIONDEF", tree)
 end;
+
+resolveValueElement = function(tree, scope)
+    local valueCollection = ValueCollection:new()
+    if is(tree.symbol.type, S.BOOLCHAIN) then
+        valueCollection[#valueCollection+1] = Value:new(V.BOOL, tree.symbol)
+        walkSideEffectsOnly(tree, scope)
+
+    elseif is(tree.symbol.type, S.NUMCHAIN) then
+        valueCollection[#valueCollection+1] = Value:new(V.NUMBER, tree.symbol)
+        walkSideEffectsOnly(tree, scope)
+
+    elseif is(tree.symbol.type, S.STRINGCHAIN) then
+        valueCollection[#valueCollection+1] = Value:new(V.STRING, tree.symbol)
+        walkSideEffectsOnly(tree, scope)
+
+    end
+end;
+
+---@param tree ScopedTree
+resolveOrChain = function(tree, scope)
+    local returnValues = ValueCollection:new()
+
+    -- right now we just assume all the branches could be true
+    -- in future, could add it that we check if the condition can't possibly be true?
+    -- maybe all this was a bit of a silly endeavor
+    for i=1,#tree, 2 do
+        local child = tree[i]
+        local returnVal = resolveValueElement(child)
+        returnValues:combine(returnVal)
+    end
+    return returnValues
+end;
+
+---@param tree ScopedTree
+resolveAndChain = function(tree, scope)
+    local returnValues = ValueCollection:new()
+
+    for i=1,#tree, 2 do
+        local child = tree[i]
+        local returnVal = resolveValueElement(child)
+        returnValues:combine(returnVal)
+    end
+    return returnValues
+end;
+
+--- function calls, a.b.c():def() etc.
+---@param tree ScopedTree
+resolveExpChain = function(tree, scope)
+    local returnValues = ValueCollection:new()
+
+    for i=1,#tree, 2 do
+        local child = tree[i]
+        local returnVal = resolveValueElement(child)
+        returnValues:combine(returnVal)
+    end
+    return returnValues
+end;
+
 
 
 ---@param scope Scope

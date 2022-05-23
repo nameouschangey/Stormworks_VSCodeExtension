@@ -1,31 +1,46 @@
-a = {}
+-- make sure that you input width and height of the display you are going to use to "px," "h," "w."
+w=48
+h=48
+px=48
+maxdst=500
+storedtgt={}
 
-function abc(val)
-    a[#a+1] = val
-    return val
-end;
+function onTick()
 
-local b = false and abc(1) or abc(2) and (2 ^ abc(5) + abc(3) + abc(4))
+    tgt=input.getBool(1)
+    dst=input.getNumber(1)
+    dstpx=(dst/maxdst)*px
+    radarAng=(input.getNumber(5)%1)*math.pi*2
 
--- because and and or are the lowest, we can split the chain at each of those
--- so we evaluate left-side of and, then right side of and
--- left side of or, and ONLY right side of or IF it's not true
--- everything else is quite straight forward, ish
+    x1=w/2+px*math.cos(-math.pi/2+radarAng)
+    y1=h/2+px*math.sin(-math.pi/2+radarAng)
 
--- above, we would parse the chain upto the first "or"
--- we then resolve the left side, splitting on "and"
--- resolve each of the left and right side of each and condition?
+    x2=w/2+dstpx*math.cos(-math.pi/2+radarAng)
+    y2=h/2+dstpx*math.sin(-math.pi/2+radarAng)
 
--- splitting on "or" is the right thing to do
--- then resolving each section and "and" as it short-circuits too
-
-
-
----@param tree ScopedTree
-function resolveOperatorChain(tree)
-    local orBlocks = {}
-    for i=1,#tree do
-        local node = tree[i]
-        if not node.symbol.type == T.
+    if tgt then
+        storedtgt[x2]=y2
     end
-end;
+
+    if radarAng==0 then 
+        for x3 in pairs(storedtgt) do
+            storedtgt[x3]=nil
+        end
+    end
+
+end
+
+function onDraw()
+	w=screen.getWidth()
+	h=screen.getHeight()
+	screen.setColor(0,255,0)
+	screen.drawCircle(w/2,h/2,px)
+	screen.drawLine(w/2,h/2,x1,y1)
+	
+	for x3,y3 in pairs(storedtgt) do
+		screen.setColor(255,0,0)
+		screen.drawCircleF(x3,y3,2)
+	end
+	
+	
+end

@@ -30,7 +30,7 @@ LBSymbolTypes = {
     VALUECHAIN          = "VALUECHAIN",
     NUMCHAIN            = "NUMCHAIN",
     STRINGCHAIN         = "STRINGCONCAT",
-    BOOLEANCHAIN        = "BOOLEANCHAIN",
+    BOOLCHAIN        = "BOOLCHAIN",
     
 
     SQUARE_BRACKETS     = "SQUARE_BRACKETS",
@@ -165,10 +165,9 @@ Parse = {
 
     ---@param this Parse
     tryConsumeAs = function(this, symboltype, ...)
-        local branch = this:branch(symboltype)
-        local result = branch:tryConsume(...)
+        local result = this:tryConsume(...)
         if result then
-            branch:commit()
+            this.symbol[#this.symbol].type = symboltype
         end
         return result
     end;
@@ -409,40 +408,10 @@ LBExpressions = {
         return parse:error("Invalid named-function definition")
     end;
 
-    ---@param parse Parse
-    --[[OperatorChain = function(parse)
-        parse = parse:branch(S.OPERATORCHAIN)
-        if parse:tryConsume(LBExpressions.SingleExpression) 
-            and parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP) then
-
-            -- recategorize MIXED_OPs as BINARY_OP now we've got context
-            if parse.symbol[#parse.symbol].type == T.MIXED_OP then
-                parse.symbol[#parse.symbol].type = T.BINARY_OP
-            end
-
-            if parse:tryConsume(LBExpressions.SingleExpression) then
-
-                while parse:tryConsume(T.AND, T.OR, T.MIXED_OP, T.BINARY_OP) do
-                    if parse.symbol[#parse.symbol].type == T.MIXED_OP then
-                        parse.symbol[#parse.symbol].type = T.BINARY_OP
-                    end
-                    
-                    if not parse:tryConsume(LBExpressions.SingleExpression) then
-                        return parse:error("Invalid operator chain, missing final expression")
-                    end
-                end
-                
-                return parse:commit()
-            end
-        end
-        
-        return parse:error("Invalid binary expression")
-    end;
-    ]]
 
     ---@param parse Parse
     OperatorChain = function(parse)
-        parse = parse:branch(S.OPERATORCHAIN)
+        parse = parse:branch()
         
         if parse:tryConsume(LBExpressions.OrChain, LBExpressions.AndChain, LBExpressions.ValueChain) then
             return parse:commit()
@@ -487,34 +456,55 @@ LBExpressions = {
     end;
 
     ValueChain = function(parse)
-        parse = parse:branch(S.VALUECHAIN)
-        if parse:tryConsume(LBExpressions.SingleExpression) 
-            and parse:tryConsume(T.MIXED_OP, T.BINARY_OP) then
+        local isNumber, isBool, isString;
 
-            -- recategorize MIXED_OPs as BINARY_OP now we've got context
-            if parse.symbol[#parse.symbol].type == T.MIXED_OP then
-                parse.symbol[#parse.symbol].type = T.BINARY_OP
+        parse = parse:branch(S.VALUECHAIN)
+        if parse:tryConsume(LBExpressions.SingleExpression) then
+        
+            if parse:tryConsumeAs(T.MATHOP, T.MIXED_MATHOP, T.MATHOP) then
+                isNumber = true
+            elseif parse:tryConsume(T.STRING_CONCAT) then
+                isString = true
+            elseif parse:tryConsume(T.COMPARISON) then
+                isBool = true
+            else
+                return parse:error("Invalid value chain")
             end
 
             if parse:tryConsume(LBExpressions.SingleExpression) then
 
-                while parse:tryConsume(T.MIXED_OP, T.BINARY_OP) do
-                    if parse.symbol[#parse.symbol].type == T.MIXED_OP then
-                        parse.symbol[#parse.symbol].type = T.BINARY_OP
+                while true do
+                    if parse:tryConsumeAs(T.MATHOP, T.MIXED_MATHOP, T.MATHOP) then
+                        isNumber = true
+                    elseif parse:tryConsume(T.STRING_CONCAT) then
+                        isString = true
+                    elseif parse:tryConsume(T.COMPARISON) then
+                        isBool = true
+                    else
+                        break
                     end
-                    
+           
                     if not parse:tryConsume(LBExpressions.SingleExpression) then
                         return parse:error("Invalid operator chain, missing final expression")
                     end
                 end
                 
+                if isBool then
+                    parse.symbol.type = S.BOOLCHAIN
+                elseif isString then
+                    parse.symbol.type = S.STRINGCHAIN
+                elseif isNumber then
+                    parse.symbol.type = S.NUMCHAIN
+                else
+                    error("internal: unexpected chain operators, please review parser code for errors")
+                end
+
                 return parse:commit()
             end
         end
-        
         return parse:error("Invalid value chain")
     end;
-    
+
     ---@param parse Parse
     FunctionCallStatement = function(parse)
         parse = parse:branch()
@@ -565,10 +555,15 @@ LBExpressions = {
         parse = parse:branch()
 
         -- clear any unary operators from the front
-        while parse:tryConsume(T.NOT, T.UNARY_OP, T.MIXED_OP) do
+        while parse:tryConsume(T.NOT)
+              or parse:tryConsumeAs(T.UNARY_MATHOP, T.UNARY_MATHOP, T.MIXED_MATHOP) do
             local symbolJustAdded = parse.symbol[#parse.symbol]
-            if symbolJustAdded.type == T.MIXED_OP then
-                symbolJustAdded.type = T.UNARY_OP -- categorize mixed as unary, now we know the context
+
+            -- categorize this as a Math or Boolean expression (as these returns convert it)
+            if is(symbolJustAdded.type, T.UNARY_MATHOP) then
+                parse.symbol.type = S.NUMCHAIN
+            else
+                parse.symbol.type = S.BOOLCHAIN
             end
         end
 
@@ -658,8 +653,13 @@ LBExpressions = {
     GlobalAssignmentStatement = function(parse)
         parse = parse:branch(S.GLOBAL_ASSIGNMENT)
 
-        if parse:tryConsume(T.IDENTIFIER) then -- check last part of the EXPCHAIN was assignable
-            
+        if parse:tryConsume(LBExpressions.ExpressionChainedOperator) then 
+            -- check last part of the EXPCHAIN was assignable
+            local lastSymbol = parse.symbol[#parse.symbol]
+            if not is(lastSymbol.type, T.IDENTIFIER, S.SQUARE_BRACKETS) then
+                parse:error("Cannot assign to type: " .. lastSymbol.type)
+            end
+
             -- now check repeatedly for the same, with comma separators
             --   return false if a comma is provided, but not a valid assignable value
             while parse:tryConsume(T.COMMA) do
