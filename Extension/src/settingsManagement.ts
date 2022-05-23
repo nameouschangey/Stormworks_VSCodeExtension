@@ -68,6 +68,10 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 	];
 
 	let cpathString : string = luaDebugConfig.get("cpath") ?? "";
+	if (typeof cpathString !== 'string')
+	{
+		cpathString = "";
+	}
 		
 	let existingAsList : string[] = cpathString.split(";");
 	for(const cPathElement of defaultCPaths)

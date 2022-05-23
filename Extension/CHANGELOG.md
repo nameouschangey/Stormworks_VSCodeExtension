@@ -1,10 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
-#### [0.0.13] - 25th February 2022
+#### [0.0.14] + [0.0.15] - 25th February 2022
 **major**
 - Quick fix for "existing.push is not a function"
 - Updated documentation by Toastery
+**major**
+- Fix for existing projects
 
 #### [0.0.13] - 25th February 2022
 **major**
