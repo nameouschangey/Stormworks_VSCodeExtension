@@ -102,7 +102,7 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
         local nameParts = LifeBoatAPI.Tools.StringUtils.split(item, ".")
         this.baseNames[nameParts[1]] = true
         this.fullNames[item] = true
-        if(instanceBased) then -- instance based means things like gmatch which apply to any string
+        if(instanceBased and #nameParts > 1) then -- instance based means things like gmatch which apply to any string
             this.restrictedKeywords[nameParts[2]] = true
         end
     end;
