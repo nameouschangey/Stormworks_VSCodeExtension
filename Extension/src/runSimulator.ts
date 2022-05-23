@@ -79,7 +79,7 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     program: `${simulatedLuaFile?.fsPath}`,
                     stopOnEntry: false,
                     stopOnThreadEntry: false,
-                    cpath: settingsManagement.getDebugCPaths(context).join(";"),
+                    cpath: settingsManagement.getDebugCPaths(context),
                     path: path.join(";"),
                     arg: [
                         utils.sanitisePath(context.extensionPath) + "/assets/simulator/STORMWORKS_Simulator.exe",
