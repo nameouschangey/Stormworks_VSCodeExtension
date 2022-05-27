@@ -67,16 +67,22 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 		utils.sanitisePath(context.extensionPath) + "/assets/luasocket/dll/mime/core.dll"
 	];
 
-	let existing : string[] = luaDebugConfig.get("cpath") ?? [];
+	let cpathString : string = luaDebugConfig.get("cpath") ?? "";
+	if (typeof cpathString !== 'string')
+	{
+		cpathString = "";
+	}
 		
+	let existingAsList : string[] = cpathString.split(";");
 	for(const cPathElement of defaultCPaths)
 	{
-		if(existing.indexOf(cPathElement) === -1)
+		if(!existingAsList.includes(cPathElement))
 		{
-			existing.push(cPathElement);
+			existingAsList.push(cPathElement);
 		}
 	}
-	return existing;
+	
+	return existingAsList.join(";");
 }
 
 export function beginUpdateWorkspaceSettings(context: vscode.ExtensionContext) {

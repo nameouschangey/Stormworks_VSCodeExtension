@@ -115,7 +115,7 @@ export function beginBuild(context:vscode.ExtensionContext)
                     stopOnEntry: false,
                     stopOnThreadEntry: false,
                     path: path.join(";"),
-                    cpath: settingsManagement.getDebugCPaths(context).join(";"),
+                    cpath: settingsManagement.getDebugCPaths(context),
                     arg: [
                         neloAddonDoc,
                         neloMCDoc,
