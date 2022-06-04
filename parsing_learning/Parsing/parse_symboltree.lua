@@ -30,7 +30,7 @@ LBSymbolTypes = {
     VALUECHAIN          = "VALUECHAIN",
     NUMCHAIN            = "NUMCHAIN",
     STRINGCHAIN         = "STRINGCONCAT",
-    BOOLCHAIN        = "BOOLCHAIN",
+    BOOLCHAIN           = "BOOLCHAIN",
     
 
     SQUARE_BRACKETS     = "SQUARE_BRACKETS",

@@ -165,13 +165,13 @@ This allows you to setup a library so that each function is a separate block, an
 function myOtherFunction(abc)
     return abc + "def"
 end;
----@endsection`
+---@endsection
 
 ---@section myFunction
 function myFunction(abc)
     myOtherFunction(abc)
 end;
----@endsection`
+---@endsection
 
 var a = 10;
 --end program

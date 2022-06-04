@@ -31,20 +31,15 @@
         "/_build/",
         "/_examples_and_tutorials/"
     ],
-    "lua.debug.settings.cpath": [
-        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/socket/core.dll",
-        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/mime/core.dll",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/luasocket/dll/socket/core.dll",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/luasocket/dll/mime/core.dll"
-    ],
+    "lua.debug.settings.cpath": ";c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/socket/core.dll;c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/mime/core.dll",
     "lua.debug.settings.path": [
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/luasocket/?.lua",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/LifeBoatAPI/Microcontroller/?.lua",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/LifeBoatAPI/Tools/?.lua"
+        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/?.lua",
+        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/LifeBoatAPI/Microcontroller/?.lua",
+        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/LifeBoatAPI/Tools/?.lua"
     ],
     "Lua.workspace.library": [
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/LifeBoatAPI/Microcontroller/",
-        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.13//assets/LifeBoatAPI/Tools/"
+        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/LifeBoatAPI/Microcontroller/",
+        "c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/LifeBoatAPI/Tools/"
     ],
     "lua.debug.settings.luaVersion": "5.3",
     "lua.debug.settings.luaArch": "x86",
