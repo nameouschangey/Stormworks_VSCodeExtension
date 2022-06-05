@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.16] - 25th February 2022
+**major**
+- Fix for spaces in windows username, preventing correct launch of Simulator
+
 #### [0.0.14] + [0.0.15] - 25th February 2022
 **major**
 - Quick fix for "existing.push is not a function"
@@ -18,7 +22,6 @@ Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issu
 - map functions no longer throw an error if used in onTick
 - screen.setColor wraps at 255 as the game does, instead of clamping
 - drawTextBox now respects \n newline characters as the game does
-
 
 #### [0.0.12] - 25th January 2022
 **minor**
