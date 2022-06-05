@@ -2,55 +2,6 @@ require("Parsing.parse_symboltree")
 local S = LBSymbolTypes
 local T = LBTokenTypes
 
---[[
-
-    all we really want is to know what code is and isn't valie
-    but how do we even remove things from a table defintion?
-        and assignments that were never used?
-
-    this is such a nightmare, even if we figure out which parts are actually used
-
-    the fact some values will never be called is a nightmare
-
-
-    can we treat local and global as tables as well?
-    the scope table being special, in that we also search up higher for the values as well
-
-    what happens if a table is only assigned into?
-        that's a useless table isn't it?
-
-    and same for any field that's not actually called during a useful call
-
-    if we only assign into fields, and then it's safe to remove them all
-        isn't it also safe to also remove the table itself?
-
-    
-    things we have:
-        - a tree of syntax
-        - knowledge of every table defintion, assignment, function definition, function call and time a value was used
-        
-    the basic level we're trying to remove is just "you literally never called this function"
-        if we remove functions on that basis, then we can remove the variable they were assigned into as well
-        and any other variable that ONLY holds that value
-
-    the issue with resolving functions just once, is the values can rely on the inputs
-    and the inputs may be different types each time (annoyingly)
-    the reason that matters, is the difference of what functions may be getting passed in as lambdas
-            and the difficulty of what tables are passed in with which fields
-
-    some functions may be super generic, and take almost anything as input
-            we want to track exactly which tables that is don't we
-
-    each time we come across a definition, we need that value to be stored in the tree for next time
-    is that right? probably
-
-    because we want to tie the "stuff in the tree" to the "stuff that actually gets called"
-
-    
-]]
-
-
-
 ValueTypes = {
     TABLE = "TABLE",
     FUNCTION = "FUNCTION",
@@ -60,12 +11,18 @@ ValueTypes = {
 }
 local V = ValueTypes
 
+local K = {
+    UNDEFINED_KEY = "__lbundefinedkeytype__",
+    VALUE_KEY = "__lbvaluekeytype__",
+    STRING_KEY = "__lbstringkeytype__"
+}
+
 ---@class Value
 ---@field type string
 ---@field symbol LBToken
 Value = {
     ---@return Value
-    new = function(this, type, symbol)
+    new = function(self, type, symbol)
         return {
             type = type,
             symbol = symbol
@@ -73,218 +30,214 @@ Value = {
     end;
 }
 
-local K = {
-    UNDEFINED_KEY = "__lbundefinedkeytype__",
-    VALUE_KEY = "__lbvaluekeytype__",
-    STRING_KEY = "__"
-}
+--[[
+    for globals and locals, we just want to track in the Scope "was this used"
+    that's super easy
+    we then just go back over every assignment and check "is this lvalue used in the scope, or not?" and if it's not - we remove it
 
----@class TableValue : Value
----@field fields table<string, ValueCollection>
-TableValue = {
-    ---@return TableValue
-    new = function(this, symbol)
+    we don't care about any values OTHER than tables (inc. strings) and functions
+        that's because they are pass by reference
+
+    strings matter because they can have functions called on them...or does it matter?
+    it feels kinda like they don't matter in the same way
+        we're obviously not removing any of the string functions
+
+    in fact all we need to track are:
+        - tables
+        - functions
+        - which identifiers are "used" in each scope
+
+    we can represent values as:
+        - plain value
+        - function
+        - table
+    
+    in each Scope, we have a "ScopeValue"
+        - isUsed
+        - tableScopes
+        - functionVals
+
+    functionVals link back to the function def they're from, so we can run that function
+        this part will be hard/a pain
+
+    tableScopes are used anytime we do a.b or a:b
+    
+    return values from a function, is a list of ScopeValues (comma separated)
+        this is for handling comma-separate assignments, annoyingly
+
+    table.unpack - might be a pain?
+        need to understand how it works better
+
+    table[""] - maybe we don't care about these?
+              - maybe we're only interested in the identifier string keys (won't remove the rest)
+              - although what if you add functions in like this? nightmare maybe
+              - each tableScope will have an additional key "__unknown__" that we use for now, to hold any/all of these indeterminate ones?
+              - we're just plain restricting people from doing a = {hello = 123} => a["hello"]
+    
+    pairs is an obvious horror
+        especially if pairs is assigned to something else, and then used
+        we'll just have to handle it specially instead of it holding a symbol
+]]
+
+---@class FunctionValue
+---@field symbol LBToken|string
+---@field isSpecial boolean
+FunctionValue = {
+    ---@return ScopeValue
+    new = function(self, symbol, isSpecial)
         return {
-            type = V.TABLE,
-            symbol = symbol,
-            fields = {},
-            get = this.get,
-            set = this.set
+            isSpecial = isSpecial,
+            symbol = symbol
         }
     end;
-
-    ---@return ValueCollection
-    get = function(this, key)
-        if not this.fields[key] then
-            this.fields[key] = ValueCollection:new()
-        end
-        return this.fields[key]
-    end;
-
-    ---@param this TableValue
-    ---@param value Value
-    setKey = function(this, key, value)
-        if not this.fields[key] then
-            this.fields[key] = ValueCollection:new()
-        end
-        this.fields[key]:set(value)
-    end;
 }
 
----@class ValueCollection
----@field name string
----@field scope Scope
----@field isLocal boolean
----@field fields Value[]
----@field symbolsLookup table<LBToken, boolean>
-ValueCollection = {
-    ---@return ValueCollection
-    new = function(this)
+---@class ScopeValue : Value
+---@field children table<string, ScopeValue>
+---@field funcs table<string, FunctionValue>
+---@field symbols LBToken[]
+---@field isUsed boolean
+ScopeValue = {
+    ---@return ScopeValue
+    new = function(self, symbol)
         return {
-            symbolsLookup = {},
+            children = {}, -- if this represents a table, these are the keys
+            funcs = {}, -- combined list of any function that can exist for this table-like scope
+            -- we don't care about regular vals, because they're meaningless, just whether or not they're used
+            -- in future, we can extend to add constant folding, etc.
+            isUsed = false,
+            symbols = {symbol=true},
 
             -- functions
-            isNil = this.isNil,
-            isValueType = this.isValueType,
-            assignTableKey = this.assignTableKey,
-            getTablesWithKey = this.getTablesWithKey,
-            getFunctions = this.getFunctions,
-            getTables = this.getTables,
-            combine = this.combine
+            getChildScope = self.getChildScope,
+            assign = self.assign,
+            checkIsUsed = self.checkIsUsed
         }
     end;
 
-    ---@param value Value
-    ---@param this ValueCollection
-    set = function(this, value)
-        if not this.symbolsLookup[value.symbol] then
-            this.symbolsLookup[value.symbol] = true
-            this[#this+1] = value
+    ---@param self ScopeValue
+    ---@return ScopeValue
+    getChildScope = function(self, key)
+        if not self.children[key] then
+            self.children[key] = ScopeValue:new()
         end
-        this[#this+1] = value
+        return self.children[key]
     end;
 
-    ---@param value Value
-    ---@return ValueCollection
-    setKey = function(this, key, value)
-        for i=1,#this do
-            local val = this[i]
-            if val.type == V.TABLE then
-                val.set(key, value)
+    ---@param self ScopeValue
+    ---@param value ScopeValue
+    assign = function(self, value)
+        for k,v in pairs(value.symbols) do
+            self.symbols[k] = v
+        end
+        -- combine in all the functions, table keys, etc.
+        for k,v in pairs(value.funcs) do
+            self.funcs[k] = v -- should be safe, as each function definition IS the key
+        end
+
+        for k,v in pairs(value.children) do
+            if not self.children[k] then
+                self.children[k] = v
+            else
+                self.children[k]:assign(k, v)
+            end
+
+            self.children[k].isUsed = self.children.isUsed or v.isUsed
+        end
+    end;
+
+    ---@param self ScopeValue
+    ---@param symbol LBToken
+    checkIsUsed = function(self, symbol)
+        if self.symbols[symbol] then
+            return true
+        else
+            for k,v in self.children do
+                if v:checkIsUsed(symbol) then
+                    return true
+                end
             end
         end
-    end;
-
-
-
-    ---@return boolean
-    isNil = function(this)
-        return #this == 0
-    end;
-
-    ---@return boolean
-    isValueType = function(this)
-        for i=1,#this do
-            if this[i].type == V.FUNCTION or this[i].type == V.TABLE then
-                return false
-            end
-        end
-        return true
-    end;
-
-    ---@return ValueCollection
-    getTables = function(this)
-        local result = ValueCollection:new()
-        for i=1,#this do
-            local val = this[i]
-            if val.type == V.TABLE then
-                result:set(val)
-            end
-        end
-        return result
-    end;
-
-    ---@return ValueCollection
-    getTablesWithKey = function(this, key)
-        local result = ValueCollection:new()
-        for i=1,#this do
-            local val = this[i]
-            if val.type == V.TABLE and val.get(key) then
-                result:set(val)
-            end
-        end
-        return result
-    end;
-
-    ---@return ValueCollection
-    getFunctions = function(this)
-        local result = ValueCollection:new()
-        for i=1,#this do
-            local val = this[i]
-            if val.type == V.FUNCTION then
-                result:set(val)
-            end
-        end
-        return result
-    end;
-
-    ---@param this ValueCollection
-    ---@return ValueCollection
-    combine = function(this, valueCollection)
-        for i=1,#valueCollection do
-            this:set(valueCollection[i])
-        end
-        return this
+        return false
     end;
 }
 
----@class Scope : TableValue
+---@class Scope
 ---@field parent Scope
----@field locals TableValue
----@field _ENVCollection ValueCollection collection of all the values _ENV can be (can be not a table too)
+---@field locals ScopeValue
+---@field _ENV ScopeValue collection of all the values _ENV can be (can be not a table too)
 Scope = {
-    ---@param this Scope
+    ---@param self Scope
     ---@return Scope
-    new = function(this)
+    new = function(self)
         local scope = {
             parent = nil,
-            locals = TableValue:new(),
-            _ENVCollection = ValueCollection:new(), -- env itself can be redefined, which would be a real PITA
+            locals = ScopeValue:new(),
+            _ENV = ScopeValue:new(), -- env itself can be redefined, which would be a real PITA
 
             --functions
-            newChildScope = this.newChildScope,
-            get = this.get,
+            get = self.get,
+            addLocal = self.addLocal,
+            newChildScope = self.newChildScope
         }
-        scope._ENV[#scope._ENV+1] = TableValue:new()
-    end;
-
-    ---@param this Scope
-    ---@return Scope
-    newChildScope = function(this)
-        local scope = {
-            parent = this,
-            locals = {},
-
-            --functions
-            get = this.get,
-        }
-
-        this[#this+1] = scope
         return scope
     end;
 
-    ---@param this Scope
+    ---@param self Scope
+    ---@return Scope
+    newChildScope = function(self)
+        local scope = {
+            parent = self,
+            locals = ScopeValue:new(),
+
+            --functions
+            get = self.get,
+            addLocal = self.addLocal,
+            newChildScope = self.newChildScope
+        }
+        return scope
+    end;
+
+    -- note, expected use is:
+    --  e.g. a.b.c = 123  => get(a).get(b).set(c, 123)
+    --  or,  a = 123      => set(a, 123)
+    ---@param self Scope
     ---@param key string
-    ---@return ValueCollection
-    get = function(this, key)
-        if this.locals[key] then
-            return this.locals[key]
-        elseif this.parent then
-            return this.parent:get(key)
+    ---@return ScopeValue
+    get = function(self, key)
+        if self.locals[key] then
+            return self.locals[key]
+        elseif self.parent then
+            return self.parent:get(key)
         end
 
         -- no parent, so is a global from _ENV
         if key == "_ENV" then
-            return this._ENVCollection -- request for the _ENV table directly
+            return self._ENV -- request for the _ENV table directly
         else
-            return this._ENVCollection:getTablesWithKey(key)
+            return self._ENV:getChildScope(key)
         end
-        -- note, expected use is:
-        --      e.g. a.b.c = 123
-        --      => get(a).get(b).set(c, 123)
-
-        -- or,
-        --      a = 123
-        --      => set(a, 123)
     end;
 
-    set = function(this, key, valueCollection)
-        this._ENVCollection:getTables():set(key, valueCollection)
+    ---@param self Scope
+    addLocal = function(self, key)
+        self.locals:getChildScope(key) -- creates the key if not existent
     end;
 
-    ---@param this Scope
-    setLocal = function(this, key, valueCollection)
-        this.locals:set(key, valueCollection)
+    ---@param self Scope
+    ---@param symbol LBToken
+    checkIsUsed = function(self, symbol)
+        for k,v in pairs(self.locals) do
+            if v:checkIsUsed(symbol) then
+                return true
+            end
+        end
+
+        if self.parent and self.parent:checkIsUsed(symbol) then
+            return true
+        else
+            return self._ENV:checkIsUsed(symbol)
+        end
     end;
 }
 
@@ -296,9 +249,9 @@ Scope = {
 ---@field symbol LBToken
 ---@field [number] ScopedTree
 ScopedTree = {
-    ---@param this ScopedTree
+    ---@param self ScopedTree
     ---@return ScopedTree
-    newFromSymbol = function(this, symbol, parent, parentIndex)
+    newFromSymbol = function(self, symbol, parent, parentIndex)
         local this = {
             -- fields
             parent = parent,
@@ -306,12 +259,12 @@ ScopedTree = {
             symbol = symbol,
 
             -- functions
-            replaceSelf     = this.replaceSelf,
-            sibling         = this.sibling,
-            siblingsUntil   = this.siblingsUntil,
-            next            = this.next,
-            nextInstanceOf  = this.nextInstanceOf,
-            nextUntil       = this.nextUntil
+            replaceSelf     = self.replaceSelf,
+            sibling         = self.sibling,
+            siblingsUntil   = self.siblingsUntil,
+            next            = self.next,
+            nextInstanceOf  = self.nextInstanceOf,
+            nextUntil       = self.nextUntil
         }
 
         for i=1,#this.symbol do
@@ -402,7 +355,6 @@ ScopedTree = {
         return result
     end;
     
-
     ---@param this ScopedTree
     ---@return ScopedTree
     nextInstanceOf = function(this, ...)
@@ -447,52 +399,57 @@ ScopedTree = {
 ---@param scope Scope
 ---@param tree ScopedTree
 walkBody = function(tree, scope)
+    ---@type ScopeValue[]
     local returnValues = {}
 
     for i=1,#tree do
-        local val = tree[i]
-        if is(val.symbol.type, S.GLOBAL_ASSIGNMENT) then
+        local node = tree[i]
+        if is(node.symbol.type, S.GLOBAL_ASSIGNMENT) then
             -- some variable is being set in some scope
-            resolveAssignmentChain(val, scope)
-        elseif is(val.symbol.type, S.EXPCHAIN) then
-            walkSideEffectsOnly(val, scope)
+            resolveAssignmentChain(node, scope)
 
+        elseif is(node.symbol.type, S.EXPCHAIN) then
+            resolveExpChain(node, scope)
 
-        elseif is(val.symbol.type, S.GLOBAL_NAMEDFUNCTIONDEF) then
+        elseif is(node.symbol.type, S.GLOBAL_NAMEDFUNCTIONDEF) then
             -- some variable is being set in some scope
-            resolveNamedFunctionDef(val, scope)
+            resolveNamedFunctionDef(node, scope)
 
-        elseif is(val.symbol.type, S.LOCAL_NAMEDFUNCTIONDEF) then
+        elseif is(node.symbol.type, S.LOCAL_NAMEDFUNCTIONDEF) then
             -- some variable is being set in some scope
-            resolveLocalNamedFunctionDef(val, scope)
+            resolveLocalNamedFunctionDef(node, scope)
 
-
-        elseif is(val.symbol.type, S.LOCAL_ASSIGNMENT) then
+        elseif is(node.symbol.type, S.LOCAL_ASSIGNMENT) then
             -- some variable is being set in some scope
-            resolveLocalAssignmentChain(val, scope)
+            resolveLocalAssignmentChain(node, scope)
 
-        elseif is(val.symbol.type, S.FOR_LOOP, S.IF_STATEMENT, S.WHILE_LOOP, S.REPEAT_UNTIL, S.DO_END) then
+        elseif is(node.symbol.type, S.IF_STATEMENT) then
+
+        elseif is(node.symbol.type, S.FOR_LOOP, S.WHILE_LOOP, S.REPEAT_UNTIL, S.DO_END) then
             -- new local scope
-            --returnValues:combine(resolveBody(val, scope:branch()))
-        elseif is(val.symbol.type, T.RETURN) then
+            walkBody(node, scope:newChildScope())
+
+        elseif is(node.symbol.type, S.RETURNSTATEMENT) then
             -- add the return values to the things we're returning
+            local vals = resolveReturnStatement(node, scope)
+            for i=1,#vals do
+                returnValues[i] = returnValues[i] or ScopeValue:new()
+                returnValues[i]:assign(vals[i])
+            end
         end
     end
 
     return returnValues
 end;
 
-walkSideEffectsOnly = function(tree, scope)
-    local returnValues = ValueCollection:new()
-
+resolveExpChain = function(tree, scope)
     for i=1,#tree do
         local child = tree[i]
         if is(child.symbol.type, S.EXPCHAIN) then
             resolveExpChain(child, scope) -- ignore the return value
         end
-        walkSideEffectsOnly(child)
+        resolveExpChain(child)
     end
-    return returnValues
 end;
 
 

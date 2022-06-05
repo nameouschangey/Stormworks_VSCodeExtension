@@ -40,6 +40,8 @@ LBSymbolTypes = {
     GOTOLABEL           = "GOTOLABEL",
     GOTOSTATEMENT       = "GOTOSTATEMENT",
     LBTAG               = "LBTAG",
+
+    RETURNSTATEMENT     = "RETURNSTATEMENT"
     }
 local S = LBSymbolTypes
 
@@ -315,7 +317,7 @@ LBExpressions = {
 
     ---@param parse Parse
     ReturnStatement = function(parse)
-        parse = parse:branch()
+        parse = parse:branch(S.RETURNSTATEMENT)
         if parse:tryConsume(T.RETURN) then
 
             -- optional expression-list
