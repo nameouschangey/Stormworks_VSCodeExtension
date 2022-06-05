@@ -35,7 +35,7 @@
   	  	  	  	  	  	"type": "string",
   	  	  	  	  	  	"default": null,
   	  	  	  	  	  	"scope": "resource",
-  	  	  	  	  	  	"description": "Enable the Stormworks: New Project option in the Explorer context menu"
+  	  	  	  	  	  	"description": "Your name to add to the Author comment at the top of files."
   	  	  	  	  	},
   	  	  	  	  	"lifeboatapi.stormworks.user.workshopLink": {
   	  	  	  	  	  	"type": "string",
