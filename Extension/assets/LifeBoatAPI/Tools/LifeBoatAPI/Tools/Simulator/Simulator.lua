@@ -259,7 +259,8 @@ LifeBoatAPI.Tools.Simulator = {
 
         if not attachToExistingProcess then
             local simulatorExePath = LifeBoatAPI.Tools.Filepath:new(simulatorFile)
-            this._simulatorProcess = io.popen("\"" .. simulatorExePath:win() .. " -logfile \"" .. simulatorLogFile .. "\"\"", "w")
+            local simLaunchCommand = '"' .. simulatorExePath:win() .. '" -logfile "' .. simulatorLogFile .. '"'
+            this._simulatorProcess = io.popen('"' .. simLaunchCommand .. '"', "w") -- additional outer quotes needed, due to windows cmd
         end
 
         this._connection = LifeBoatAPI.Tools.SimulatorConnection:new()

@@ -62,7 +62,8 @@ LifeBoatAPI.Tools.FileSystemUtils = {
     ---@return Filepath[] list of filepaths
     findPathsInDir = function (dirPath, commandlinePattern)
         local result = {}
-        local process = io.popen("\"" .. "dir \""..dirPath:win().."\" /b " .. commandlinePattern .. " 2>nul\"")
+        local processCommand = 'dir "'..dirPath:win()..'" /b ' .. commandlinePattern .. ' 2>nul'
+        local process = io.popen('"' .. processCommand .. '"')
 
         for filename in process:lines() do
             LifeBoatAPI.Tools.TableUtils.add(result, LifeBoatAPI.Tools.Filepath:new(filename))
