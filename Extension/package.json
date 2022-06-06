@@ -5,7 +5,7 @@
   	"icon": "assets/images/icon.png",
   	"displayName": "Stormworks Lua with LifeBoatAPI",
   	"description": "Lua toolchain for Stormworks Microcontrollers and Addons, with LifeBoatAPI",
-  	"version": "0.0.15",
+  	"version": "0.0.16",
   	"engines": {
   	  	"vscode": "^1.62.0"
   	},
@@ -35,7 +35,7 @@
   	  	  	  	  	  	"type": "string",
   	  	  	  	  	  	"default": null,
   	  	  	  	  	  	"scope": "resource",
-  	  	  	  	  	  	"description": "Enable the Stormworks: New Project option in the Explorer context menu"
+  	  	  	  	  	  	"description": "Your name to add to the Author comment at the top of files."
   	  	  	  	  	},
   	  	  	  	  	"lifeboatapi.stormworks.user.workshopLink": {
   	  	  	  	  	  	"type": "string",
