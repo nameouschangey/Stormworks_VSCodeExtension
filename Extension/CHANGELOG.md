@@ -1,6 +1,13 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.17] - 25th February 2022
+**major**
+- Fix for people running VSCode terminal through cmd; newlines in command were preventing build working correctly
+**minor**
+- "Enable Pan" is now persistent between sessions
+- ---@section change, if you miss the identifier, it will no longer crash - but instead will just remove that section
+
 #### [0.0.16] - 25th February 2022
 **major**
 - Fix for spaces in windows username, preventing correct launch of Simulator
