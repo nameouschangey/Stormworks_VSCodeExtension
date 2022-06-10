@@ -58,7 +58,7 @@ LifeBoatAPI.Tools.CodeSection = {
         end
 
         -- 2. next argument is the identifier to search for
-        this.identifier = args[index]
+        this.identifier = args[index] or "_LB_SECTION_MISSING_IDENTIFIER_"
         index = index + 1
         -- exact matching (default) means we expect this to be the entire word, and not made of any pattern stuff
         -- PATTERN matching (non-exact) means we trust the user comes up with a relevant pattern themself
