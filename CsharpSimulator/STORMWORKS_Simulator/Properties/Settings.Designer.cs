@@ -118,5 +118,17 @@ namespace STORMWORKS_Simulator.Properties {
                 this["EnableHardwareAcceleration"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnablePan {
+            get {
+                return ((bool)(this["EnablePan"]));
+            }
+            set {
+                this["EnablePan"] = value;
+            }
+        }
     }
 }

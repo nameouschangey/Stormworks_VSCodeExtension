@@ -130,14 +130,14 @@ namespace STORMWORKS_Simulator
 
         public bool EnablePan
         {
-            get { return _EnablePan; }
+            get { return Properties.Settings.Default.EnablePan; }
             set
             {
-                _EnablePan = value;
+                Properties.Settings.Default.EnablePan = value;
+                Properties.Settings.Default.Save();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
             }
         }
-        private bool _EnablePan = true;
 
         public bool AutoReset
         {
