@@ -26,6 +26,11 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     let contents = `
 --- @diagnostic disable: undefined-global
 
+-- replace newlines
+for k,v in pairs(arg) do
+    arg[k] = v:gsub("##LBNEWLINE##", "\\n")
+end
+
 require("LifeBoatAPI.Tools.Simulator.Simulator");
 __simulator = LifeBoatAPI.Tools.Simulator:new() 
 __simulator:_beginSimulation(false, arg[1], arg[2])
@@ -87,6 +92,11 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     ]
                 };
                 
+                // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
+                config.arg.forEach(function(val, index, arr) {
+                    arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
+                });
+
                 return vscode.debug.startDebugging(workspace, config);
             }
         );

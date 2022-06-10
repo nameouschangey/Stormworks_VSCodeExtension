@@ -14,6 +14,11 @@ function generateBuildLua(workspace: vscode.Uri, isMC : boolean, context:vscode.
 
 require("LifeBoatAPI.Tools.Build.Builder")
 
+-- replace newlines
+for k,v in pairs(arg) do
+    arg[k] = v:gsub("##LBNEWLINE##", "\\n")
+end
+
 local luaDocsAddonPath  = LifeBoatAPI.Tools.Filepath:new(arg[1]);
 local luaDocsMCPath     = LifeBoatAPI.Tools.Filepath:new(arg[2]);
 local outputDir         = LifeBoatAPI.Tools.Filepath:new(arg[3]);
@@ -142,6 +147,11 @@ export function beginBuild(context:vscode.ExtensionContext)
                     config.arg.push(dir);
                 }
                 config.arg.push(rootDir);
+
+                // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
+                config.arg.forEach(function(val, index, arr) {
+                    arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
+                });
 
                 return vscode.debug.startDebugging(workspace, config);
             }
