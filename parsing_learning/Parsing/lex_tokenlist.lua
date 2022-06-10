@@ -15,6 +15,8 @@ LBToken = {
 }
 
 LBTokenTypes = {
+    EMPTY           = "EMPTY",
+    
     COMMENT         = "COMMENT",
     WHITESPACE      = "WHITESPACE",
 
