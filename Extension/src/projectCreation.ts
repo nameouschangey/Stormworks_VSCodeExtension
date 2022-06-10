@@ -64,6 +64,64 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 						settingsJson["lifeboatapi.stormworks.minimizer.forceBoilerplate"] 			= true;
 					}
 
+					settingsJson["Lua.diagnostics.disable"] = [
+						"lowercase-global",
+						"undefined-doc-name"
+					];
+
+					settingsJson["Lua.diagnostics.globals"] = [
+						"__simulator",
+						"print",
+						"simulator"
+					];
+					settingsJson["Lua.runtime.version"] = "Lua 5.3";
+
+					settingsJson["Lua.runtime.builtin"] = {
+						"coroutine": "enable",
+						"bit32": "enable",
+						"bit": "enable",
+						"builtin": "enable",
+						"utf8": "enable",
+						"package": "enable",
+						"os": "enable",
+						"jit": "enable",
+						"io": "enable",
+						"ffi": "enable",
+						"debug": "enable",
+						"basic": "enable"
+					};
+
+					settingsJson["Lua.workspace.ignoreDir"] = [
+						".vscode",
+						"/out/",
+						"/_build/",
+						"/_examples_and_tutorials/"
+					];
+
+					if(isMicrocontrollerProject){
+						settingsJson["Lua.workspace.library"] = [
+							context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/",
+							context.extensionPath + "/assets/LifeBoatAPI/Tools/"
+						];
+
+						settingsJson["Lua.runtime.path"] = [
+							context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/?.lua",
+							"?.lua"
+						];
+					}
+					else
+					{
+						settingsJson["Lua.workspace.library"] = [
+							context.extensionPath + "/assets/LifeBoatAPI/Addons/",
+							context.extensionPath + "/assets/LifeBoatAPI/Tools/"
+						];
+
+						settingsJson["Lua.runtime.path"] = [
+							context.extensionPath + "/assets/LifeBoatAPI/Addon/?.lua",
+							"?.lua"
+						];
+					}
+
                     return vscode.workspace.fs.writeFile(params.settingsFilePath, new TextEncoder().encode(JSON.stringify(settingsJson, null, 4)))
 				             .then(() => params);
                 }

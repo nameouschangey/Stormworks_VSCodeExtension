@@ -72,6 +72,13 @@ export function beginSimulator(context:vscode.ExtensionContext)
         // load the path and cpath, this means if the settings file is wrong - at least the simulator works
         // although the lua-debug probably won't. It shouldn't be needed, but it will make life a bit more stable.
         let path = settingsManagement.getDebugPaths(context);
+
+        path = [
+            "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.17//assets/luasocket/?.lua",
+            "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.17//assets/LifeBoatAPI/Microcontroller/?.lua",
+            "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.17//assets/LifeBoatAPI/Tools/?.lua"];
+
+
         path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
 
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new TextEncoder().encode(simulatorLua))
@@ -84,8 +91,10 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     program: `${simulatedLuaFile?.fsPath}`,
                     stopOnEntry: false,
                     stopOnThreadEntry: false,
-                    cpath: settingsManagement.getDebugCPaths(context),
+                    luaVersion : "5.3",
+                    luaArch: "x86",
                     path: path.join(";"),
+                    cpath: settingsManagement.getDebugCPaths(context),
                     arg: [
                         utils.sanitisePath(context.extensionPath) + "/assets/simulator/STORMWORKS_Simulator.exe",
                         utils.sanitisePath(ws.uri.fsPath) + "/_build/_debug_simulator_log.txt"
@@ -96,6 +105,8 @@ export function beginSimulator(context:vscode.ExtensionContext)
                 config.arg.forEach(function(val, index, arr) {
                     arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
                 });
+
+                // todo, set the debugger setting here, it doesn't look like it reads it from above?
 
                 return vscode.debug.startDebugging(workspace, config);
             }

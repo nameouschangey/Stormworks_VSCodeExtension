@@ -37,6 +37,7 @@ LifeBoatAPI.LBColorRGBA = {
     ---@param a number alpha 0->255
     ---@param constantCorrection number (default 0.8) constant factor, as K in the equation (K*color) ^ gamma
     ---@param gamma number (default 2.6) gamma factor, in the equation (K*color) ^ gamma
+    ---@overload fun(self, r,g,b,a)
     --- see explanation of Stormworks gamma here: https://steamcommunity.com/sharedfiles/filedetails/?id=2273112890
     lbcolorrgba_newGammaCorrected = function (this, r,g,b,a, gamma, constantCorrection)
         constantCorrection = constantCorrection or 0.85

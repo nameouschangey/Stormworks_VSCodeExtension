@@ -23,6 +23,7 @@ LifeBoatAPI.LBTouchScreen = {
     --- Handles the touchscreen state for whether things are pressed or not
     ---@param this LBTouchScreen
     ---@param compositeOffset number default composite for touches is 1,2,3,4; offset if composite has been re-routed
+    ---@overload fun(self)
     lbtouchscreen_onTick = function(this, compositeOffset)
         compositeOffset = compositeOffset or 0
         this.screenWidth    = input.getNumber(compositeOffset + 1)

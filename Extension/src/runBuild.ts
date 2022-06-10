@@ -119,11 +119,13 @@ export function beginBuild(context:vscode.ExtensionContext)
                     program: `${buildLuaFile?.fsPath}`,
                     stopOnEntry: false,
                     stopOnThreadEntry: false,
+                    luaVersion: "5.3",
+                    luaArch: "x86",
                     path: path.join(";"),
                     cpath: settingsManagement.getDebugCPaths(context),
                     arg: [
-                        neloAddonDoc,
-                        neloMCDoc,
+                        context.extension.extensionPath + "/assets/stormworks_externals/addon.lua",
+                        context.extension.extensionPath + "/assets/stormworks_externals/microcontroller.lua",
                         outputDir,
 
                         projectCreation.addUserBoilerplate(""),
