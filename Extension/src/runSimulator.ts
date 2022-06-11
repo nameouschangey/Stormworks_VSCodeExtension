@@ -61,7 +61,6 @@ export function beginSimulator(context:vscode.ExtensionContext)
 
     if (workspace
         && file
-        && utils.isMicrocontrollerProject()
         && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
     {
         let simulatorLua = generateSimulatorLua(workspace.uri, file);
@@ -106,10 +105,7 @@ export function beginSimulator(context:vscode.ExtensionContext)
         );
     }
 
-    if(!utils.isMicrocontrollerProject())
-    {// no error, might not be a stormworks project
-    }
-    else if(vscode.debug.activeDebugSession)
+    if(vscode.debug.activeDebugSession)
     {
         return Promise.reject("Please end current debug session before starting another.");
     }

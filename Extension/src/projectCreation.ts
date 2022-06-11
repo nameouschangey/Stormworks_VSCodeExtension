@@ -100,24 +100,24 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 
 					if(isMicrocontrollerProject){
 						settingsJson["Lua.workspace.library"] = [
-							context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/",
-							context.extensionPath + "/assets/LifeBoatAPI/Tools/"
+							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/",
+							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/"
 						];
 
 						settingsJson["Lua.runtime.path"] = [
-							context.extensionPath + "/assets/LifeBoatAPI/Microcontroller/?.lua",
+							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/?.lua",
 							"?.lua"
 						];
 					}
 					else
 					{
 						settingsJson["Lua.workspace.library"] = [
-							context.extensionPath + "/assets/LifeBoatAPI/Addons/",
-							context.extensionPath + "/assets/LifeBoatAPI/Tools/"
+							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addons/",
+							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/"
 						];
 
 						settingsJson["Lua.runtime.path"] = [
-							context.extensionPath + "/assets/LifeBoatAPI/Addon/?.lua",
+							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addon/?.lua",
 							"?.lua"
 						];
 					}
@@ -171,23 +171,23 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 	.then((params) => vscode.commands.executeCommand("workbench.view.explorer").then(() => params))
 	.then( 
 		(params) => {
-			if(!vscode.workspace.workspaceFile)
-			{
-				let workspaceName = path.basename(params.selectedFolder.uri.fsPath);
-				let workspaceFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/" + workspaceName + ".code-workspace");
-				return vscode.workspace.fs.writeFile(
-					workspaceFile,
-					new TextEncoder().encode(JSON.stringify({
-						"folders": [
-							{
-								"path": ".."
-							}
-						]
-					}, null, 4)))
-				 .then(
-					 () => vscode.commands.executeCommand("vscode.openFolder", workspaceFile)
-				 );
-			}
+			//if(!vscode.workspace.workspaceFile)
+			//{
+			//	let workspaceName = path.basename(params.selectedFolder.uri.fsPath);
+			//	let workspaceFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/" + workspaceName + ".code-workspace");
+			//	return vscode.workspace.fs.writeFile(
+			//		workspaceFile,
+			//		new TextEncoder().encode(JSON.stringify({
+			//			"folders": [
+			//				{
+			//					"path": ".."
+			//				}
+			//			]
+			//		}, null, 4)))
+			//	 .then(
+			//		 () => vscode.commands.executeCommand("vscode.openFolder", workspaceFile)
+			//	 );
+			//}
 			return vscode.workspace.updateWorkspaceFolders(0, 0, params.selectedFolder);
 		}
 	);

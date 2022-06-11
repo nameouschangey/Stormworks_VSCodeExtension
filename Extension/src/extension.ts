@@ -45,13 +45,19 @@ export function activate(context: vscode.ExtensionContext)
 	// Simulate current file
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.simulate',
 	() => {
-		return runSimulator.beginSimulator(context);
+		if(utils.isMicrocontrollerProject())
+		{
+			return runSimulator.beginSimulator(context);
+		}
 	}));
 
 	// Build current workspace
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build',
 	() => {
+		if(utils.isStormworksProject())
+		{
 			return runBuild.beginBuild(context);
+		}
 	}));
 
 	// New MC
