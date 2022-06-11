@@ -98,7 +98,7 @@ export function beginBuild(context:vscode.ExtensionContext)
         }
 
         let buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_build.lua");
-        let outputDir = workspace.uri.fsPath + "/out/";
+        let outputDir = workspace.uri.fsPath + "/_build/out/";
         let rootDir = workspace.uri.fsPath;
 
         let path = settingsManagement.getDebugPaths(context);

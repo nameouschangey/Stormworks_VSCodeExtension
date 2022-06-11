@@ -33,7 +33,7 @@ export function activate(context: vscode.ExtensionContext)
 			return false;
 		}, null, context.subscriptions);
 
-		// check if the settings need updated when the user swaps between editor windows
+	// check if the settings need updated when the user swaps between editor windows
 	vscode.window.onDidChangeActiveTextEditor(
 		(e) => {
 			let currentWorkspaceFolder = utils.getCurrentWorkspaceFolder();
@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext)
 			}
 		}, null, context.subscriptions);
 
-		
+	// when the library paths are changed, this will have a knock-on to the other settings
 	vscode.workspace.onDidChangeConfiguration(
 		(e) => {
 			if(e.affectsConfiguration("lifeboatapi.stormworks.libs.libraryPaths"))
