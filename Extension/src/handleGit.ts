@@ -41,15 +41,17 @@ import * as https from 'https';
 //  
 //  export const gists = GistsService.getInstance();
 
-interface GistSetting
+export interface GistSetting
 {
     relativePath : string,
-    gistUrl : string
+    gistUrl : string,
+    isDirty : boolean,
+    gistID : string
 }
 
-export function shareSelectedFile(context : vscode.ExtensionContext)
+export function shareSelectedFile(context : vscode.ExtensionContext, file: vscode.Uri)
 {
-    let selectedFile = utils.getCurrentWorkspaceFile();
+    let selectedFile = file ?? utils.getCurrentWorkspaceFile();
     let selectedFolder = utils.getCurrentWorkspaceFolder();
 
     if (selectedFile && selectedFolder)
@@ -68,60 +70,122 @@ export function shareSelectedFile(context : vscode.ExtensionContext)
                 {
                     if(gist.relativePath === relativePath)
                     {
-                        vscode.env.clipboard.writeText(gist.gistUrl);
-                        return vscode.window.showInformationMessage("Copied " + gist.gistUrl + " to the clipboard for " + relativePath + " ready to share!");
+                        if(!gist.isDirty)
+                        {
+                            vscode.env.clipboard.writeText(gist.gistUrl);
+                            return vscode.window.showInformationMessage("Copied " + gist.gistUrl + " to the clipboard for " + relativePath + " ready to share!");
+                        }
+                        else
+                        {
+                            return updateGist(libConfig, existingGists, gist, relativePath, fileName, fileContents);
+                        }
                     }
                 }
         
                 // no existing gist found, create a new one
-                return vscode.authentication.getSession("github", ['gist'], {createIfNone: true})
-                .then(
-                    (session) => {
-                        if(session)
+                return createGist(libConfig, existingGists, relativePath, fileName, fileContents);
+        });
+    }
+}
+
+function updateGist(libConfig : vscode.WorkspaceConfiguration, existingGists: GistSetting[], gist: GistSetting, relativePath: string, fileName: string, fileContents: string)
+{
+    return vscode.authentication.getSession("github", ['gist'], {createIfNone: true})
+    .then(
+        (session) => {
+            if(session)
+            {
+                // valid github session
+                const url = 'https://api.github.com';
+                const rejectUnauthorized = true;
+                const agent = new https.Agent({ rejectUnauthorized });
+                let octokit = new Octokit({ auth: session.accessToken});
+
+                let files : {[name:string] : {content:string}} = {};
+                files[fileName] = {content : fileContents};
+
+                let request = {
+                    gist_id : gist.gistID,
+                    description : "Stormworks LifeboatAPI - Gist - " + fileName,
+                    files : files
+                };
+
+                return octokit.gists.update(request).then(
+                    (response) => {
+                        if ((response.status === 200) && response.data.git_pull_url)
                         {
-                            // valid github session
-                            const url = 'https://api.github.com';
-                            const rejectUnauthorized = true;
-                            const agent = new https.Agent({ rejectUnauthorized });
-                            const config = { baseUrl: url, agent };
-                            let octokit = new Octokit({ auth: session.accessToken});
-        
-                            let files : {[name:string] : {content:string}} = {};
-                            files[fileName] = {content : fileContents};
-
-                            let request = {
-                                description : "Stormworks LifeboatAPI - Gist - " + fileName,
-                                files : files,
-                                public : true
-                            };
-
-                            return octokit.gists.create(request).then(
-                                (response) => {
-                                    if ((response.status === 201 || response.status === 202) && response.data.git_pull_url)
-                                    {
-                                        existingGists.push({gistUrl: response.data.git_pull_url, relativePath:relativePath});
-                                        return libConfig.update("sharedGistFiles", existingGists).then(
-                                            () => {
-                                                vscode.env.clipboard.writeText(response.data.git_pull_url ?? "FATAL ERROR");
-                                                return vscode.window.showInformationMessage("Created new gist, copied to clipboard: " + response.data.git_pull_url + " to the clipboard for " + relativePath + " ready to share!");
-                                            }
-                                        );
-                                    }
-                                    else
-                                    {
-                                        return vscode.window.showWarningMessage("Gist failed to create, HTTP status code: " + response.status);
-                                    }
+                            gist.isDirty = false;
+                            return libConfig.update("sharedGistFiles", existingGists).then(
+                                () => {
+                                    vscode.env.clipboard.writeText(response.data.git_pull_url ?? "FATAL ERROR");
+                                    return vscode.window.showInformationMessage("Updated gist, link copied to clipboard: " + response.data.git_pull_url + " for " + relativePath + " ready to share!");
                                 }
                             );
                         }
                         else
                         {
-                            return vscode.window.showWarningMessage("A github account must be connected in order to create gist's. Please see VSCode user accounts.");
+                            return vscode.window.showWarningMessage("Gist failed to update, HTTP status code: " + response.status);
                         }
                     }
                 );
-        });
-    }
+            }
+            else
+            {
+                return vscode.window.showWarningMessage("A github account must be connected in order to update gist's. Please see VSCode user accounts.");
+            }
+        }
+    );
+}
+
+
+function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: GistSetting[], relativePath: string, fileName: string, fileContents: string)
+{
+    return vscode.authentication.getSession("github", ['gist'], {createIfNone: true})
+    .then(
+        (session) => {
+            if(session)
+            {
+                let octokit = new Octokit({ auth: session.accessToken});
+
+                let files : {[name:string] : {content:string}} = {};
+                files[fileName] = {content : fileContents};
+
+                let request = {
+                    description : "Stormworks LifeboatAPI - Gist - " + fileName,
+                    files : files,
+                    public : true
+                };
+
+                return octokit.gists.create(request).then(
+                    (response) => {
+                        if ((response.status === 201) && response.data.git_pull_url && response.data.id)
+                        {
+                            existingGists.push({
+                                gistUrl: response.data.git_pull_url,
+                                relativePath:relativePath,
+                                isDirty: false,
+                                gistID: response.data.id});
+
+                            return libConfig.update("sharedGistFiles", existingGists).then(
+                                () => {
+                                    vscode.env.clipboard.writeText(response.data.git_pull_url ?? "FATAL ERROR");
+                                    return vscode.window.showInformationMessage("Created new gist, link copied to clipboard: " + response.data.git_pull_url + " for " + relativePath + " ready to share!");
+                                }
+                            );
+                        }
+                        else
+                        {
+                            return vscode.window.showWarningMessage("Gist failed to create, HTTP status code: " + response.status);
+                        }
+                    }
+                );
+            }
+            else
+            {
+                return vscode.window.showWarningMessage("A github account must be connected in order to create gist's. Please see VSCode user accounts.");
+            }
+        }
+    );
 }
 
 

@@ -11,6 +11,7 @@ import * as settingsManagement from "./settingsManagement";
 import * as runSimulator from "./runSimulator";
 import * as runBuild from "./runBuild";
 import * as handleGit from "./handleGit";
+import { GistSetting } from './handleGit';
 
 // this method is called when your extension is activated
 // the extension is activated the very first time the command is executed
@@ -32,6 +33,25 @@ export function activate(context: vscode.ExtensionContext)
 				return vscode.workspace.applyEdit(edit);
 			}
 			return false;
+		}, null, context.subscriptions);
+
+	vscode.workspace.onDidChangeTextDocument(
+		(e) => {
+			if(e.document && e.contentChanges.length > 0)
+			{
+				let relativePath = vscode.workspace.asRelativePath(e.document.uri);
+				let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", e.document.uri);
+                let existingGists : GistSetting[] = libConfig.get("sharedGistFiles") ?? [];
+				for (let gist of existingGists)
+				{
+					if (gist.relativePath === relativePath)
+					{
+						gist.isDirty = true;
+						libConfig.update("sharedGistFiles", existingGists);
+						return;
+					}
+				}
+			}
 		}, null, context.subscriptions);
 
 	// check if the settings need updated when the user swaps between editor windows
@@ -92,15 +112,8 @@ export function activate(context: vscode.ExtensionContext)
 
 	// Share File Link
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.shareFile',
-	() => {
-		return handleGit.shareSelectedFile(context);
-		//return vscode.authentication.getSession("github", ['gist'], {createIfNone: true})
-		//.then(
-		//	(session) => {
-		//		let name = session?.account.label;
-		//		let name2 = name;
-		//	}
-		//);
+	(file) => {
+		return handleGit.shareSelectedFile(context, file);
 	}));
 }
 

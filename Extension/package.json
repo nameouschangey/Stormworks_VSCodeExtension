@@ -242,7 +242,7 @@
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.shareFile",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "!explorerResourceIsFolder && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	  	"when": "!explorerResourceIsFolder && resourceExtname == .lua && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
   	  	  	  	},
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.shareRepository",
