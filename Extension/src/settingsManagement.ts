@@ -104,9 +104,11 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 	return existingAsList.join(";");
 }
 
-export function updateLuaLibraryPaths(context: vscode.ExtensionContext) {
-	let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace", utils.getCurrentWorkspaceFile());
-	let luaLibRuntime = vscode.workspace.getConfiguration("Lua.runtime", utils.getCurrentWorkspaceFile());
+export function updateLuaLibraryPaths(context: vscode.ExtensionContext, folder?:vscode.WorkspaceFolder) {
+	folder = folder || utils.getCurrentWorkspaceFolder();
+
+	let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace", folder);
+	let luaLibRuntime = vscode.workspace.getConfiguration("Lua.runtime", folder);
 
 	return Promise.resolve()
 	.then( () => {

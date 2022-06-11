@@ -15,30 +15,47 @@ import * as runBuild from "./runBuild";
 // the extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext)
 {
+	// track the folders we've loaded settings for - avoid rewriting settings constantly
+	let loadedFolders : Set<vscode.WorkspaceFolder | undefined> = new Set<vscode.WorkspaceFolder | undefined>();
+
 	// when a lua file is created, if it's empty - add the boilerplate
 	vscode.workspace.onDidOpenTextDocument(
 		(document) => {
-		return Promise.resolve().then( () => {
-				if (utils.isStormworksProject() 
-					&& document.languageId === "lua"
-					&& document.lineCount === 1)
-				{
-					const boilerPlate = projectCreation.addBoilerplate("");
-					let edit = new vscode.WorkspaceEdit();
-					edit.insert(document.uri, new vscode.Position(0, 0), boilerPlate);
-					return vscode.workspace.applyEdit(edit);
-				}
-				return false;
+			if (utils.isStormworksProject() 
+				&& document.languageId === "lua"
+				&& document.lineCount === 1)
+			{
+				const boilerPlate = projectCreation.addBoilerplate("");
+				let edit = new vscode.WorkspaceEdit();
+				edit.insert(document.uri, new vscode.Position(0, 0), boilerPlate);
+				return vscode.workspace.applyEdit(edit);
+			}
+			return false;
+		}, null, context.subscriptions);
 
-			}).then(() => {
+		// check if the settings need updated when the user swaps between editor windows
+	vscode.window.onDidChangeActiveTextEditor(
+		(e) => {
+			let currentWorkspaceFolder = utils.getCurrentWorkspaceFolder();
+			if (e
+				&& currentWorkspaceFolder
+				&& !loadedFolders.has(currentWorkspaceFolder)
+				&& !e.document.fileName.includes("settings.json")
+				&& !e.document.fileName.includes(".code-workspace")
+				&& utils.isStormworksProject())
+			{
+				loadedFolders.add(currentWorkspaceFolder);
+				return settingsManagement.updateLuaLibraryPaths(context, currentWorkspaceFolder);
+			}
+		}, null, context.subscriptions);
 
-				if (!document.fileName.includes("settings.json")
-					&& !document.fileName.includes(".code-workspace")
-					&& utils.isStormworksProject())
-				{
-					return settingsManagement.updateLuaLibraryPaths(context);
-				}
-			});
+		
+	vscode.workspace.onDidChangeConfiguration(
+		(e) => {
+			if(e.affectsConfiguration("lifeboatapi.stormworks.libs.libraryPaths"))
+			{
+				loadedFolders.clear();
+			}
 		}, null, context.subscriptions);
 
 	// COMMAND HANDLING --------------------------------------------------------------------------------
