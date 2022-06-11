@@ -12,6 +12,7 @@ import * as runSimulator from "./runSimulator";
 import * as runBuild from "./runBuild";
 import * as handleGit from "./handleGit";
 import { GistSetting } from './handleGit';
+import { TerminalHandler } from './terminal';
 
 // this method is called when your extension is activated
 // the extension is activated the very first time the command is executed
@@ -19,6 +20,12 @@ export function activate(context: vscode.ExtensionContext)
 {
 	// track the folders we've loaded settings for - avoid rewriting settings constantly
 	let loadedFolders : Set<vscode.WorkspaceFolder | undefined> = new Set<vscode.WorkspaceFolder | undefined>();
+
+	vscode.window.onDidCloseTerminal(
+		(t) => {
+			TerminalHandler.get().onTerminalClosed(t);
+		}, null, context.subscriptions);
+
 
 	// when a lua file is created, if it's empty - add the boilerplate
 	vscode.workspace.onDidOpenTextDocument(
@@ -85,7 +92,7 @@ export function activate(context: vscode.ExtensionContext)
 	() => {
 		if(utils.isMicrocontrollerProject())
 		{
-			return runSimulator.beginSimulator(context);
+			return utils.ensureBuildFolderExists().then(() => runSimulator.beginSimulator(context));
 		}
 	}));
 
@@ -94,7 +101,7 @@ export function activate(context: vscode.ExtensionContext)
 	() => {
 		if(utils.isStormworksProject())
 		{
-			return runBuild.beginBuild(context);
+			return utils.ensureBuildFolderExists().then(() => runBuild.beginBuild(context));
 		}
 	}));
 
@@ -110,7 +117,6 @@ export function activate(context: vscode.ExtensionContext)
 		return projectCreation.beginCreateNewProjectFolder(context, false);
 	}));
 
-
 	// Share File Gist Link
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.shareFile',
 	(file) => {
@@ -120,7 +126,7 @@ export function activate(context: vscode.ExtensionContext)
 	// Add Library
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.cloneGitLibrary',
 	() => {
-		return handleGit.addLibraryFromURL(context);
+		return utils.ensureBuildFolderExists().then(() => handleGit.addLibraryFromURL(context));
 	}));
 
 	// Remove Library
@@ -132,9 +138,10 @@ export function activate(context: vscode.ExtensionContext)
 	// Update Libraries
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.updateLibraries',
 	() => {
-		return handleGit.updateLibraries(context);
+		return utils.ensureBuildFolderExists().then(() => handleGit.updateLibraries(context));
 	}));
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+

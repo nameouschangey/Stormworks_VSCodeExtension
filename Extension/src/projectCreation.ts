@@ -93,33 +93,35 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 					settingsJson["Lua.workspace.ignoreDir"] = [
 						".vscode",
 						"/out/",
-						"/_build/",
-						"/_examples_and_tutorials/"
+						"/_build/"
 					];
 
-					if(isMicrocontrollerProject){
-						settingsJson["Lua.workspace.library"] = [
-							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/",
-							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/"
-						];
+					settingsJson["Lua.workspace.library"] = [
+						"/_build/libs/?.lua"
+					];
 
-						settingsJson["Lua.runtime.path"] = [
-							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Microcontroller/?.lua",
-							"?.lua"
+					settingsJson["Lua.runtime.path"] = [
+						"?.lua"
+					];
+					
+					if(isMicrocontrollerProject){
+						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
+							{
+								name: "nameouschangey/LifeBoatAPI",
+								gitUrl: "https://git.github.com/nameouschangey/SW_LifeBoatAPI_MicrocontrollerAPI.git"
+							}
 						];
 					}
 					else
 					{
-						settingsJson["Lua.workspace.library"] = [
-							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addons/",
-							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Tools/"
-						];
-
-						settingsJson["Lua.runtime.path"] = [
-							utils.sanitisePath(context.extensionPath) + "/assets/LifeBoatAPI/Addon/?.lua",
-							"?.lua"
+						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
+							{
+								name: "nameouschangey/LifeBoatAPI",
+								gitUrl: "https://git.github.com/nameouschangey/SW_LifeBoatAPI_AddonAPI.git"
+							}
 						];
 					}
+
 
                     return vscode.workspace.fs.writeFile(params.settingsFilePath, new TextEncoder().encode(JSON.stringify(settingsJson, null, 4)))
 				             .then(() => params);

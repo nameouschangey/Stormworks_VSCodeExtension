@@ -6,9 +6,10 @@ import { settings } from 'cluster';
 import * as utils from "./utils";
 import { debug } from 'console';
 import { relative } from 'path';
-import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 import * as https from 'https';
-import { API as GitAPI, GitExtension, APIState } from './typings/git'; 
+import { API as GitAPI, GitExtension } from './typings/git'; 
+import { TerminalHandler } from './terminal';
 
 export interface GistSetting
 {
@@ -159,7 +160,7 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
 
 interface GitLibSetting
 {
-    relativePath : string,
+    name : string,
     gitUrl : string
 }
 
@@ -179,7 +180,12 @@ export function addLibraryFromURL(context : vscode.ExtensionContext)
                         let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
                         let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
                         let urlEnding = path.basename(url, ".git");
-                        let relativePath = "_build/libs/" + urlEnding;
+                        let urlUser = path.basename(path.dirname(url));
+
+                        let libName = urlEnding;
+                        if (!urlUser.includes(".")) {
+                            libName = urlUser + "/" + urlEnding;
+                        }
 
                         for(let lib of gitLibs)
                         {
@@ -194,19 +200,19 @@ export function addLibraryFromURL(context : vscode.ExtensionContext)
                         {
                             let gitPath = gitExtension.getAPI(1).git.path;
 
-                            return Promise.resolve().then(()=>{
-                                let terminal = vscode.window.createTerminal({
+                            return TerminalHandler.get().awaitTerminal({
                                     cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
-                                    shellArgs: ["clone", url],
+                                    shellArgs: ["clone", url, libName],
                                     name: "add library",
                                     hideFromUser: false,
                                     shellPath: gitPath,
+                                }).then((terminal) => {
+                                    if(terminal.exitStatus?.code === 0)
+                                    {
+                                        gitLibs.push({ name: libName, gitUrl: url });
+                                        return config.update("gitLibraries", gitLibs);
+                                    }
                                 });
-                                terminal.show();
-                            }).then(() => {
-                                gitLibs.push({ relativePath: relativePath, gitUrl: url });
-                                return config.update("gitLibraries", gitLibs);
-                            });
                         }
                     }
                 }
@@ -215,9 +221,9 @@ export function addLibraryFromURL(context : vscode.ExtensionContext)
 
 export function removeSelectedLibrary(context : vscode.ExtensionContext, file: vscode.Uri)
 {
-    let sanitized = utils.sanitisePath(file.fsPath);
-
     let workspaceFolder = utils.getCurrentWorkspaceFolder();
+
+    let sanitized = utils.sanitisePath(vscode.workspace.asRelativePath(file));
     if (workspaceFolder)
     {
         let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
@@ -227,7 +233,7 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
         let libsTokeep = [];
         for(let lib of gitLibs)
         {
-            if(!sanitized.includes(lib.relativePath))
+            if(!sanitized.includes("_build/libs/" + lib.name))
             {
                 libsTokeep.push(lib);
             }
@@ -240,7 +246,7 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
         let promises = [];
         for(let lib of libsToDelete)
         {
-            promises.push(vscode.workspace.fs.delete(vscode.Uri.file(utils.sanitisePath(workspaceFolder.uri.fsPath) + lib.relativePath), {recursive: true, useTrash: false}));
+            promises.push(vscode.workspace.fs.delete(vscode.Uri.file(utils.sanitisePath(workspaceFolder.uri.fsPath) + "_build/libs/" + lib.name), {recursive: true, useTrash: false}));
         }
         Promise.all(promises);
 
@@ -260,17 +266,29 @@ export function updateLibraries(context: vscode.ExtensionContext) {
         let promises = [];
         for(let lib of gitLibs)
         {
-            let promise = Promise.resolve().then(
+            let libPath = utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/" + lib.name;
+
+            let promise = utils.doesFileExist(vscode.Uri.file(libPath), 
                 () => {
-                let terminal = vscode.window.createTerminal({
-                    cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + lib.relativePath,
-                    shellArgs: ["pull"],
-                    name: "update libraries",
-                    hideFromUser: false,
-                    shellPath: gitPath,
+                    // update latest
+                    TerminalHandler.get().awaitTerminal({
+                        cwd: libPath,
+                        shellArgs: ["pull"],
+                        name: "update libraries",
+                        hideFromUser: false,
+                        shellPath: gitPath,
+                    });
+                },
+                () => {
+                    TerminalHandler.get().awaitTerminal({
+                        cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
+                        shellArgs: ["clone", lib.gitUrl, lib.name],
+                        name: "clone missing lib",
+                        hideFromUser: false,
+                        shellPath: gitPath,
+                    });
                 });
-                terminal.show();
-            });
+
             promises.push(promise);
         }
 

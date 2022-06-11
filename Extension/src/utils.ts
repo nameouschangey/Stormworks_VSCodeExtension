@@ -25,6 +25,12 @@ String.prototype.replaceAll = function (searchValue: string | RegExp, replacemen
 	return current;
 };
 
+export function ensureBuildFolderExists()
+{
+	let workspaceFolder = getCurrentWorkspaceFolder();
+	return vscode.workspace.fs.createDirectory(vscode.Uri.file(sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/"));
+}
+
 export function sanitisePath(path : string)
 {
 	path = path.replaceAll("\\", "/");
