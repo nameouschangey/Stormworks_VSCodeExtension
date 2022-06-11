@@ -23,6 +23,9 @@
   	  	"nanoid": "^3.3.1",
   	  	"octokit": "^1.7.2"
   	},
+	"extensionDependencies": [
+		"vscode.git"
+	],
   	"extensionPack": [
   	  	"sumneko.lua",
   	  	"actboy168.lua-debug"
@@ -69,7 +72,7 @@
   	  	  	  	  	"lifeboatapi.stormworks.libs.gitLibraries": {
   	  	  	  	  	  	"type": "array",
   	  	  	  	  	  	"items": {
-  	  	  	  	  	  	  	"type": "string"
+  	  	  	  	  	  	  	"type": "object"
   	  	  	  	  	  	},
   	  	  	  	  	  	"scope": "resource",
   	  	  	  	  	  	"default": [],
@@ -194,13 +197,10 @@
   	  	  	  	"command": "lifeboatapi.simulate",
   	  	  	  	"title": "Stormworks: Simulate Microcontroller"
   	  	  	},
+
   	  	  	{
   	  	  	  	"command": "lifeboatapi.shareFile",
   	  	  	  	"title": "Stormworks: Share this file"
-  	  	  	},
-  	  	  	{
-  	  	  	  	"command": "lifeboatapi.shareRepository",
-  	  	  	  	"title": "Stormworks: Share this repository"
   	  	  	},
   	  	  	{
   	  	  	  	"command": "lifeboatapi.cloneGitLibrary",
@@ -242,12 +242,7 @@
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.shareFile",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "!explorerResourceIsFolder && resourceExtname == .lua && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
-  	  	  	  	},
-  	  	  	  	{
-  	  	  	  	  	"command": "lifeboatapi.shareRepository",
-  	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "scmActiveResourceRepository && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	  	"when": "resource =~ /^(.(?!/_build/))*$/ && !explorerResourceIsFolder && resourceExtname == .lua && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
   	  	  	  	},
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.cloneGitLibrary",

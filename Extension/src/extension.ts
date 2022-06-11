@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext)
 	// when the library paths are changed, this will have a knock-on to the other settings
 	vscode.workspace.onDidChangeConfiguration(
 		(e) => {
-			if(e.affectsConfiguration("lifeboatapi.stormworks.libs.libraryPaths"))
+			if(e && e.affectsConfiguration("lifeboatapi.stormworks.libs.libraryPaths"))
 			{
 				loadedFolders.clear();
 			}
@@ -110,10 +110,29 @@ export function activate(context: vscode.ExtensionContext)
 		return projectCreation.beginCreateNewProjectFolder(context, false);
 	}));
 
-	// Share File Link
+
+	// Share File Gist Link
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.shareFile',
 	(file) => {
 		return handleGit.shareSelectedFile(context, file);
+	}));
+
+	// Add Library
+	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.cloneGitLibrary',
+	() => {
+		return handleGit.addLibraryFromURL(context);
+	}));
+
+	// Remove Library
+	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.removeLibrary',
+	(file) => {
+		return handleGit.removeSelectedLibrary(context, file);
+	}));
+
+	// Update Libraries
+	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.updateLibraries',
+	() => {
+		return handleGit.updateLibraries(context);
 	}));
 }
 

@@ -8,38 +8,7 @@ import { debug } from 'console';
 import { relative } from 'path';
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import * as https from 'https';
-
-//class GistsService {
-//
-//  
-//    public delete(
-//      params: RestEndpointMethodTypes['gists']['delete']['parameters']
-//    ) {
-//      return this.octokit.gists.delete(params);
-//    }
-//  
-//    public get(params: RestEndpointMethodTypes['gists']['get']['parameters']) {
-//      return this.octokit.gists.get(params);
-//    }
-//  
-//    public list(params?: RestEndpointMethodTypes['gists']['list']['parameters']) {
-//      return this.octokit.gists.list(params);
-//    }
-//  
-//    public listStarred(
-//      params?: RestEndpointMethodTypes['gists']['listStarred']['parameters']
-//    ) {
-//      return this.octokit.gists.listStarred(params);
-//    }
-//  
-//    public update(
-//      params: RestEndpointMethodTypes['gists']['update']['parameters']
-//    ) {
-//      return this.octokit.gists.update(params);
-//    }
-//  }
-//  
-//  export const gists = GistsService.getInstance();
+import { API as GitAPI, GitExtension, APIState } from './typings/git'; 
 
 export interface GistSetting
 {
@@ -105,6 +74,7 @@ function updateGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
                 files[fileName] = {content : fileContents};
 
                 let request = {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     gist_id : gist.gistID,
                     description : "Stormworks LifeboatAPI - Gist - " + fileName,
                     files : files
@@ -136,7 +106,6 @@ function updateGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
         }
     );
 }
-
 
 function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: GistSetting[], relativePath: string, fileName: string, fileContents: string)
 {
@@ -188,20 +157,123 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
     );
 }
 
-
-function shareRepository(context : vscode.ExtensionContext)
+interface GitLibSetting
 {
-}
-
-export function removeSelectedLibrary(context : vscode.ExtensionContext)
-{
+    relativePath : string,
+    gitUrl : string
 }
 
 export function addLibraryFromURL(context : vscode.ExtensionContext)
 {
-    // 
+    return vscode.window.showInputBox({
+        placeHolder : "https//github.com/example_link.git",
+        prompt: "Enter the git URL of the library",
+        title: "Add Git Library",
+        ignoreFocusOut: false})
+        .then(
+            (url) => {
+                if (url) {
+                    let workspaceFolder = utils.getCurrentWorkspaceFolder();
+                    if (workspaceFolder)
+                    {
+                        let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
+                        let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
+                        let urlEnding = path.basename(url, ".git");
+                        let relativePath = "_build/libs/" + urlEnding;
+
+                        for(let lib of gitLibs)
+                        {
+                            if(lib.gitUrl === url)
+                            {
+                                return vscode.window.showInformationMessage("Library already in project - see settings.json if this is wrong").then();
+                            }
+                        }
+
+                        let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
+                        if (gitExtension)
+                        {
+                            let gitPath = gitExtension.getAPI(1).git.path;
+
+                            return Promise.resolve().then(()=>{
+                                let terminal = vscode.window.createTerminal({
+                                    cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
+                                    shellArgs: ["clone", url],
+                                    name: "add library",
+                                    hideFromUser: false,
+                                    shellPath: gitPath,
+                                });
+                                terminal.show();
+                            }).then(() => {
+                                gitLibs.push({ relativePath: relativePath, gitUrl: url });
+                                return config.update("gitLibraries", gitLibs);
+                            });
+                        }
+                    }
+                }
+            });
+}
+
+export function removeSelectedLibrary(context : vscode.ExtensionContext, file: vscode.Uri)
+{
+    let sanitized = utils.sanitisePath(file.fsPath);
+
+    let workspaceFolder = utils.getCurrentWorkspaceFolder();
+    if (workspaceFolder)
+    {
+        let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
+        let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
+
+        let libsToDelete = [];
+        let libsTokeep = [];
+        for(let lib of gitLibs)
+        {
+            if(!sanitized.includes(lib.relativePath))
+            {
+                libsTokeep.push(lib);
+            }
+            else
+            {
+                libsToDelete.push(lib);
+            }
+        }
+
+        let promises = [];
+        for(let lib of libsToDelete)
+        {
+            promises.push(vscode.workspace.fs.delete(vscode.Uri.file(utils.sanitisePath(workspaceFolder.uri.fsPath) + lib.relativePath), {recursive: true, useTrash: false}));
+        }
+        Promise.all(promises);
+
+        return config.update("gitLibraries", libsTokeep);
+    }
 }
 
 export function updateLibraries(context: vscode.ExtensionContext) {
+    let workspaceFolder = utils.getCurrentWorkspaceFolder();
+    let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
+    if(gitExtension && workspaceFolder)
+    {
+        let gitPath = gitExtension.getAPI(1).git.path;
+        let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
+        let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
 
+        let promises = [];
+        for(let lib of gitLibs)
+        {
+            let promise = Promise.resolve().then(
+                () => {
+                let terminal = vscode.window.createTerminal({
+                    cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + lib.relativePath,
+                    shellArgs: ["pull"],
+                    name: "update libraries",
+                    hideFromUser: false,
+                    shellPath: gitPath,
+                });
+                terminal.show();
+            });
+            promises.push(promise);
+        }
+
+        return Promise.all(promises);
+    }
 }

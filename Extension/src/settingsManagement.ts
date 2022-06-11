@@ -9,7 +9,8 @@ import { debug } from 'console';
 
 export function getLibraryPaths(context : vscode.ExtensionContext)
 {
-	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
+	let workspaceFolder = utils.getCurrentWorkspaceFolder();
+	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
 	let lbPaths : {[path:string] : boolean;} = {};
 
 	// sanitized library paths from settings
@@ -18,6 +19,8 @@ export function getLibraryPaths(context : vscode.ExtensionContext)
     {
         lbPaths[utils.sanitisePath(path)] = true;
     }
+
+	lbPaths[utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/"] = true;
 
 	// add lifeboatAPI to the library path
 	if(utils.isMicrocontrollerProject())
@@ -37,6 +40,7 @@ export function getLibraryPaths(context : vscode.ExtensionContext)
 // specific for getting the paths that Lua Intellisense wants (separate to runtime + library paths)
 function getLuaIntellisenseRequirePaths(context : vscode.ExtensionContext)
 {
+	let workspaceFolder = utils.getCurrentWorkspaceFolder();
 	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
 	let lbPaths : {[path:string] : boolean;} = {};
 
@@ -46,6 +50,8 @@ function getLuaIntellisenseRequirePaths(context : vscode.ExtensionContext)
     {
         lbPaths[utils.sanitisePath(path)] = true;
     }
+
+	lbPaths[utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/"] = true;
 
 	// add lifeboatAPI to the library path
 	if(utils.isMicrocontrollerProject())
