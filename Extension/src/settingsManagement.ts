@@ -90,9 +90,8 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 	
 	let existingAsList : string[] = cpathString.split(";");
 	const defaultCPaths = [
-		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/socket/?.dll",
-		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/mime/?.dll",
-		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/?.dll"
+		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/socket/core.dll",
+		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/mime/core.dll",
 	];
 	for(const cPathElement of defaultCPaths)
 	{
@@ -106,8 +105,8 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 }
 
 export function updateLuaLibraryPaths(context: vscode.ExtensionContext) {
-	let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace");
-	let luaLibRuntime = vscode.workspace.getConfiguration("Lua.runtime");
+	let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace", utils.getCurrentWorkspaceFile());
+	let luaLibRuntime = vscode.workspace.getConfiguration("Lua.runtime", utils.getCurrentWorkspaceFile());
 
 	return Promise.resolve()
 	.then( () => {
@@ -116,8 +115,8 @@ export function updateLuaLibraryPaths(context: vscode.ExtensionContext) {
 			return Promise.reject("Can't update settings while no workspace is active");
 		}
 	}).then( () => { 
-		return luaLibWorkspace.update("library", getLibraryPaths(context), null);
+		return luaLibWorkspace.update("library", getLibraryPaths(context), vscode.ConfigurationTarget.WorkspaceFolder);
 	}).then( () => { 
-		return luaLibRuntime.update("path", getLuaIntellisenseRequirePaths(context), null);
+		return luaLibRuntime.update("path", getLuaIntellisenseRequirePaths(context), vscode.ConfigurationTarget.WorkspaceFolder);
 	});
 }
