@@ -19,7 +19,9 @@
   	  	"onCommand:lifeboatapi.newAddonProject"
   	],
   	"dependencies": {
-  	  	"nanoid": "^3.3.1"
+  	  	"@octokit/rest": "^18.12.0",
+  	  	"nanoid": "^3.3.1",
+  	  	"octokit": "^1.7.2"
   	},
   	"extensionPack": [
   	  	"sumneko.lua",
@@ -62,7 +64,25 @@
   	  	  	  	  	  	},
   	  	  	  	  	  	"scope": "resource",
   	  	  	  	  	  	"default": [],
-  	  	  	  	  	  	"description": "(Per-project) Add absolute-paths to other projects or libraries, to use the lua from them. \n These paths apply ONLY to this project."
+  	  	  	  	  	  	"description": "Add absolute-paths to other projects or libraries, to use the lua from them."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.libs.gitLibraries": {
+  	  	  	  	  	  	"type": "array",
+  	  	  	  	  	  	"items": {
+  	  	  	  	  	  	  	"type": "string"
+  	  	  	  	  	  	},
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"default": [],
+  	  	  	  	  	  	"description": "Internally managed, list of libraries to use from git."
+  	  	  	  	  	},
+  	  	  	  	  	"lifeboatapi.stormworks.libs.sharedGistFiles": {
+  	  	  	  	  	  	"type": "array",
+  	  	  	  	  	  	"items": {
+  	  	  	  	  	  	  	"type": "object"
+  	  	  	  	  	  	},
+  	  	  	  	  	  	"scope": "resource",
+  	  	  	  	  	  	"default": [],
+  	  	  	  	  	  	"description": "Internally managed list of files that have been sent to gist"
   	  	  	  	  	},
   	  	  	  	  	"lifeboatapi.stormworks.enableNewProjectContextMenu": {
   	  	  	  	  	  	"type": "boolean",
@@ -173,6 +193,26 @@
   	  	  	{
   	  	  	  	"command": "lifeboatapi.simulate",
   	  	  	  	"title": "Stormworks: Simulate Microcontroller"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.shareFile",
+  	  	  	  	"title": "Stormworks: Share this file"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.shareRepository",
+  	  	  	  	"title": "Stormworks: Share this repository"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.cloneGitLibrary",
+  	  	  	  	"title": "Stormworks: Add Library From Url"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.removeLibrary",
+  	  	  	  	"title": "Stormworks: Remove Selected Library"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.updateLibraries",
+  	  	  	  	"title": "Stormworks: Update Libraries"
   	  	  	}
   	  	],
   	  	"keybindings": [
@@ -200,14 +240,29 @@
   	  	  	],
   	  	  	"explorer/context": [
   	  	  	  	{
-  	  	  	  	  	"command": "lifeboatapi.newMCProject",
+  	  	  	  	  	"command": "lifeboatapi.shareFile",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "config.lifeboatapi.stormworks.enableNewProjectContextMenu"
+  	  	  	  	  	"when": "!explorerResourceIsFolder && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
   	  	  	  	},
   	  	  	  	{
-  	  	  	  	  	"command": "lifeboatapi.newAddonProject",
+  	  	  	  	  	"command": "lifeboatapi.shareRepository",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "config.lifeboatapi.stormworks.enableNewProjectContextMenu"
+  	  	  	  	  	"when": "scmActiveResourceRepository && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	},
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.cloneGitLibrary",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	},
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.removeLibrary",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "resource =~ //_build/libs// && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	},
+  	  	  	  	{
+  	  	  	  	  	"command": "lifeboatapi.updateLibraries",
+  	  	  	  	  	"group": "0_stormworks",
+  	  	  	  	  	"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
   	  	  	  	}
   	  	  	],
   	  	  	"file/newFile": [

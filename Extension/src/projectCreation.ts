@@ -32,8 +32,7 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 		{
 			return Promise.reject("No folder selected");
 		}
-	})
-	.then(
+	}).then(
 		(params) => {
 			params.settingsFilePath = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/settings.json");
             return vscode.workspace.fs.readFile(params.settingsFilePath).then(

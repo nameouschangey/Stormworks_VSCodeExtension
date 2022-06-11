@@ -10,6 +10,7 @@ import * as projectCreation from "./projectCreation";
 import * as settingsManagement from "./settingsManagement";
 import * as runSimulator from "./runSimulator";
 import * as runBuild from "./runBuild";
+import * as handleGit from "./handleGit";
 
 // this method is called when your extension is activated
 // the extension is activated the very first time the command is executed
@@ -87,6 +88,19 @@ export function activate(context: vscode.ExtensionContext)
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newAddonProject',
 	() =>{
 		return projectCreation.beginCreateNewProjectFolder(context, false);
+	}));
+
+	// Share File Link
+	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.shareFile',
+	() => {
+		return handleGit.shareSelectedFile(context);
+		//return vscode.authentication.getSession("github", ['gist'], {createIfNone: true})
+		//.then(
+		//	(session) => {
+		//		let name = session?.account.label;
+		//		let name2 = name;
+		//	}
+		//);
 	}));
 }
 
