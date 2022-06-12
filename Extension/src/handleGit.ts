@@ -205,7 +205,7 @@ export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscod
                             let gitPath = gitExtension.getAPI(1).git.path;
 
                             return TerminalHandler.get().awaitTerminal({
-                                    cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
+                                    cwd: utils.sanitizeFolderPath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
                                     shellArgs: ["clone", url, libName],
                                     name: "add library",
                                     hideFromUser: false,
@@ -255,7 +255,7 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
         let promises = [];
         for(let lib of libsToDelete)
         {
-            promises.push(vscode.workspace.fs.delete(vscode.Uri.file(utils.sanitisePath(workspaceFolder.uri.fsPath) + "_build/libs/" + lib.name), {recursive: true, useTrash: false}));
+            promises.push(vscode.workspace.fs.delete(vscode.Uri.file(utils.sanitizeFolderPath(workspaceFolder.uri.fsPath) + "_build/libs/" + lib.name), {recursive: true, useTrash: false}));
         }
         Promise.all(promises);
 
@@ -277,7 +277,7 @@ export function updateLibraries(context: vscode.ExtensionContext, file: vscode.U
 
             for(let lib of gitLibs)
             {
-                let libPath = utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/" + lib.name;
+                let libPath = utils.sanitizeFolderPath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/" + lib.name;
 
                 let promise = utils.doesFileExist(vscode.Uri.file(libPath), 
                     () => {
@@ -292,7 +292,7 @@ export function updateLibraries(context: vscode.ExtensionContext, file: vscode.U
                     },
                     () => {
                         TerminalHandler.get().awaitTerminal({
-                            cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
+                            cwd: utils.sanitizeFolderPath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
                             shellArgs: ["clone", lib.gitUrl, lib.name],
                             name: "clone missing lib",
                             hideFromUser: false,

@@ -237,12 +237,12 @@ function copyAllFiles(sourceFolder : vscode.Uri, destinationFolder : vscode.Uri,
 
 function setupMicrocontrollerFiles(context : vscode.ExtensionContext, params : any)
 {
-	return copyAllFiles(vscode.Uri.file(context.extensionPath + "/assets/default_project_files/microcontroller/"),
+	return copyAllFiles(vscode.Uri.file(utils.sanitizeFolderPath(context.extensionPath) + "assets/default_project_files/microcontroller/"),
 						vscode.Uri.file(params.selectedFolder.uri.fsPath), false);
 }
 
 function setupAddonFiles(context : vscode.ExtensionContext, params : any)
 {
-	return copyAllFiles(vscode.Uri.file(context.extensionPath + "/assets/default_project_files/addon/"),
+	return copyAllFiles(vscode.Uri.file(utils.sanitizeFolderPath(context.extensionPath) + "assets/default_project_files/addon/"),
 						vscode.Uri.file(params.selectedFolder.uri.fsPath), false);
 }

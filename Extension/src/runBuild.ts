@@ -93,7 +93,7 @@ export function beginBuild(context:vscode.ExtensionContext)
         let rootDir = workspace.uri.fsPath;
 
         let path = settingsManagement.getDebugPaths(context, utils.getCurrentWorkspaceFolder());
-        path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
+        path.push(utils.sanitizeFolderPath(workspace.uri.fsPath) + "?.lua");
 
         return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(workspace), context)
             .then(

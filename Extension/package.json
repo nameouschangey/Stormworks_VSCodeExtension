@@ -20,12 +20,11 @@
   	],
   	"dependencies": {
   	  	"@octokit/rest": "^18.12.0",
-  	  	"nanoid": "^3.3.1",
-  	  	"octokit": "^1.7.2"
+  	  	"nanoid": "^3.3.1"
   	},
-	"extensionDependencies": [
-		"vscode.git"
-	],
+  	"extensionDependencies": [
+  	  	"vscode.git"
+  	],
   	"extensionPack": [
   	  	"sumneko.lua",
   	  	"actboy168.lua-debug"
@@ -60,8 +59,6 @@
   	  	  	  	  	  	"scope": "resource",
   	  	  	  	  	  	"description": "Any remaining boiletplate notice you wish to include at the top of the file."
   	  	  	  	  	},
-
-
   	  	  	  	  	"lifeboatapi.stormworks.libs.libraryPaths": {
   	  	  	  	  	  	"type": "array",
   	  	  	  	  	  	"items": {
@@ -76,7 +73,7 @@
   	  	  	  	  	  	"items": {
   	  	  	  	  	  	  	"type": "object"
   	  	  	  	  	  	},
-						"default": null,
+  	  	  	  	  	  	"default": null,
   	  	  	  	  	  	"scope": "resource",
   	  	  	  	  	  	"description": "Internally managed, list of libraries to use from git."
   	  	  	  	  	},
@@ -89,13 +86,12 @@
   	  	  	  	  	  	"default": [],
   	  	  	  	  	  	"description": "Internally managed list of files that have been sent to gist"
   	  	  	  	  	},
-					"lifeboatapi.stormworks.libs.autoUpdate": {
-						"type": "boolean",
-						"default": true,
-						"scope": "application",
-						"description": "Auto-Updates the project's libraries when the project loads."
-					},
-
+  	  	  	  	  	"lifeboatapi.stormworks.libs.autoUpdate": {
+  	  	  	  	  	  	"type": "boolean",
+  	  	  	  	  	  	"default": true,
+  	  	  	  	  	  	"scope": "application",
+  	  	  	  	  	  	"description": "Auto-Updates the project's libraries when the project loads."
+  	  	  	  	  	},
   	  	  	  	  	"lifeboatapi.stormworks.isMicrocontrollerProject": {
   	  	  	  	  	  	"type": "boolean",
   	  	  	  	  	  	"default": false,
@@ -220,10 +216,10 @@
   	  	  	  	"command": "lifeboatapi.updateAllSettings",
   	  	  	  	"title": "Stormworks: Refresh Settings"
   	  	  	},
-			{
-				"command": "lifeboatapi.updateAllLibraries",
-				"title": "Stormworks: Update Libraries In All Workspaces"
-			}
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.updateAllLibraries",
+  	  	  	  	"title": "Stormworks: Update Libraries In All Workspaces"
+  	  	  	}
   	  	],
   	  	"keybindings": [
   	  	  	{

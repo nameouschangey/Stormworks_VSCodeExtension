@@ -66,12 +66,10 @@ export function beginSimulator(context:vscode.ExtensionContext)
         let simulatorLua = generateSimulatorLua(workspace.uri, file);
         let simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_simulator.lua");
 
-        let ws : vscode.WorkspaceFolder = workspace;
-
         // load the path and cpath, this means if the settings file is wrong - at least the simulator works
         // although the lua-debug probably won't. It shouldn't be needed, but it will make life a bit more stable.
-        let path = settingsManagement.getDebugPaths(context, utils.getCurrentWorkspaceFolder());
-        path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
+        let path = settingsManagement.getDebugPaths(context, workspace);
+        path.push(utils.sanitizeFolderPath(workspace.uri.fsPath) + "?.lua");
 
         return vscode.workspace.fs.writeFile(simulatedLuaFile, new TextEncoder().encode(simulatorLua))
         .then(
@@ -88,8 +86,8 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     path: path.join(";"),
                     cpath: settingsManagement.getDebugCPaths(context),
                     arg: [
-                        utils.sanitisePath(context.extensionPath) + "/assets/simulator/STORMWORKS_Simulator.exe",
-                        utils.sanitisePath(ws.uri.fsPath) + "/_build/_debug_simulator_log.txt"
+                        utils.sanitizeFolderPath(context.extensionPath) + "assets/simulator/STORMWORKS_Simulator.exe",
+                        utils.sanitizeFolderPath(workspace?.uri.fsPath ?? "") + "_build/_debug_simulator_log.txt"
                     ]
                 };
                 

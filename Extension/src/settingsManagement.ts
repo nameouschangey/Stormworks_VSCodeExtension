@@ -16,19 +16,19 @@ export function getLibraryPaths(context : vscode.ExtensionContext, folder: vscod
 	let uniquePaths : Set<string> = new Set();
 	for (let path of libraryPaths)
     {
-        uniquePaths.add(utils.sanitisePath(path));
+        uniquePaths.add(utils.sanitizeFolderPath(path));
     }
 
-	uniquePaths.add(utils.sanitisePath(folder?.uri.fsPath ?? "") + "_build/libs/");
-	uniquePaths.add(utils.sanitisePath(context.extensionPath) + "assets/lua/Common/");
+	uniquePaths.add(utils.sanitizeFolderPath(folder?.uri.fsPath ?? "") + "_build/libs/");
+	uniquePaths.add(utils.sanitizeFolderPath(context.extensionPath) + "assets/lua/Common/");
 
 	if(utils.isMicrocontrollerProject(folder))
 	{
-		uniquePaths.add(utils.sanitisePath(context.extensionPath) + "assets/lua/Microcontroller/");
+		uniquePaths.add(utils.sanitizeFolderPath(context.extensionPath) + "assets/lua/Microcontroller/");
 	}
 	else
 	{
-		uniquePaths.add(utils.sanitisePath(context.extensionPath) + "assets/lua/Addon/");
+		uniquePaths.add(utils.sanitizeFolderPath(context.extensionPath) + "assets/lua/Addon/");
 	}
 
 	return Array.from(uniquePaths);
@@ -37,7 +37,7 @@ export function getLibraryPaths(context : vscode.ExtensionContext, folder: vscod
 export function getDebugPaths(context : vscode.ExtensionContext, folder: vscode.WorkspaceFolder | undefined)
 {
 	let debugPaths = [
-		utils.sanitisePath(context.extensionPath) + "assets/luasocket/?.lua",
+		utils.sanitizeFolderPath(context.extensionPath) + "assets/luasocket/?.lua",
 	];
 	for(let path of getLibraryPaths(context, folder))
 	{
@@ -61,8 +61,8 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 	
 	let existingAsList : string[] = cpathString.split(";");
 	const defaultCPaths = [
-		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/socket/core.dll",
-		utils.sanitisePath(context.extensionPath) + "assets/luasocket/dll/mime/core.dll",
+		utils.sanitizeFolderPath(context.extensionPath) + "assets/luasocket/dll/socket/core.dll",
+		utils.sanitizeFolderPath(context.extensionPath) + "assets/luasocket/dll/mime/core.dll",
 	];
 	for(const cPathElement of defaultCPaths)
 	{

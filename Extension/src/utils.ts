@@ -30,10 +30,10 @@ export function relativePath(file: vscode.Uri)
 	let folder = getContainingFolder(file);
 	if(folder)
 	{
-		let fileSanitized = sanitisePath(file.fsPath);
-		let folderSanitized = sanitisePath(folder.uri.fsPath);
+		let fileSanitized = sanitizeFilePath(file.fsPath);
+		let folderSanitized = sanitizeFolderPath(folder.uri.fsPath);
 
-		let relative = sanitisePath(fileSanitized.replace(folderSanitized, ""));
+		let relative = sanitizeFolderPath(fileSanitized.replace(folderSanitized, ""));
 		return relative;
 	}
 
@@ -48,16 +48,22 @@ export function getContainingFolder(file: vscode.Uri)
 
 export function ensureBuildFolderExists(folder : vscode.WorkspaceFolder | undefined)
 {
-	return vscode.workspace.fs.createDirectory(vscode.Uri.file(sanitisePath(folder?.uri.fsPath ?? "") + "_build/libs/"));
+	return vscode.workspace.fs.createDirectory(vscode.Uri.file(sanitizeFolderPath(folder?.uri.fsPath ?? "") + "_build/libs/"));
 }
 
-export function sanitisePath(resourcePath : string)
+export function sanitizeFolderPath(resourcePath : string)
 {
 	resourcePath = resourcePath.replaceAll("\\", "/");
-	if(path.extname(resourcePath) === "" && resourcePath.charAt(resourcePath. length-1) !== "/")
+	if(resourcePath.charAt(resourcePath. length-1) !== "/")
 	{
 		return resourcePath + "/";
 	}
+	return resourcePath;
+}
+
+export function sanitizeFilePath(resourcePath : string)
+{
+	resourcePath = resourcePath.replaceAll("\\", "/");
 	return resourcePath;
 }
 

@@ -31,5 +31,11 @@
     ],
     "lua.debug.settings.path": [
         "LUADEBUG_PATH"
+    ],
+    "lifeboatapi.stormworks.libs.gitLibraries": [
+        {
+            "name": "LifeBoatAPI",
+            "gitUrl": "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git"
+        }
     ]
 }
