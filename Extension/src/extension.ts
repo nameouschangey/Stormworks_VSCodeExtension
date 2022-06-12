@@ -161,8 +161,7 @@ export function activate(context: vscode.ExtensionContext)
 		let promises = [];
 		for(let folder of vscode.workspace.workspaceFolders ?? [])
 		{
-			let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks", folder);
-			let isSWProject = config.get("isMicrocontrollerProject") === true || config.get("isAddonProject") === true;
+			let isSWProject = utils.isStormworksProject(folder) === true;
 			isSWWorkspace ||= isSWProject;
 
 			if(isSWProject)

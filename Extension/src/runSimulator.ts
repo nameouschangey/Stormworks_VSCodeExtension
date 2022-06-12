@@ -59,9 +59,12 @@ export function beginSimulator(context:vscode.ExtensionContext)
     let workspace = utils.getCurrentWorkspaceFolder();
     let file = utils.getCurrentWorkspaceFile();
 
-    if (workspace
-        && file
-        && !vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
+    if(!file || !workspace || !utils.isStormworksProject(workspace))
+    {
+        return;
+    }
+
+    if (!vscode.debug.activeDebugSession) // avoid running two debug sessions at once, easy to do as it's F6 to start
     {
         let simulatorLua = generateSimulatorLua(workspace.uri, file);
         let simulatedLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_simulator.lua");
@@ -102,13 +105,8 @@ export function beginSimulator(context:vscode.ExtensionContext)
             }
         );
     }
-
-    if(vscode.debug.activeDebugSession)
-    {
-        return Promise.reject("Please end current debug session before starting another.");
-    }
     else
     {
-        return Promise.reject("Please ensure a valid file is selected for simulation");
+        return Promise.reject("Please end current debug session before starting another.");
     }
 }

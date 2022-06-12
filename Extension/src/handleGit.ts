@@ -31,40 +31,42 @@ export function shareSelectedFile(context : vscode.ExtensionContext, file: vscod
     let selectedFile = file ?? utils.getCurrentWorkspaceFile();
     let selectedFolder = utils.getContainingFolder(selectedFile);
 
-    if (selectedFile && selectedFolder)
+    if(!selectedFile || !selectedFolder || !utils.isStormworksProject(selectedFolder))
     {
-        let relativePath = utils.relativePath(selectedFile);
-        if (!relativePath) {return;}
+        return;
+    }
 
-        let fileName = path.basename(relativePath);
-        return vscode.workspace.fs.readFile(selectedFile).then(
-            (fileData) => {
-                return new TextDecoder().decode(fileData);
-            }
-        ).then(
-            (fileContents) => {
-                let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", selectedFolder);
-                let existingGists : GistSetting[] = libConfig.get("sharedGistFiles") ?? [];
-                for(let gist of existingGists)
+    let relativePath = utils.relativePath(selectedFile);
+    if (!relativePath) {return;}
+
+    let fileName = path.basename(relativePath);
+    return vscode.workspace.fs.readFile(selectedFile).then(
+        (fileData) => {
+            return new TextDecoder().decode(fileData);
+        }
+    ).then(
+        (fileContents) => {
+            let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", selectedFolder);
+            let existingGists : GistSetting[] = libConfig.get("sharedGistFiles") ?? [];
+            for(let gist of existingGists)
+            {
+                if(gist.relativePath === relativePath)
                 {
-                    if(gist.relativePath === relativePath)
+                    if(!gist.isDirty)
                     {
-                        if(!gist.isDirty)
-                        {
-                            vscode.env.clipboard.writeText(gist.gistUrl);
-                            return vscode.window.showInformationMessage("Copied " + gist.gistUrl + " to the clipboard for " + relativePath + " ready to share!");
-                        }
-                        else
-                        {
-                            return updateGist(libConfig, existingGists, gist, relativePath, fileName, fileContents);
-                        }
+                        vscode.env.clipboard.writeText(gist.gistUrl);
+                        return vscode.window.showInformationMessage("Copied " + gist.gistUrl + " to the clipboard for " + relativePath + " ready to share!");
+                    }
+                    else
+                    {
+                        return updateGist(libConfig, existingGists, gist, relativePath, fileName, fileContents);
                     }
                 }
-        
-                // no existing gist found, create a new one
-                return createGist(libConfig, existingGists, relativePath ?? "", fileName, fileContents);
-        });
-    }
+            }
+    
+            // no existing gist found, create a new one
+            return createGist(libConfig, existingGists, relativePath ?? "", fileName, fileContents);
+    });
 }
 
 function updateGist(libConfig : vscode.WorkspaceConfiguration, existingGists: GistSetting[], gist: GistSetting, relativePath: string, fileName: string, fileContents: string)
@@ -169,7 +171,13 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
 
 export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscode.Uri)
 {
-    return utils.ensureBuildFolderExists(utils.getContainingFolder(file))
+    let workspaceFolder = utils.getContainingFolder(file);
+    if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
+    {
+        return;
+    }
+
+    return utils.ensureBuildFolderExists(workspaceFolder)
         .then(() => vscode.window.showInputBox({
                     placeHolder : "https//github.com/example_link.git",
                     prompt: "Enter the git URL of the library",
@@ -232,8 +240,13 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
 {
     let workspaceFolder = utils.getContainingFolder(file);
 
+    if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
+    {
+        return;
+    }
+
     let sanitized = utils.relativePath(file);
-    if (workspaceFolder && sanitized)
+    if (sanitized)
     {
         let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
         let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
@@ -266,6 +279,12 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
 export function updateLibraries(context: vscode.ExtensionContext, file: vscode.Uri) {
     let workspaceFolder = utils.getContainingFolder(file);
     let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
+
+    if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
+    {
+        return;
+    }
+
     utils.ensureBuildFolderExists(workspaceFolder)
         .then(() => {
         let promises = [];
