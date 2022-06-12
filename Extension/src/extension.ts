@@ -32,10 +32,14 @@ export function activate(context: vscode.ExtensionContext)
 		(e) => {
 			return vscode.commands.executeCommand("lifeboatapi.updateAllSettings")
 			.then(() => {
+				let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs");
 				let promises = [];
-				for (let added of e.added)
+				if(config.get("autoUpdate"))
 				{
-					promises.push(vscode.commands.executeCommand("lifeboatapi.updateLibraries", added.uri));
+					for (let added of e.added)
+					{
+						promises.push(vscode.commands.executeCommand("lifeboatapi.updateLibraries", added.uri));
+					}
 				}
 				return Promise.all(promises);
 			});
