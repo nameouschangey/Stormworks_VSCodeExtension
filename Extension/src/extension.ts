@@ -122,14 +122,12 @@ export function activate(context: vscode.ExtensionContext)
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newMCProject',
 	() =>{
 		return projectCreation.beginCreateNewProjectFolder(context, true);
-		//.then( () => handleGit.updateLibraries(context));
 	}));
 	
 	// New Addon
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newAddonProject',
 	() =>{
 		return projectCreation.beginCreateNewProjectFolder(context, false);
-		//.then( () => handleGit.updateLibraries(context));
 	}));
 
 	// Share File Gist Link
@@ -141,8 +139,7 @@ export function activate(context: vscode.ExtensionContext)
 	// Add Library
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.cloneGitLibrary',
 	(file) => {
-		return utils.ensureBuildFolderExists(utils.getContainingFolder(file))
-		.then(() => handleGit.addLibraryFromURL(context, file));
+		return handleGit.addLibraryFromURL(context, file);
 	}));
 
 	// Remove Library
@@ -154,8 +151,7 @@ export function activate(context: vscode.ExtensionContext)
 	// Update Libraries
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.updateLibraries',
 	(file) => {
-		return utils.ensureBuildFolderExists(utils.getContainingFolder(file))
-		.then(() => handleGit.updateLibraries(context, file));
+		return handleGit.updateLibraries(context, file);
 	}));
 
 	// Update All Settings
