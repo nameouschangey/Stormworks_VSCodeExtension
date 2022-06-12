@@ -169,11 +169,12 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
 
 export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscode.Uri)
 {
-    return vscode.window.showInputBox({
-        placeHolder : "https//github.com/example_link.git",
-        prompt: "Enter the git URL of the library",
-        title: "Add Git Library",
-        ignoreFocusOut: false})
+    return utils.ensureBuildFolderExists(utils.getContainingFolder(file))
+        .then(() => vscode.window.showInputBox({
+                    placeHolder : "https//github.com/example_link.git",
+                    prompt: "Enter the git URL of the library",
+                    title: "Add Git Library",
+                    ignoreFocusOut: false})
         .then(
             (url) => {
                 if (url) {
@@ -223,7 +224,8 @@ export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscod
                         }
                     }
                 }
-            });
+            })
+        );
 }
 
 export function removeSelectedLibrary(context : vscode.ExtensionContext, file: vscode.Uri)
@@ -264,44 +266,47 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
 export function updateLibraries(context: vscode.ExtensionContext, file: vscode.Uri) {
     let workspaceFolder = utils.getContainingFolder(file);
     let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
-    let promises = [];
-    if(gitExtension && workspaceFolder)
-    {
-        let gitPath = gitExtension.getAPI(1).git.path;
-        let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
-        let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
-
-        for(let lib of gitLibs)
+    utils.ensureBuildFolderExists(workspaceFolder)
+        .then(() => {
+        let promises = [];
+        if(gitExtension && workspaceFolder)
         {
-            let libPath = utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/" + lib.name;
+            let gitPath = gitExtension.getAPI(1).git.path;
+            let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
+            let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
 
-            let promise = utils.doesFileExist(vscode.Uri.file(libPath), 
-                () => {
-                    // update latest
-                    TerminalHandler.get().awaitTerminal({
-                        cwd: libPath,
-                        shellArgs: ["pull"],
-                        name: "update libraries",
-                        hideFromUser: false,
-                        shellPath: gitPath,
-                    });
-                },
-                () => {
-                    TerminalHandler.get().awaitTerminal({
-                        cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
-                        shellArgs: ["clone", lib.gitUrl, lib.name],
-                        name: "clone missing lib",
-                        hideFromUser: false,
-                        shellPath: gitPath,
-                    });
-                });
+            for(let lib of gitLibs)
+            {
+                let libPath = utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/" + lib.name;
 
-            promises.push(promise);
+                let promise = utils.doesFileExist(vscode.Uri.file(libPath), 
+                    () => {
+                        // update latest
+                        TerminalHandler.get().awaitTerminal({
+                            cwd: libPath,
+                            shellArgs: ["pull"],
+                            name: "update libraries",
+                            hideFromUser: false,
+                            shellPath: gitPath,
+                        });
+                    },
+                    () => {
+                        TerminalHandler.get().awaitTerminal({
+                            cwd: utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
+                            shellArgs: ["clone", lib.gitUrl, lib.name],
+                            name: "clone missing lib",
+                            hideFromUser: false,
+                            shellPath: gitPath,
+                        });
+                    });
+
+                promises.push(promise);
+            }
         }
-    }
-    else if(!gitExtension)
-    {
-        promises.push(vscode.window.showErrorMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git"));
-    }
-    return Promise.all(promises);
+        else if(!gitExtension)
+        {
+            promises.push(vscode.window.showErrorMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git"));
+        }
+        return Promise.all(promises);
+    });
 }
