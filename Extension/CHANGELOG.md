@@ -1,18 +1,30 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
-#### [0.0.17] - 25th February 2022
+#### [0.0.18] - 12th June 2022
+**major**
+- EXTREMELY LARGE UPDATE
+- Rewrote majority of internals to work better per-folder/per-workspace
+- Fixed requires not working + simulator not working, for some users
+- Added NEW git-libraries feature
+- - "Add Library" and enter a git link, to add it to the project
+- - require the files from this easily
+- - "Share File" to create a quick gist to share with friends
+- - Majorly extends the ability to share code with other developers, and easily make + re-use libraries between projects
+- - Auto-updates when launching, so you can use the latest at all times
+
+#### [0.0.17]
 **major**
 - Fix for people running VSCode terminal through cmd; newlines in command were preventing build working correctly
 **minor**
 - "Enable Pan" is now persistent between sessions
 - ---@section change, if you miss the identifier, it will no longer crash - but instead will just remove that section
 
-#### [0.0.16] - 25th February 2022
+#### [0.0.16]
 **major**
 - Fix for spaces in windows username, preventing correct launch of Simulator
 
-#### [0.0.14] + [0.0.15] - 25th February 2022
+#### [0.0.14] + [0.0.15]
 **major**
 - Quick fix for "existing.push is not a function"
 - Updated documentation by Toastery
