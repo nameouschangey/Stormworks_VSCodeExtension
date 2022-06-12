@@ -180,27 +180,30 @@ export function activate(context: vscode.ExtensionContext)
 		let promises = [];
 		for (let folder of vscode.workspace.workspaceFolders ?? [])
 		{
-			let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", folder);
-			promises.push(
-				Promise.resolve().then(
-				() => {
-					// migration from old style -> git library style, to avoid too many complaints in one go
-					// after this, no more migration really needed. Can just recommend people make new projects...probably
-					let libraries : GitLibSetting[] | undefined = libConfig.get("gitLibraries");
-					if (libraries === null)
-					{
-						if (!utils.isMicrocontrollerProject(folder))
-						{ // addon
-							return libConfig.update("gitLibraries", [{ name: "LifeBoatAPI", gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git" } ]);
-						}
-						else
-						{ // mc
-							return libConfig.update("gitLibraries", [{ name: "LifeBoatAPI", gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_MC.git" }]);
+			if(utils.isStormworksProject(folder))
+			{
+				let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", folder);
+				promises.push(
+					Promise.resolve().then(
+					() => {
+						// migration from old style -> git library style, to avoid too many complaints in one go
+						// after this, no more migration really needed. Can just recommend people make new projects...probably
+						let libraries : GitLibSetting[] | undefined = libConfig.get("gitLibraries");
+						if (libraries === null)
+						{
+							if (!utils.isMicrocontrollerProject(folder))
+							{ // addon
+								return libConfig.update("gitLibraries", [{ name: "LifeBoatAPI", gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git" } ]);
+							}
+							else
+							{ // mc
+								return libConfig.update("gitLibraries", [{ name: "LifeBoatAPI", gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_MC.git" }]);
+							}
 						}
 					}
-				}
-				).then(() => vscode.commands.executeCommand("lifeboatapi.updateLibraries", folder.uri)
-			));
+					).then(() => vscode.commands.executeCommand("lifeboatapi.updateLibraries", folder.uri)
+				));
+			}
 		}
 		return Promise.all(promises);
 	}));
