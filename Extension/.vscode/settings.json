@@ -8,34 +8,4 @@
     },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
     "typescript.tsc.autoDetect": "off",
-    "lua.debug.settings.cpath": [
-        "LUADEBUG_CPATH"
-    ],
-    "lua.debug.settings.luaVersion": "5.3",
-    "lua.debug.settings.luaArch": "x86",
-    "Lua.diagnostics.disable": [
-        "lowercase-global"
-    ],
-    "Lua.runtime.path": [
-        "?.lua",
-        "?/init.lua",
-        "LUA_PATH"
-    ],
-    "Lua.workspace.ignoreDir": [
-        ".vscode",
-        "LUA_IGNOREDIR"
-    ],
-    "Lua.runtime.version": "Lua 5.3",
-    "Lua.workspace.library": [
-        "LUA_LIBRARIES"
-    ],
-    "lua.debug.settings.path": [
-        "LUADEBUG_PATH"
-    ],
-    "lifeboatapi.stormworks.libs.gitLibraries": [
-        {
-            "name": "LifeBoatAPI",
-            "gitUrl": "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git"
-        }
-    ]
 }
