@@ -60,6 +60,8 @@
   	  	  	  	  	  	"scope": "resource",
   	  	  	  	  	  	"description": "Any remaining boiletplate notice you wish to include at the top of the file."
   	  	  	  	  	},
+
+
   	  	  	  	  	"lifeboatapi.stormworks.libs.libraryPaths": {
   	  	  	  	  	  	"type": "array",
   	  	  	  	  	  	"items": {
@@ -74,8 +76,8 @@
   	  	  	  	  	  	"items": {
   	  	  	  	  	  	  	"type": "object"
   	  	  	  	  	  	},
+						"default": null,
   	  	  	  	  	  	"scope": "resource",
-  	  	  	  	  	  	"default": [],
   	  	  	  	  	  	"description": "Internally managed, list of libraries to use from git."
   	  	  	  	  	},
   	  	  	  	  	"lifeboatapi.stormworks.libs.sharedGistFiles": {
@@ -87,12 +89,13 @@
   	  	  	  	  	  	"default": [],
   	  	  	  	  	  	"description": "Internally managed list of files that have been sent to gist"
   	  	  	  	  	},
-  	  	  	  	  	"lifeboatapi.stormworks.enableNewProjectContextMenu": {
-  	  	  	  	  	  	"type": "boolean",
-  	  	  	  	  	  	"default": true,
-  	  	  	  	  	  	"scope": "resource",
-  	  	  	  	  	  	"description": "Enable the Stormworks: New Project option in the Explorer context menu"
-  	  	  	  	  	},
+					"lifeboatapi.stormworks.libs.autoUpdate": {
+						"type": "boolean",
+						"default": true,
+						"scope": "application",
+						"description": "Auto-Updates the project's libraries when the project loads."
+					},
+
   	  	  	  	  	"lifeboatapi.stormworks.isMicrocontrollerProject": {
   	  	  	  	  	  	"type": "boolean",
   	  	  	  	  	  	"default": false,
@@ -197,7 +200,6 @@
   	  	  	  	"command": "lifeboatapi.simulate",
   	  	  	  	"title": "Stormworks: Simulate Microcontroller"
   	  	  	},
-
   	  	  	{
   	  	  	  	"command": "lifeboatapi.shareFile",
   	  	  	  	"title": "Stormworks: Share this file"
@@ -216,8 +218,12 @@
   	  	  	},
   	  	  	{
   	  	  	  	"command": "lifeboatapi.updateAllSettings",
-  	  	  	  	"title": "Stormworks: Update All Settings"
-  	  	  	}
+  	  	  	  	"title": "Stormworks: Refresh Settings"
+  	  	  	},
+			{
+				"command": "lifeboatapi.updateAllLibraries",
+				"title": "Stormworks: Update Libraries In All Workspaces"
+			}
   	  	],
   	  	"keybindings": [
   	  	  	{

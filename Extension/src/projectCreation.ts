@@ -109,25 +109,6 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 					settingsJson["Lua.runtime.pathStrict"] = true;
 					settingsJson["Lua.workspace.library"] = libraryPaths;
 
-					if(isMicrocontrollerProject){
-						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
-							{
-								name: "LifeBoatAPI",
-								gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_MC.git"
-							}
-						];
-					}
-					else
-					{
-						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
-							{
-								name: "LifeBoatAPI",
-								gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git"
-							}
-						];
-					}
-
-
                     return vscode.workspace.fs.writeFile(params.settingsFilePath, new TextEncoder().encode(JSON.stringify(settingsJson, null, 4)))
 				             .then(() => params);
                 }
@@ -177,24 +158,6 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 	.then((params) => vscode.commands.executeCommand("workbench.view.explorer").then(() => params))
 	.then( 
 		(params) => {
-			//if(!vscode.workspace.workspaceFile)
-			//{
-			//	let workspaceName = path.basename(params.selectedFolder.uri.fsPath);
-			//	let workspaceFile = vscode.Uri.file(params.selectedFolder.uri.fsPath + "/.vscode/" + workspaceName + ".code-workspace");
-			//	return vscode.workspace.fs.writeFile(
-			//		workspaceFile,
-			//		new TextEncoder().encode(JSON.stringify({
-			//			"folders": [
-			//				{
-			//					"path": ".."
-			//				}
-			//			]
-			//		}, null, 4)))
-			//	 .then(
-			//		 () => vscode.commands.executeCommand("vscode.openFolder", workspaceFile)
-			//	 );
-			//}
-			//return vscode.commands.executeCommand("vscode.openFolder", params.selectedFolder.uri);
 			return vscode.workspace.updateWorkspaceFolders(0, 0, params.selectedFolder);
 		}
 	);

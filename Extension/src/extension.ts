@@ -11,7 +11,7 @@ import * as settingsManagement from "./settingsManagement";
 import * as runSimulator from "./runSimulator";
 import * as runBuild from "./runBuild";
 import * as handleGit from "./handleGit";
-import { GistSetting } from './handleGit';
+import { GistSetting, GitLibSetting } from './handleGit';
 import { TerminalHandler } from './terminal';
 
 // this method is called when your extension is activated
@@ -22,9 +22,23 @@ export function activate(context: vscode.ExtensionContext)
 	// "just restart VSCode becomes viable if things go out of sync"
 	vscode.commands.executeCommand("lifeboatapi.updateAllSettings");
 
+	let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs");
+	if (config.get("autoUpdate"))
+	{
+		vscode.commands.executeCommand("lifeboatapi.updateAllLibraries");
+	}
+
 	vscode.workspace.onDidChangeWorkspaceFolders(
 		(e) => {
-			return vscode.commands.executeCommand("lifeboatapi.updateAllSettings");
+			return vscode.commands.executeCommand("lifeboatapi.updateAllSettings")
+			.then(() => {
+				let promises = [];
+				for (let added of e.added)
+				{
+					promises.push(vscode.commands.executeCommand("lifeboatapi.updateLibraries", added.uri));
+				}
+				return Promise.all(promises);
+			});
 		}, null, context.subscriptions);
 
 	vscode.window.onDidCloseTerminal(
@@ -158,6 +172,36 @@ export function activate(context: vscode.ExtensionContext)
 		}
 
 		promises.push(vscode.commands.executeCommand('setContext', 'lifeboatapi.isSWWorkspace', isSWWorkspace));
+		return Promise.all(promises);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand("lifeboatapi.updateAllLibraries",
+	() => {
+		let promises = [];
+		for (let folder of vscode.workspace.workspaceFolders ?? [])
+		{
+			let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", folder);
+			promises.push(
+				Promise.resolve().then(
+				() => {
+					// migration from old style -> git library style, to avoid too many complaints in one go
+					// after this, no more migration really needed. Can just recommend people make new projects...probably
+					let libraries : GitLibSetting[] | undefined = libConfig.get("gitLibraries");
+					if (libraries === null)
+					{
+						if (!utils.isMicrocontrollerProject(folder))
+						{ // addon
+							return libConfig.update("gitLibraries", [{ name: "LifeBoatAPI", gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git" } ]);
+						}
+						else
+						{ // mc
+							return libConfig.update("gitLibraries", [{ name: "LifeBoatAPI", gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_MC.git" }]);
+						}
+					}
+				}
+				).then(() => vscode.commands.executeCommand("lifeboatapi.updateLibraries", folder.uri)
+			));
+		}
 		return Promise.all(promises);
 	}));
 }

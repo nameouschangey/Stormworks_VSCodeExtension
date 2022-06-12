@@ -11,6 +11,13 @@ import * as https from 'https';
 import { API as GitAPI, GitExtension } from './typings/git'; 
 import { TerminalHandler } from './terminal';
 
+
+export interface GitLibSetting
+{
+    name : string,
+    gitUrl : string
+}
+
 export interface GistSetting
 {
     relativePath : string,
@@ -158,12 +165,6 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
             }
         }
     );
-}
-
-interface GitLibSetting
-{
-    name : string,
-    gitUrl : string
 }
 
 export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscode.Uri)
