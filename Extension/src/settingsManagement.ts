@@ -7,78 +7,42 @@ import * as utils from "./utils";
 import { debug } from 'console';
 
 
-export function getLibraryPaths(context : vscode.ExtensionContext)
+export function getLibraryPaths(context : vscode.ExtensionContext, folder: vscode.WorkspaceFolder | undefined)
 {
-	let workspaceFolder = utils.getCurrentWorkspaceFolder();
-	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
-	let lbPaths : {[path:string] : boolean;} = {};
+	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", folder);
+	let libraryPaths : string[] = lifeboatConfig.get("libraryPaths") ?? [];
 
 	// sanitized library paths from settings
-	let libraryPaths : string[] = lifeboatConfig.get("libraryPaths") ?? [];
+	let uniquePaths : Set<string> = new Set();
 	for (let path of libraryPaths)
     {
-        lbPaths[utils.sanitisePath(path)] = true;
+        uniquePaths.add(utils.sanitisePath(path));
     }
 
-	lbPaths[utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/"] = true;
+	uniquePaths.add(utils.sanitisePath(folder?.uri.fsPath ?? "") + "_build/libs/");
+	uniquePaths.add(utils.sanitisePath(context.extensionPath) + "assets/lua/Common/");
 
-	// add lifeboatAPI to the library path
-	if(utils.isMicrocontrollerProject())
-    {
-		lbPaths[utils.sanitisePath(context.extensionPath) + "assets/LifeBoatAPI/Microcontroller/"] = true;
-        lbPaths[utils.sanitisePath(context.extensionPath) + "assets/LifeBoatAPI/Tools/"] = true;
+	if(utils.isMicrocontrollerProject(folder))
+	{
+		uniquePaths.add(utils.sanitisePath(context.extensionPath) + "assets/lua/Microcontroller/");
 	}
 	else
 	{
-		lbPaths[utils.sanitisePath(context.extensionPath) + "assets/LifeBoatAPI/Addons/"] = true;
-		lbPaths[utils.sanitisePath(context.extensionPath) + "assets/LifeBoatAPI/Tools/"] = true;
+		uniquePaths.add(utils.sanitisePath(context.extensionPath) + "assets/lua/Addon/");
 	}
 
-	return Object.keys(lbPaths);
+	return Array.from(uniquePaths);
 }
 
-// specific for getting the paths that Lua Intellisense wants (separate to runtime + library paths)
-function getLuaIntellisenseRequirePaths(context : vscode.ExtensionContext)
-{
-	let workspaceFolder = utils.getCurrentWorkspaceFolder();
-	let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", utils.getCurrentWorkspaceFile());
-	let lbPaths : {[path:string] : boolean;} = {};
-
-	// sanitized library paths from settings
-	let libraryPaths : string[] = lifeboatConfig.get("libraryPaths") ?? [];
-	for (let path of libraryPaths)
-    {
-        lbPaths[utils.sanitisePath(path)] = true;
-    }
-
-	lbPaths[utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/"] = true;
-
-	// add lifeboatAPI to the library path
-	if(utils.isMicrocontrollerProject())
-    {
-		lbPaths[utils.sanitisePath(context.extensionPath) + "assets/LifeBoatAPI/Microcontroller/"] = true;
-	}
-	else
-	{
-		lbPaths[utils.sanitisePath(context.extensionPath) + "assets/LifeBoatAPI/Addons/"] = true;
-	}
-
-	let paths = Object.keys(lbPaths);
-	paths.forEach(function(val, ind, array) {
-		array[ind] = val + "?.lua";
-	});
-	paths.push("?.lua");
-	return paths;
-}
-
-export function getDebugPaths(context : vscode.ExtensionContext)
+export function getDebugPaths(context : vscode.ExtensionContext, folder: vscode.WorkspaceFolder | undefined)
 {
 	let debugPaths = [
 		utils.sanitisePath(context.extensionPath) + "assets/luasocket/?.lua",
 	];
-	for(let path of getLibraryPaths(context))
+	for(let path of getLibraryPaths(context, folder))
 	{
 		debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
+		debugPaths.push(path + "?.luah"); // "hidden" lua that will run, but not appear in intellisense
 	}
 	return debugPaths;
 }
@@ -110,21 +74,9 @@ export function getDebugCPaths(context : vscode.ExtensionContext)
 	return existingAsList.join(";");
 }
 
-export function updateLuaLibraryPaths(context: vscode.ExtensionContext, folder?:vscode.WorkspaceFolder) {
-	folder = folder || utils.getCurrentWorkspaceFolder();
-
-	let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace", folder);
-	let luaLibRuntime = vscode.workspace.getConfiguration("Lua.runtime", folder);
-
-	return Promise.resolve()
-	.then( () => {
-		if(!utils.getCurrentWorkspaceFolder())
-		{
-			return Promise.reject("Can't update settings while no workspace is active");
-		}
-	}).then( () => { 
-		return luaLibWorkspace.update("library", getLibraryPaths(context), vscode.ConfigurationTarget.WorkspaceFolder);
-	}).then( () => { 
-		return luaLibRuntime.update("path", getLuaIntellisenseRequirePaths(context), vscode.ConfigurationTarget.WorkspaceFolder);
+export function updateLuaLibraryPaths(context: vscode.ExtensionContext, folder:vscode.WorkspaceFolder|undefined) {
+	return Promise.resolve().then( () => {
+		let luaLibWorkspace = vscode.workspace.getConfiguration("Lua.workspace", folder);
+		return luaLibWorkspace.update("library", getLibraryPaths(context, folder), vscode.ConfigurationTarget.WorkspaceFolder);
 	});
 }

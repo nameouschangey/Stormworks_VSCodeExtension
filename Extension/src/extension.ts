@@ -18,8 +18,14 @@ import { TerminalHandler } from './terminal';
 // the extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext)
 {
-	// track the folders we've loaded settings for - avoid rewriting settings constantly
-	let loadedFolders : Set<vscode.WorkspaceFolder | undefined> = new Set<vscode.WorkspaceFolder | undefined>();
+	// reload all library paths at startup
+	// "just restart VSCode becomes viable if things go out of sync"
+	vscode.commands.executeCommand("lifeboatapi.updateAllSettings");
+
+	vscode.workspace.onDidChangeWorkspaceFolders(
+		(e) => {
+			return vscode.commands.executeCommand("lifeboatapi.updateAllSettings");
+		}, null, context.subscriptions);
 
 	vscode.window.onDidCloseTerminal(
 		(t) => {
@@ -30,7 +36,8 @@ export function activate(context: vscode.ExtensionContext)
 	// when a lua file is created, if it's empty - add the boilerplate
 	vscode.workspace.onDidOpenTextDocument(
 		(document) => {
-			if (utils.isStormworksProject() 
+			let folder = utils.getContainingFolder(document.uri);
+			if (utils.isStormworksProject(folder) 
 				&& document.languageId === "lua"
 				&& document.lineCount === 1)
 			{
@@ -46,7 +53,7 @@ export function activate(context: vscode.ExtensionContext)
 		(e) => {
 			if(e.document && e.contentChanges.length > 0)
 			{
-				let relativePath = vscode.workspace.asRelativePath(e.document.uri);
+				let relativePath = utils.relativePath(e.document.uri);
 				let libConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", e.document.uri);
                 let existingGists : GistSetting[] = libConfig.get("sharedGistFiles") ?? [];
 				for (let gist of existingGists)
@@ -61,28 +68,12 @@ export function activate(context: vscode.ExtensionContext)
 			}
 		}, null, context.subscriptions);
 
-	// check if the settings need updated when the user swaps between editor windows
-	vscode.window.onDidChangeActiveTextEditor(
-		(e) => {
-			let currentWorkspaceFolder = utils.getCurrentWorkspaceFolder();
-			if (e
-				&& currentWorkspaceFolder
-				&& !loadedFolders.has(currentWorkspaceFolder)
-				&& !e.document.fileName.includes("settings.json")
-				&& !e.document.fileName.includes(".code-workspace")
-				&& utils.isStormworksProject())
-			{
-				loadedFolders.add(currentWorkspaceFolder);
-				return settingsManagement.updateLuaLibraryPaths(context, currentWorkspaceFolder);
-			}
-		}, null, context.subscriptions);
-
 	// when the library paths are changed, this will have a knock-on to the other settings
 	vscode.workspace.onDidChangeConfiguration(
 		(e) => {
 			if(e && e.affectsConfiguration("lifeboatapi.stormworks.libs.libraryPaths"))
 			{
-				loadedFolders.clear();
+				return vscode.commands.executeCommand("lifeboatapi.updateAllSettings");
 			}
 		}, null, context.subscriptions);
 
@@ -90,18 +81,22 @@ export function activate(context: vscode.ExtensionContext)
 	// Simulate current file
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.simulate',
 	() => {
-		if(utils.isMicrocontrollerProject())
+		let currentFolder = utils.getCurrentWorkspaceFolder();
+		if(utils.isMicrocontrollerProject(currentFolder))
 		{
-			return utils.ensureBuildFolderExists().then(() => runSimulator.beginSimulator(context));
+			return utils.ensureBuildFolderExists(currentFolder)
+			.then(() => runSimulator.beginSimulator(context));
 		}
 	}));
 
 	// Build current workspace
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.build',
 	() => {
-		if(utils.isStormworksProject())
+		let currentFolder = utils.getCurrentWorkspaceFolder();
+		if(utils.isStormworksProject(currentFolder))
 		{
-			return utils.ensureBuildFolderExists().then(() => runBuild.beginBuild(context));
+			return utils.ensureBuildFolderExists(currentFolder)
+			.then(() => runBuild.beginBuild(context));
 		}
 	}));
 
@@ -109,12 +104,14 @@ export function activate(context: vscode.ExtensionContext)
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newMCProject',
 	() =>{
 		return projectCreation.beginCreateNewProjectFolder(context, true);
+		//.then( () => handleGit.updateLibraries(context));
 	}));
 	
 	// New Addon
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.newAddonProject',
 	() =>{
 		return projectCreation.beginCreateNewProjectFolder(context, false);
+		//.then( () => handleGit.updateLibraries(context));
 	}));
 
 	// Share File Gist Link
@@ -125,8 +122,9 @@ export function activate(context: vscode.ExtensionContext)
 
 	// Add Library
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.cloneGitLibrary',
-	() => {
-		return utils.ensureBuildFolderExists().then(() => handleGit.addLibraryFromURL(context));
+	(file) => {
+		return utils.ensureBuildFolderExists(utils.getContainingFolder(file))
+		.then(() => handleGit.addLibraryFromURL(context, file));
 	}));
 
 	// Remove Library
@@ -137,8 +135,30 @@ export function activate(context: vscode.ExtensionContext)
 
 	// Update Libraries
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.updateLibraries',
+	(file) => {
+		return utils.ensureBuildFolderExists(utils.getContainingFolder(file))
+		.then(() => handleGit.updateLibraries(context, file));
+	}));
+
+	// Update All Settings
+	context.subscriptions.push(vscode.commands.registerCommand("lifeboatapi.updateAllSettings",
 	() => {
-		return utils.ensureBuildFolderExists().then(() => handleGit.updateLibraries(context));
+		let isSWWorkspace = false;
+		let promises = [];
+		for(let folder of vscode.workspace.workspaceFolders ?? [])
+		{
+			let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks", folder);
+			let isSWProject = config.get("isMicrocontrollerProject") === true || config.get("isAddonProject") === true;
+			isSWWorkspace ||= isSWProject;
+
+			if(isSWProject)
+			{
+				promises.push(settingsManagement.updateLuaLibraryPaths(context, folder));
+			}
+		}
+
+		promises.push(vscode.commands.executeCommand('setContext', 'lifeboatapi.isSWWorkspace', isSWWorkspace));
+		return Promise.all(promises);
 	}));
 }
 

@@ -213,6 +213,10 @@
   	  	  	{
   	  	  	  	"command": "lifeboatapi.updateLibraries",
   	  	  	  	"title": "Stormworks: Update Libraries"
+  	  	  	},
+  	  	  	{
+  	  	  	  	"command": "lifeboatapi.updateAllSettings",
+  	  	  	  	"title": "Stormworks: Update All Settings"
   	  	  	}
   	  	],
   	  	"keybindings": [
@@ -242,22 +246,22 @@
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.shareFile",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "resource =~ /^(.(?!/_build/))*$/ && !explorerResourceIsFolder && resourceExtname == .lua && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	  	"when": "resource =~ /^(.(?!/_build/))*$/ && !explorerResourceIsFolder && resourceExtname == .lua && lifeboatapi.isSWWorkspace"
   	  	  	  	},
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.cloneGitLibrary",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	  	"when": "lifeboatapi.isSWWorkspace"
   	  	  	  	},
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.removeLibrary",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "resource =~ //_build/libs// && config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	  	"when": "resource =~ //_build/libs// && lifeboatapi.isSWWorkspace"
   	  	  	  	},
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.updateLibraries",
   	  	  	  	  	"group": "0_stormworks",
-  	  	  	  	  	"when": "config.lifeboatapi.stormworks.isMicrocontrollerProject || config.lifeboatapi.stormworks.isAddonProject"
+  	  	  	  	  	"when": "lifeboatapi.isSWWorkspace"
   	  	  	  	}
   	  	  	],
   	  	  	"file/newFile": [

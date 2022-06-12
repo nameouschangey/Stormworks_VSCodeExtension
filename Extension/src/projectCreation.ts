@@ -4,6 +4,7 @@ import { Func } from 'mocha';
 import { TextDecoder, TextEncoder } from 'util';
 import { settings } from 'cluster';
 import * as utils from "./utils";
+import * as settingsManagement from "./settingsManagement";
 
 export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isMicrocontrollerProject: boolean)
 {
@@ -46,6 +47,9 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
                 }
             ).then(
                 (settingsJson) => {
+
+					let libraryPaths = settingsManagement.getLibraryPaths(context, utils.getCurrentWorkspaceFolder());
+					
                     settingsJson["lifeboatapi.stormworks.isMicrocontrollerProject"] = isMicrocontrollerProject;
                     settingsJson["lifeboatapi.stormworks.isAddonProject"] = !isMicrocontrollerProject;
 
@@ -96,14 +100,13 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 						"/_build/"
 					];
 
-					settingsJson["Lua.workspace.library"] = [
-						"/_build/libs/?.lua"
-					];
-
 					settingsJson["Lua.runtime.path"] = [
 						"?.lua"
 					];
-					
+
+					settingsJson["Lua.runtime.pathStrict"] = true;
+					settingsJson["Lua.workspace.library"] = libraryPaths;
+
 					if(isMicrocontrollerProject){
 						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
 							{
@@ -189,6 +192,7 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 			//		 () => vscode.commands.executeCommand("vscode.openFolder", workspaceFile)
 			//	 );
 			//}
+			//return vscode.commands.executeCommand("vscode.openFolder", params.selectedFolder.uri);
 			return vscode.workspace.updateWorkspaceFolders(0, 0, params.selectedFolder);
 		}
 	);

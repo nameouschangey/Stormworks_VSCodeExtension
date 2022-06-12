@@ -84,80 +84,70 @@ if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Fi
 
 export function beginBuild(context:vscode.ExtensionContext)
 {
-    let lifeboatapiConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", utils.getCurrentWorkspaceFile());
     let workspace = utils.getCurrentWorkspaceFolder();
     // we build an entire workspace at once, as the majority of the cost is starting up the combiner
     if (workspace)
     {
-        let neloAddonDoc = context.extensionPath + "/assets/nelodocs/docs_missions.lua";
-        let neloMCDoc = context.extensionPath + "/assets/nelodocs/docs_vehicles.lua";
-        if(lifeboatapiConfig.get("overwriteNeloDocsPath"))
-        {
-            neloAddonDoc = lifeboatapiConfig.get("neloAddonDocPath") ?? neloAddonDoc; // if the user screws it up, just use our bundled one
-            neloMCDoc = lifeboatapiConfig.get("neloMicrocontrollerDocPath") ?? neloMCDoc;
-        }
-
         let buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_build.lua");
         let outputDir = workspace.uri.fsPath + "/_build/out/";
         let rootDir = workspace.uri.fsPath;
 
-        let path = settingsManagement.getDebugPaths(context);
+        let path = settingsManagement.getDebugPaths(context, utils.getCurrentWorkspaceFolder());
         path.push(utils.sanitisePath(workspace.uri.fsPath) + "?.lua");
 
-        return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(), context)
-        .then(
-            (buildLua) => vscode.workspace.fs.writeFile(buildLuaFile, new TextEncoder().encode(buildLua))
-        ).then(
-            () => {
+        return generateBuildLua(workspace.uri, utils.isMicrocontrollerProject(workspace), context)
+            .then(
+                (buildLua) => vscode.workspace.fs.writeFile(buildLuaFile, new TextEncoder().encode(buildLua))
+            ).then(
+                () => {
 
-                let minimizerConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.minimizer", utils.getCurrentWorkspaceFile());
+                    let minimizerConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks.minimizer", utils.getCurrentWorkspaceFile());
 
-                let config = {
-                    name: "Build Workspace",
-                    type: "lua",
-                    request: "launch",
-                    program: `${buildLuaFile?.fsPath}`,
-                    stopOnEntry: false,
-                    stopOnThreadEntry: false,
-                    luaVersion: "5.3",
-                    luaArch: "x86",
-                    path: path.join(";"),
-                    cpath: settingsManagement.getDebugCPaths(context),
-                    arg: [
-                        context.extension.extensionPath + "/assets/stormworks_externals/addon.lua",
-                        context.extension.extensionPath + "/assets/stormworks_externals/microcontroller.lua",
-                        outputDir,
+                    let config = {
+                        name: "Build Workspace",
+                        type: "lua",
+                        request: "launch",
+                        program: `${buildLuaFile?.fsPath}`,
+                        stopOnEntry: false,
+                        stopOnThreadEntry: false,
+                        luaVersion: "5.3",
+                        luaArch: "x86",
+                        path: path.join(";"),
+                        cpath: settingsManagement.getDebugCPaths(context),
+                        arg: [
+                            context.extension.extensionPath + "/assets/lua/Addon/addon.lua",
+                            context.extension.extensionPath + "/assets/lua/Microcontroller/microcontroller.lua",
+                            outputDir,
 
-                        projectCreation.addUserBoilerplate(""),
-                        `${minimizerConfig.get("reduceAllWhitespace",       true)}`,
-                        `${minimizerConfig.get("reduceNewlines",            true)}`,
-                        `${minimizerConfig.get("removeRedundancies",        true)}`,
-                        `${minimizerConfig.get("shortenVariables",          true)}`,
-                        `${minimizerConfig.get("shortenGlobals",            true)}`,
-                        `${minimizerConfig.get("shortenNumbers",            true)}`,
-                        `${minimizerConfig.get("forceNCBoilerplate",        false)}`,
-                        `${minimizerConfig.get("forceBoilerplate",          false)}`,
-                        `${minimizerConfig.get("shortenStringDuplicates",   true)}`,
-                        `${minimizerConfig.get("removeComments",            true)}`,
-                        `${minimizerConfig.get("skipCombinedFileOutput",    false)}`
-                    ]
-                };
-                // all remaining args are root paths to load scripts from
-                const libPaths = settingsManagement.getLibraryPaths(context);
-                for(let dir of libPaths)
-                {
-                    config.arg.push(dir);
-                }
-                config.arg.push(rootDir);
+                            projectCreation.addUserBoilerplate(""),
+                            `${minimizerConfig.get("reduceAllWhitespace",       true)}`,
+                            `${minimizerConfig.get("reduceNewlines",            true)}`,
+                            `${minimizerConfig.get("removeRedundancies",        true)}`,
+                            `${minimizerConfig.get("shortenVariables",          true)}`,
+                            `${minimizerConfig.get("shortenGlobals",            true)}`,
+                            `${minimizerConfig.get("shortenNumbers",            true)}`,
+                            `${minimizerConfig.get("forceNCBoilerplate",        false)}`,
+                            `${minimizerConfig.get("forceBoilerplate",          false)}`,
+                            `${minimizerConfig.get("shortenStringDuplicates",   true)}`,
+                            `${minimizerConfig.get("removeComments",            true)}`,
+                            `${minimizerConfig.get("skipCombinedFileOutput",    false)}`
+                        ]
+                    };
+                    // all remaining args are root paths to load scripts from
+                    const libPaths = settingsManagement.getLibraryPaths(context, utils.getCurrentWorkspaceFolder());
+                    for(let dir of libPaths)
+                    {
+                        config.arg.push(dir);
+                    }
+                    config.arg.push(rootDir);
 
-                // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
-                config.arg.forEach(function(val, index, arr) {
-                    arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
+                    // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
+                    config.arg.forEach(function(val, index, arr) {
+                        arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
+                    });
+
+                    return vscode.debug.startDebugging(workspace, config);
                 });
-
-                return vscode.debug.startDebugging(workspace, config);
-            }
-        );
     }
 
     return Promise.reject();

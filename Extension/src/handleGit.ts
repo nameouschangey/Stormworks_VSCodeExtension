@@ -22,11 +22,13 @@ export interface GistSetting
 export function shareSelectedFile(context : vscode.ExtensionContext, file: vscode.Uri)
 {
     let selectedFile = file ?? utils.getCurrentWorkspaceFile();
-    let selectedFolder = utils.getCurrentWorkspaceFolder();
+    let selectedFolder = utils.getContainingFolder(selectedFile);
 
     if (selectedFile && selectedFolder)
     {
-        let relativePath = vscode.workspace.asRelativePath(selectedFile);
+        let relativePath = utils.relativePath(selectedFile);
+        if (!relativePath) {return;}
+
         let fileName = path.basename(relativePath);
         return vscode.workspace.fs.readFile(selectedFile).then(
             (fileData) => {
@@ -53,7 +55,7 @@ export function shareSelectedFile(context : vscode.ExtensionContext, file: vscod
                 }
         
                 // no existing gist found, create a new one
-                return createGist(libConfig, existingGists, relativePath, fileName, fileContents);
+                return createGist(libConfig, existingGists, relativePath ?? "", fileName, fileContents);
         });
     }
 }
@@ -132,7 +134,7 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
                         {
                             existingGists.push({
                                 gistUrl: response.data.git_pull_url,
-                                relativePath:relativePath,
+                                relativePath: relativePath,
                                 isDirty: false,
                                 gistID: response.data.id});
 
@@ -164,7 +166,7 @@ interface GitLibSetting
     gitUrl : string
 }
 
-export function addLibraryFromURL(context : vscode.ExtensionContext)
+export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscode.Uri)
 {
     return vscode.window.showInputBox({
         placeHolder : "https//github.com/example_link.git",
@@ -174,7 +176,7 @@ export function addLibraryFromURL(context : vscode.ExtensionContext)
         .then(
             (url) => {
                 if (url) {
-                    let workspaceFolder = utils.getCurrentWorkspaceFolder();
+                    let workspaceFolder = utils.getContainingFolder(file);
                     if (workspaceFolder)
                     {
                         let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
@@ -221,10 +223,10 @@ export function addLibraryFromURL(context : vscode.ExtensionContext)
 
 export function removeSelectedLibrary(context : vscode.ExtensionContext, file: vscode.Uri)
 {
-    let workspaceFolder = utils.getCurrentWorkspaceFolder();
+    let workspaceFolder = utils.getContainingFolder(file);
 
-    let sanitized = utils.sanitisePath(vscode.workspace.asRelativePath(file));
-    if (workspaceFolder)
+    let sanitized = utils.relativePath(file);
+    if (workspaceFolder && sanitized)
     {
         let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
         let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
@@ -254,8 +256,8 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
     }
 }
 
-export function updateLibraries(context: vscode.ExtensionContext) {
-    let workspaceFolder = utils.getCurrentWorkspaceFolder();
+export function updateLibraries(context: vscode.ExtensionContext, file: vscode.Uri) {
+    let workspaceFolder = utils.getContainingFolder(file);
     let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
     if(gitExtension && workspaceFolder)
     {

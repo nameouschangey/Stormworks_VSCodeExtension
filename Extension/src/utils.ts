@@ -25,20 +25,40 @@ String.prototype.replaceAll = function (searchValue: string | RegExp, replacemen
 	return current;
 };
 
-export function ensureBuildFolderExists()
+export function relativePath(file: vscode.Uri)
 {
-	let workspaceFolder = getCurrentWorkspaceFolder();
-	return vscode.workspace.fs.createDirectory(vscode.Uri.file(sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/"));
+	let folder = getContainingFolder(file);
+	if(folder)
+	{
+		let fileSanitized = sanitisePath(file.fsPath);
+		let folderSanitized = sanitisePath(folder.uri.fsPath);
+
+		let relative = sanitisePath(fileSanitized.replace(folderSanitized, ""));
+		return relative;
+	}
+
+	// is not a child of any of the workspace folders
+	return undefined;
 }
 
-export function sanitisePath(path : string)
+export function getContainingFolder(file: vscode.Uri)
 {
-	path = path.replaceAll("\\", "/");
-	if(path.charAt(path. length-1) !== "/")
+	return vscode.workspace.getWorkspaceFolder(file);
+}
+
+export function ensureBuildFolderExists(folder : vscode.WorkspaceFolder | undefined)
+{
+	return vscode.workspace.fs.createDirectory(vscode.Uri.file(sanitisePath(folder?.uri.fsPath ?? "") + "_build/libs/"));
+}
+
+export function sanitisePath(resourcePath : string)
+{
+	resourcePath = resourcePath.replaceAll("\\", "/");
+	if(path.extname(resourcePath) === "" && resourcePath.charAt(resourcePath. length-1) !== "/")
 	{
-		return path + "/";
+		return resourcePath + "/";
 	}
-	return path;
+	return resourcePath;
 }
 
 export function getCurrentWorkspaceFile() {
@@ -55,29 +75,23 @@ export function getCurrentWorkspaceFolder()
 	return undefined;
 }
 
-export function isMicrocontrollerProject() : boolean
+export function isMicrocontrollerProject(folder: vscode.WorkspaceFolder | undefined) : boolean
 {
-	if(getCurrentWorkspaceFile())
+	if (folder)
 	{
-		let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
+		let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", folder);
 		return lifeboatConfig.get("isMicrocontrollerProject") ?? false;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
-export function isStormworksProject() {
-	if(getCurrentWorkspaceFile())
+export function isStormworksProject(folder: vscode.WorkspaceFolder | undefined) {
+	if (folder)
 	{
-		let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", getCurrentWorkspaceFile());
+		let lifeboatConfig = vscode.workspace.getConfiguration("lifeboatapi.stormworks", folder);
 		return lifeboatConfig.get("isAddonProject") || lifeboatConfig.get("isMicrocontrollerProject");
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 export function doesFileExist<T, U>(path : vscode.Uri, onExists: () => Thenable<T>|T, onNotExist: () => Thenable<U>|U) : Thenable<T> | Thenable<U>
