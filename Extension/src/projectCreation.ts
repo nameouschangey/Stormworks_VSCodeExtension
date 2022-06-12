@@ -96,12 +96,14 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 
 					settingsJson["Lua.workspace.ignoreDir"] = [
 						".vscode",
-						"/out/",
-						"/_build/"
+						"/_build/",
+						"!/_build/libs/",
+						"!/_build/_buildactions.lua"
 					];
 
 					settingsJson["Lua.runtime.path"] = [
-						"?.lua"
+						"?.lua",
+						"?/init.lua"
 					];
 
 					settingsJson["Lua.runtime.pathStrict"] = true;
@@ -110,8 +112,8 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 					if(isMicrocontrollerProject){
 						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
 							{
-								name: "nameouschangey/LifeBoatAPI",
-								gitUrl: "https://git.github.com/nameouschangey/SW_LifeBoatAPI_MicrocontrollerAPI.git"
+								name: "LifeBoatAPI",
+								gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_MC.git"
 							}
 						];
 					}
@@ -119,8 +121,8 @@ export function beginCreateNewProjectFolder(context:vscode.ExtensionContext, isM
 					{
 						settingsJson["lifeboatapi.stormworks.libs.gitLibraries"] = [
 							{
-								name: "nameouschangey/LifeBoatAPI",
-								gitUrl: "https://git.github.com/nameouschangey/SW_LifeBoatAPI_AddonAPI.git"
+								name: "LifeBoatAPI",
+								gitUrl: "https://github.com/nameouschangey/Stormworks_LifeBoatAPI_Addon.git"
 							}
 						];
 					}

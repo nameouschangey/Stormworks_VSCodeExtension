@@ -43,6 +43,7 @@ export function getDebugPaths(context : vscode.ExtensionContext, folder: vscode.
 	{
 		debugPaths.push(path + "?.lua"); // irritating difference between how the debugger and the intellisense check paths
 		debugPaths.push(path + "?.luah"); // "hidden" lua that will run, but not appear in intellisense
+		debugPaths.push(path + "?/init.lua"); // library initializers
 	}
 	return debugPaths;
 }

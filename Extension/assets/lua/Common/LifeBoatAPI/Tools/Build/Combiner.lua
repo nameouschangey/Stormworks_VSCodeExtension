@@ -86,9 +86,16 @@ LifeBoatAPI.Tools.Combiner = {
         local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory)
 
         for _, filename in ipairs(files) do
+            -- if the file is init.lua, we add it as the parent require path as well
+
             local requireName = filename:linux():gsub(LifeBoatAPI.Tools.StringUtils.escape(rootDirectory:linux()) .. "/", "")
             requireName = requireName:gsub("/", ".")
-            requireName = requireName:gsub(".lua", "")
+
+            -- if name is init.lua, strip it
+            requireName = requireName:gsub("%.init.lua$", "")
+
+            -- if name ends in .lua, strip it
+            requireName = requireName:gsub("%.lua$", "")
 
             requiresToFilecontents[requireName] = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filename)
         end

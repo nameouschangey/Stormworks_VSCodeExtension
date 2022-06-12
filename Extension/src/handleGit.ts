@@ -216,6 +216,10 @@ export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscod
                                     }
                                 });
                         }
+                        else
+                        {
+                            return vscode.window.showErrorMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git");
+                        }
                     }
                 }
             });
@@ -259,13 +263,13 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
 export function updateLibraries(context: vscode.ExtensionContext, file: vscode.Uri) {
     let workspaceFolder = utils.getContainingFolder(file);
     let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
+    let promises = [];
     if(gitExtension && workspaceFolder)
     {
         let gitPath = gitExtension.getAPI(1).git.path;
         let config = vscode.workspace.getConfiguration("lifeboatapi.stormworks.libs", workspaceFolder);
         let gitLibs : GitLibSetting[] = config.get("gitLibraries") ?? [];
 
-        let promises = [];
         for(let lib of gitLibs)
         {
             let libPath = utils.sanitisePath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/" + lib.name;
@@ -293,7 +297,10 @@ export function updateLibraries(context: vscode.ExtensionContext, file: vscode.U
 
             promises.push(promise);
         }
-
-        return Promise.all(promises);
     }
+    else if(!gitExtension)
+    {
+        promises.push(vscode.window.showErrorMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git"));
+    }
+    return Promise.all(promises);
 }
