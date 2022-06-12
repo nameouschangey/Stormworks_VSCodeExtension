@@ -1,3 +1,2 @@
-/_build/libs/
-/_build/_build.lua
-/_build/_simulate.lua
+/_build/
+!/_build/_buildactions.lua
