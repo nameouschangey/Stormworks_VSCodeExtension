@@ -214,7 +214,7 @@
   	  	  	},
   	  	  	{
   	  	  	  	"command": "lifeboatapi.updateAllSettings",
-  	  	  	  	"title": "Stormworks: Refresh Settings"
+  	  	  	  	"title": "Stormworks: Refresh Settings in All Workspaces"
   	  	  	},
   	  	  	{
   	  	  	  	"command": "lifeboatapi.updateAllLibraries",
@@ -232,6 +232,28 @@
   	  	  	}
   	  	],
   	  	"menus": {
+			"commandPalette": [
+				{
+					"command": "lifeboatapi.shareFile",
+					"group": "0_stormworks",
+					"when": "resource =~ /^(.(?!/_build/))*$/ && !explorerResourceIsFolder && resourceExtname == .lua && lifeboatapi.isSWWorkspace"
+				},
+				{
+					"command": "lifeboatapi.cloneGitLibrary",
+					"group": "0_stormworks",
+					"when": "lifeboatapi.isSWWorkspace"
+				},
+				{
+					"command": "lifeboatapi.removeLibrary",
+					"group": "0_stormworks",
+					"when": "false && neverShowThisInTheCommandPalette"
+				},
+				{
+					"command": "lifeboatapi.updateLibraries",
+					"group": "0_stormworks",
+					"when": "lifeboatapi.isSWWorkspace"
+				}
+			],
   	  	  	"editor/title/run": [
   	  	  	  	{
   	  	  	  	  	"command": "lifeboatapi.simulate",

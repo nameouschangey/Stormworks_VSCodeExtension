@@ -26,14 +26,20 @@ export interface GistSetting
     gistID : string
 }
 
-export function shareSelectedFile(context : vscode.ExtensionContext, file: vscode.Uri)
+export function shareSelectedFile(context : vscode.ExtensionContext, file: vscode.Uri | undefined)
 {
     let selectedFile = file ?? utils.getCurrentWorkspaceFile();
+
+    if (!selectedFile)
+    {
+        return vscode.window.showWarningMessage("No file selected to share. Try using right-click menu.");
+    }
+
     let selectedFolder = utils.getContainingFolder(selectedFile);
 
     if(!selectedFile || !selectedFolder || !utils.isStormworksProject(selectedFolder))
     {
-        return;
+        return vscode.window.showWarningMessage("Command can only be run within a Stormworks project");
     }
 
     let relativePath = utils.relativePath(selectedFile);
@@ -171,7 +177,21 @@ function createGist(libConfig : vscode.WorkspaceConfiguration, existingGists: Gi
 
 export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscode.Uri)
 {
-    let workspaceFolder = utils.getContainingFolder(file);
+    let workspaceFolder : vscode.WorkspaceFolder | undefined;
+    if (file)
+    {
+        workspaceFolder = utils.getContainingFolder(file);
+    }
+    else
+    {
+        workspaceFolder = utils.getCurrentWorkspaceFolder();
+    }
+
+    if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
+    {
+        return vscode.window.showWarningMessage("Must have active Stormworks project open, or run from right-click menu.");
+    }
+
     if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
     {
         return;
@@ -238,6 +258,11 @@ export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscod
 
 export function removeSelectedLibrary(context : vscode.ExtensionContext, file: vscode.Uri)
 {
+    if(!file)
+    {
+        return vscode.window.showWarningMessage("Run this command via right-click menu - no selected file to remove");
+    }
+
     let workspaceFolder = utils.getContainingFolder(file);
 
     if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
@@ -276,14 +301,23 @@ export function removeSelectedLibrary(context : vscode.ExtensionContext, file: v
     }
 }
 
-export function updateLibraries(context: vscode.ExtensionContext, file: vscode.Uri) {
-    let workspaceFolder = utils.getContainingFolder(file);
-    let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
+export function updateLibraries(context: vscode.ExtensionContext, file: vscode.Uri | undefined) {
+    let workspaceFolder : vscode.WorkspaceFolder | undefined;
+    if (file)
+    {
+        workspaceFolder = utils.getContainingFolder(file);
+    }
+    else
+    {
+        workspaceFolder = utils.getCurrentWorkspaceFolder();
+    }
 
     if(!workspaceFolder || !utils.isStormworksProject(workspaceFolder))
     {
-        return;
+        return vscode.window.showWarningMessage("Must have active Stormworks project open, or run from right-click menu");
     }
+
+    let gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git')?.exports;
 
     utils.ensureBuildFolderExists(workspaceFolder)
         .then(() => {
