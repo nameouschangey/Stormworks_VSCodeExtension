@@ -1,0 +1,78 @@
+a=[[
+GLOBAL_NAMEDFUNCTIONDEF
+    FUNCTION(function)
+    IDENTIFIER(abc)
+    FUNCTIONDEF_PARAMS
+        OPENBRACKET(()
+        CLOSEBRACKET())
+    RETURNSTATEMENT
+        RETURN(return)
+        NUMBER(123)
+        COMMA(,)
+        NUMCHAIN
+            NUMBER(12)
+            MATHOP(+)
+            NUMBER(24)
+    END(end)
+GLOBAL_ASSIGNMENT
+    EXPCHAIN
+        IDENTIFIER(a)
+    ASSIGN(=)
+    TABLEDEF
+        OPENCURLY({)
+        NUMBER(1)
+        CLOSECURLY(})
+EXPCHAIN
+    IDENTIFIER(table)
+    DOTACCESS(.)
+    IDENTIFIER(insert)
+    FUNCTIONCALL
+        OPENBRACKET(()
+        EXPCHAIN
+            IDENTIFIER(a)
+        COMMA(,)
+        NUMBER(3)
+        COMMA(,)
+        NUMBER(2)
+        CLOSEBRACKET())
+IF_STATEMENT
+    IF(if)
+    BOOLCHAIN
+        EXPCHAIN
+            IDENTIFIER(a)
+        BOOLOP(==)
+        NUMBER(123)
+    THEN(then)
+    EXPCHAIN
+        IDENTIFIER(a)
+        COLONACCESS(:)
+        IDENTIFIER(doStuff)
+        FUNCTIONCALL
+            OPENBRACKET(()
+            CLOSEBRACKET())
+    ELSE(else)
+    EXPCHAIN
+        IDENTIFIER(doSomething)
+        FUNCTIONCALL
+            OPENBRACKET(()
+            CLOSEBRACKET())
+    FOR_LOOP
+        FOR(for)
+        IDENTIFIER(i)
+        ASSIGN(=)
+        NUMBER(1)
+        COMMA(,)
+        NUMBER(123)
+        DO(do)
+        LOCAL_ASSIGNMENT
+            LOCAL(local)
+            IDENTIFIER(alc)
+            ASSIGN(=)
+            NUMCHAIN
+                NUMBER(123)
+                MATHOP(+)
+                NUMBER(123)
+        END(end)
+    END(end)
+EOF
+]]

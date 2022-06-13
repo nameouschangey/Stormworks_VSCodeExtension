@@ -1,0 +1,24 @@
+04/06/2022 23:59:55 Launching, time stamp.
+04/06/2022 23:59:55 Opening connection on port 14238
+04/06/2022 23:59:55 Now Accepting TCP clients
+04/06/2022 23:59:55 MainWindow Initialized and running
+04/06/2022 23:59:56 Client accepted - Client Connected: True, beginning Message Loop
+
+04/06/2022 23:59:56 SocketConnection - SendMessage (ALIVE) - Exception - Closing Pipe - System.InvalidOperationException: The operation is not allowed on non-connected sockets.
+   at System.Net.Sockets.TcpClient.GetStream()
+   at STORMWORKS_Simulator.SocketConnection.SendMessage(String commandName, Object[] args)
+
+
+04/06/2022 23:59:56 SocketReadTask - Exception - Closing Pipe - Client Connected: False - System.IO.IOException: Unable to read data from the transport connection: An established connection was aborted by the software in your host machine. ---> System.Net.Sockets.SocketException: An established connection was aborted by the software in your host machine
+   at System.Net.Sockets.Socket.Receive(Byte[] buffer, Int32 offset, Int32 size, SocketFlags socketFlags)
+   at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
+   at STORMWORKS_Simulator.SocketConnection.<.ctor>b__13_0()
+
+
+04/06/2022 23:59:56 Pipe_OnPipeClosed - Closing Application
+
+
+04/06/2022 23:59:56 Pipe_OnPipeClosed - Closing Application
+

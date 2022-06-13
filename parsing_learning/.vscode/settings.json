@@ -1,0 +1,50 @@
+{
+    "lifeboatapi.stormworks.isMicrocontrollerProject": true,
+    "lifeboatapi.stormworks.isAddonProject": false,
+    "Lua.diagnostics.disable": [
+        "lowercase-global",
+        "undefined-doc-name"
+    ],
+    "Lua.diagnostics.globals": [
+        "__simulator",
+        "print",
+        "simulator"
+    ],
+    "Lua.runtime.version": "Lua 5.3",
+    "Lua.runtime.builtin": {
+        "coroutine": "enable",
+        "bit32": "enable",
+        "bit": "enable",
+        "builtin": "enable",
+        "utf8": "enable",
+        "package": "enable",
+        "os": "enable",
+        "jit": "enable",
+        "io": "enable",
+        "ffi": "enable",
+        "debug": "enable",
+        "basic": "enable"
+    },
+    "Lua.workspace.ignoreDir": [
+        ".vscode",
+        "/out/",
+        "/_build/",
+        "/_examples_and_tutorials/"
+    ],
+    "lua.debug.settings.cpath": ";c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/socket/core.dll;c:/Workspaces/STORMWORKS_VSCodeExtension/Extension//assets/luasocket/dll/mime/core.dll;c:/Workspaces/STORMWORKS VSCodeExtension/Extension//assets/luasocket/dll/socket/core.dll;c:/Workspaces/STORMWORKS VSCodeExtension/Extension//assets/luasocket/dll/mime/core.dll;c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/luasocket/dll/socket/core.dll;c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/luasocket/dll/mime/core.dll",
+    "lua.debug.settings.path": [
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/luasocket/?.lua",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/LifeBoatAPI/Microcontroller/?.lua",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/LifeBoatAPI/Tools/?.lua"
+    ],
+    "Lua.workspace.library": [
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/LifeBoatAPI/Microcontroller/",
+        "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.16//assets/LifeBoatAPI/Tools/"
+    ],
+    "lua.debug.settings.luaVersion": "5.3",
+    "lua.debug.settings.luaArch": "x86",
+    "Lua.IntelliSense.traceBeSetted": true,
+    "Lua.IntelliSense.traceFieldInject": true,
+    "Lua.IntelliSense.traceLocalSet": true,
+    "Lua.IntelliSense.traceReturn": true
+}
