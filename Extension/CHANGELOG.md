@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.19] - 13th June 2022
+**minor**
+- Removed all require("LifeBoatAPI") from default files for a simpler user experience
+
 #### [0.0.18] - 12th June 2022
 **major**
 - EXTREMELY LARGE UPDATE

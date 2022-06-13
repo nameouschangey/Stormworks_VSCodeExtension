@@ -5,8 +5,6 @@
 -- Allows for running external processes, or customising the build output to how you prefer
 -- Recommend using LifeBoatAPI.Tools.FileSystemUtils to simplify life
 
-require("LifeBoatAPI")
-
 --- Runs when the build process is triggered, before any file has been built
 --- Provides an opportunity for any code-generation etc.
 ---@param builder Builder           builder object that will be used to build each file
