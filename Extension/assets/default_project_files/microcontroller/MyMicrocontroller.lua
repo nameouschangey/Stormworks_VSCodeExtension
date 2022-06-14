@@ -9,7 +9,7 @@
 
 
 --[====[ EDITABLE SIMULATOR CONFIG - *automatically removed from the F7 build output ]====]
----@section onLBSimulatorTick
+---@section __LB_SIMULATOR_ONLY__
 do
     ---@type Simulator -- Set properties and screen sizes here - will run once when the script is loaded
     simulator = simulator
@@ -28,7 +28,7 @@ do
         simulator:setInputNumber(4, screenConnection.touchY)
     end;
 end
-
+---@endsection
 
 
 --[====[ IN-GAME CODE ]====]
