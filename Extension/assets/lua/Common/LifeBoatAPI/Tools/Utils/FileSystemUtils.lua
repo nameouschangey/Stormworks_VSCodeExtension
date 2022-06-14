@@ -22,7 +22,7 @@ LifeBoatAPI.Tools.FileSystemUtils = {
     ---@param filepath Filepath
     openForWrite = function(filepath)
         os.execute("\"mkdir \"" .. filepath:directory():win() .. "\" 2>nul\"")
-        local file = io.open(filepath:win(), "w")
+        local file = io.open(filepath:win(), "wb")
         return file
     end;
 
