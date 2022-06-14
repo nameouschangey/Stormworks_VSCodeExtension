@@ -1,9 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
-#### [0.0.20] - 14th June 2022
+#### [0.0.21] - 14th June 2022
 **minor**
 - Newlines in output should now be \n and not \r\n (only affects using minified data in directly via another process)
+
+#### [0.0.20] - 14th June 2022
+**minor**
 - Fixed missing ---@endsection in default mc file
 
 #### [0.0.19] - 13th June 2022
