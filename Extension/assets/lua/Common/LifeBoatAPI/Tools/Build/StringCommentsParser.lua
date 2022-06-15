@@ -47,10 +47,13 @@ LifeBoatAPI.Tools.StringCommentsParser = {
         local cUnescapedSlash = false
         local isInCommentQuote = false -- not this will always be alongside isInComment = true
 
+        local cLast = nil;
+        local c = text:sub(0,0)
+        local cNext = text:sub(1,1)
         for i = 1, #text, 1 do
-            local cLast = text:sub(i-1, i-1)
-            local c     = text:sub(i,i)
-            local cNext = text:sub(i+1,i+1)
+            cLast = c
+            c     = cNext
+            cNext = text:sub(i+1,i+1)
 
             cSlashCount = (cLast == "\\" and cSlashCount + 1) or 0
             cUnescapedSlash = cSlashCount%2 ~= 0

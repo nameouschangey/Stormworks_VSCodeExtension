@@ -14,27 +14,33 @@ LifeBoatAPI.Tools.StringBuilder = {
     ---@param cls StringBuilder
     ---@param text string initial value for the string
     new = function(cls, text)
-        local this = LifeBoatAPI.Tools.BaseClass.new(cls)
-        this.stringData = {};
+        local self = {
+            stringData = {},
+            addFront = cls.addFront,
+            add = cls.add,
+            addLine = cls.addLine,
+            getString = cls.getString
+        }
         if(text) then
-            this:add(text)
+            self:add(text)
         end
-        return this;
+        return self;
     end;
 
     --- Adds the given string to the front of the string being build
     ---@param this StringBuilder
     ---@vararg any values to add to the string
     addFront = function(this, value)
-        LifeBoatAPI.Tools.TableUtils.add(this.stringData, tostring(value), 1)
+        table.insert(this.stringData, 1, value)
     end;
 
     ---Adds the given string to the current string being built
     ---@param this StringBuilder
     ---@vararg any values to add to the string
     add = function(this, ...)
-        for i, v in ipairs({...}) do
-            LifeBoatAPI.Tools.TableUtils.add(this.stringData, tostring(v))
+        local args = {...}
+        for i=1, #args do
+            this.stringData[#this.stringData+1] = args[i]
         end
     end;
 
@@ -51,7 +57,7 @@ LifeBoatAPI.Tools.StringBuilder = {
     ---@param separator string optional separator, if provided is inserted between each entry 
     ---@return string completed string that has been built
     getString = function(this, separator)
-        return LifeBoatAPI.Tools.TableUtils.concat(this.stringData, separator)
+        return table.concat(this.stringData, separator)
     end;
 }
 LifeBoatAPI.Tools.Class(LifeBoatAPI.Tools.StringBuilder)

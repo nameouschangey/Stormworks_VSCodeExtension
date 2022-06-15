@@ -28,7 +28,7 @@ LifeBoatAPI.Tools.StringReplacer = {
     getStringReplacement = function(this, stringValue)
         if(not this.stringsReplaced[stringValue]) then
             this.count = this.count + 1
-            local replacement = "STRING" .. string.format("%07d", this.count) .. "REPLACEMENT"
+            local replacement = string.format("STRING%07dREPLACEMENT", this.count)
             this.stringsReplaced[stringValue] = {value = replacement, count = 1}
             return replacement
         else

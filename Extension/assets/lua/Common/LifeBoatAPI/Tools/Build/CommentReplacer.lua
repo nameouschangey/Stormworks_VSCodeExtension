@@ -27,7 +27,7 @@ LifeBoatAPI.Tools.CommentReplacer = {
     ---@return string replacement constant
     getCommentReplacement = function(this, stringValue)
         this.count = this.count + 1
-        local replacement = "COMMENT" .. string.format("%07d", this.count) .. "REPLACEMENT"
+        local replacement =  string.format("COMMENT%07dREPLACEMENT", this.count)
         this.replacements[#this.replacements + 1] = {original = stringValue, replacement = replacement}
         return replacement
     end;

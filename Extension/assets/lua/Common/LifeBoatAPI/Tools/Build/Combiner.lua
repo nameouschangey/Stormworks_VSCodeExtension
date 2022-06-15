@@ -14,8 +14,9 @@ require("LifeBoatAPI.Tools.Utils.FileSystemUtils")
 
 
 ---@class Combiner : BaseClass
----@field filesByRequire table<string,string> table of require names -> filecontents
 ---@field systemRequires string[] list of system libraries that are OK to import, but should be stripped
+---@field filesByRequire table<string,string> table of require names -> filenames
+---@field loadedFileData table<string,string> table of require names -> filecontents
 LifeBoatAPI.Tools.Combiner = {
 
     ---@param cls Combiner
@@ -23,6 +24,7 @@ LifeBoatAPI.Tools.Combiner = {
     new = function(cls)
         local this = LifeBoatAPI.Tools.BaseClass.new(cls)
         this.filesByRequire = {}
+        this.loadedFileData = {}
         this.systemRequires = {"table", "math", "string"}
         return this;
     end;
@@ -54,9 +56,9 @@ LifeBoatAPI.Tools.Combiner = {
         local keepSearching = true
         while keepSearching do
             keepSearching = false
-            local requires = data:gmatch("\n%s-require%(\"(..-)\"%)")
+            local requires = data:gmatch("\n%s-require%([\"'](..-)[\"']%)")
             for require in requires do
-                local fullstring = "\n%s-require%(\""..require.."\"%)%s-"
+                local fullstring = "\n%s-require%([\"']"..require.."[\"']%)%s-"
                 if(requiresSeen[require]) then
                     -- already seen this, so we just cut it from the file
                     data = data:gsub(fullstring, "")
@@ -66,7 +68,15 @@ LifeBoatAPI.Tools.Combiner = {
                     requiresSeen[require] = true
 
                     if(this.filesByRequire[require]) then
-                        data = data:gsub(fullstring, LifeBoatAPI.Tools.StringUtils.escapeSub("\n" .. this.filesByRequire[require] .. "\n"), 1) -- only first instance
+                        local filename = this.filesByRequire[require]
+
+                        -- only load each file's contentes one time
+                        if not this.loadedFileData[require] then
+                            this.loadedFileData[require] = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filename)
+                        end
+
+                        local filedata = this.loadedFileData[require]
+                        data = data:gsub(fullstring, LifeBoatAPI.Tools.StringUtils.escapeSub("\n" .. filedata .. "\n"), 1) -- only first instance
 
                     elseif (LifeBoatAPI.Tools.TableUtils.containsValue(this.systemRequires, require)) then
                         data = data:gsub(fullstring, "") -- remove system requires, without error, as long as they are allowed in the game
@@ -83,7 +93,7 @@ LifeBoatAPI.Tools.Combiner = {
     ---@param rootDirectory Filepath
     _getDataByRequire = function(this, rootDirectory)
         local requiresToFilecontents = {}
-        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {[".vscode"]=1, ["libs"]=1, ["out"]=1, [".git"]=1}, {["lua"]=1, ["luah"]=1})
+        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {[".vscode"]=1, ["_build"]=1, [".git"]=1}, {["lua"]=1, ["luah"]=1})
 
         for _, filename in ipairs(files) do
             local requireName = filename:linux():gsub(LifeBoatAPI.Tools.StringUtils.escape(rootDirectory:linux()) .. "/", "")
@@ -92,7 +102,7 @@ LifeBoatAPI.Tools.Combiner = {
             requireName = requireName:gsub("%.lua$", "") -- if name ends in .lua, strip it
             requireName = requireName:gsub("%.luah$", "") -- "hidden" lua files
 
-            requiresToFilecontents[requireName] = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filename)
+            requiresToFilecontents[requireName] = filename
         end
 
         return requiresToFilecontents

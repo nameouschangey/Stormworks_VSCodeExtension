@@ -24,126 +24,31 @@ function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscod
     // is that correct?
     // or do we need to do something else?
     let contents = `
---- @diagnostic disable: undefined-global
+require("LifeBoatAPI.Tools.Simulator.Simulator")
+require("LifeBoatAPI.Tools.Simulator.SimulatorSandbox")
 
--- replace newlines
+-- command line input
 for k,v in pairs(arg) do
     arg[k] = v:gsub("##LBNEWLINE##", "\\n")
 end
 
-require("LifeBoatAPI.Tools.Simulator.Simulator");
-__simulator = LifeBoatAPI.Tools.Simulator:new() 
-__simulator:_beginSimulation(false, arg[1], arg[2])
-
-simulator = __simulator -- 0.0.11 easier to read by far but could be overwritten by somebody's global
-
--- compatibility with 0.0.7 projects
-LBSimulatorInputHelpers = LifeBoatAPI.Tools.SimulatorInputHelpers
-
-require("${relativePath}");
-
--- compatibility with 0.0.4 projects
-if onLBSimulatorInit then
-    onLBSimulatorInit(__simulator, __simulator.config, LBSimulatorInputHelpers)
+local rootDirs = {};
+for i=3, #arg do
+    rootDirs[#rootDirs+1] = LifeBoatAPI.Tools.Filepath:new(arg[i])
 end
 
-__simulator:_giveControlToMainLoop()
+-- simulator
+local sandboxEnv = LifeBoatAPI.Tools.SimulatorSandbox.createSandbox(rootDirs)
+local simulator = LifeBoatAPI.Tools.Simulator:new(sandboxEnv)
+sandboxEnv.simulator = simulator
+simulator:_beginSimulation(false, arg[1], arg[2])
 
---- @diagnostic enable: undefined-global
+-- main require
+sandboxEnv.require("${relativePath}")
+
+simulator:_giveControlToMainLoop()
 `;
 
-    contents = `
-
-    require("LifeBoatAPI.Tools.Simulator.Simulator");
-
-    -- command line input
-    for k,v in pairs(arg) do
-        arg[k] = v:gsub("##LBNEWLINE##", "\\n")
-    end
-    
-    local simPath = arg[1]
-    local simLog = arg[2]
-    local rootDirs = {};
-    for i=3, #arg do
-        table.insert(rootDirs, LifeBoatAPI.Tools.Filepath:new(arg[i]));
-    end
-    
-    
-    -- sandbox environment, that MCs are run in
-    local sandboxEnv = {
-        ipairs = ipairs,
-        next = next,
-        pairs = pairs,
-        tonumber = tonumber,
-        tostring = tostring,
-        type = type,
-        print = print,
-    
-        -- library tables
-        string = string,
-        table = table,
-        math = math, -- etc.
-    
-        -- simulator stuff
-        screen = screen,
-        input = input,
-        output = output
-    }
-    
-    -- load the requires
-    local loadRequires = function(rootDirectory, requiresToFilenames)
-        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {["_build"]=1, [".git"]=1}, {["lua"]=1, ["luah"]=1})
-    
-        for _, filename in ipairs(files) do
-            -- if the file is init.lua, we add it as the parent require path as well
-    
-            local requireName = filename:linux():gsub(LifeBoatAPI.Tools.StringUtils.escape(rootDirectory:linux()) .. "/", "")
-            
-            requireName = requireName:gsub("/", ".") -- slashes -> . style
-            requireName = requireName:gsub("%.init.lua$", "") -- if name is init.lua, strip it
-            requireName = requireName:gsub("%.lua$", "") -- if name ends in .lua, strip it
-            requireName = requireName:gsub("%.luah$", "") -- "hidden" lua files
-    
-            requiresToFilenames[requireName] = requiresToFilenames[requireName] or filename:linux()
-        end
-    end;
-    
-    local filesnamesByRequirePattern = {}
-    for i=1, #rootDirs do
-        loadRequires(rootDirs[i], filesnamesByRequirePattern)
-    end
-    
-    local loadedRequires = {}
-    sandboxEnv.require = function(pattern)
-        local filePath = filesnamesByRequirePattern[pattern]
-        if not filePath then
-            error("Could not find require: " .. pattern)
-        end
-    
-        if not loadedRequires[pattern] then
-            loadedRequires[pattern] = loadfile(filePath, "t", sandboxEnv)
-            loadedRequires[pattern]()
-        end
-    end;
-    
-    
-    
-    --- @diagnostic disable: undefined-global
-    
-    local simulator = LifeBoatAPI.Tools.Simulator:new(sandboxEnv) 
-    simulator:_beginSimulation(false, arg[1], arg[2])
-    sandboxEnv.simulator = simulator
-    
-    
-    -- entrypoint require
-    sandboxEnv.require("${relativePath}")
-    
-    
-    simulator:_giveControlToMainLoop()
-    
-    --- @diagnostic enable: undefined-global
-    
-`;
     return projectCreation.addBoilerplate(contents);
 }
 

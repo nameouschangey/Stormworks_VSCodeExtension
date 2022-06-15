@@ -27,8 +27,8 @@ LifeBoatAPI.Tools.Builder = {
         this.mission_constants = this:_setupMissionConstants(addonDoc)
 
         this.combiner = LifeBoatAPI.Tools.Combiner:new()
-        for _,dir in ipairs(rootDirs) do
-            this.combiner:addRootFolder(dir)
+        for i=1, #rootDirs do
+            this.combiner:addRootFolder(rootDirs[i])
         end
         return this
     end;
