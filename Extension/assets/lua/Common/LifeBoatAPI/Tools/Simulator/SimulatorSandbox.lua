@@ -49,7 +49,9 @@ LifeBoatAPI.Tools.SimulatorSandbox.createSandbox = function(rootDirs)
         -- simulator stuff
         screen = screen,
         input = input,
-        output = output
+        output = output,
+        property = property,
+        map = map
     }
 
     sandboxEnv.require = function(pattern)
