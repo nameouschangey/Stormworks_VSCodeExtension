@@ -93,8 +93,7 @@ export function beginBuild(context:vscode.ExtensionContext)
 // we build an entire workspace at once, as the majority of the cost is starting up the combiner
     let buildLuaFile = vscode.Uri.file(workspace.uri.fsPath + "/_build/_build.lua");
     let outputDir = workspace.uri.fsPath + "/_build/out/";
-    let rootDir = workspace.uri.fsPath;
-
+    
     let path = settingsManagement.getDebugPaths(context, utils.getCurrentWorkspaceFolder());
     path.push(utils.sanitizeFolderPath(workspace.uri.fsPath) + "?.lua");
 
@@ -142,7 +141,6 @@ export function beginBuild(context:vscode.ExtensionContext)
                 {
                     config.arg.push(dir);
                 }
-                config.arg.push(rootDir);
 
                 // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
                 config.arg.forEach(function(val, index, arr) {

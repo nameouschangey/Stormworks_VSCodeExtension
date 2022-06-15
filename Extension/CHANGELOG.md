@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.22] - 14th June 2022
+**major**
+- Improved simulator sandboxing, more accurately reflects the functionality available to the game
+
 #### [0.0.21] - 14th June 2022
 **minor**
 - Newlines in output should now be \n and not \r\n (only affects using minified data in directly via another process)

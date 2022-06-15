@@ -57,29 +57,13 @@ export function getDebugPaths(context : vscode.ExtensionContext, folder: vscode.
 
 export function getDebugCPaths(context : vscode.ExtensionContext)
 {
-	let luaDebugConfig = vscode.workspace.getConfiguration("lua.debug.settings");
-
-	// fix for updated config in extension
-	let cpathString : string = luaDebugConfig.get("cpath") ?? "";
-	if (typeof cpathString !== 'string')
-	{
-		cpathString = "";
-	}
-	
-	let existingAsList : string[] = cpathString.split(";");
+	// no user-defined cpaths allowed, as it opens up people including and using dangerous dlls very easily
 	const defaultCPaths = [
 		utils.sanitizeFolderPath(context.extensionPath) + "assets/luasocket/dll/socket/core.dll",
 		utils.sanitizeFolderPath(context.extensionPath) + "assets/luasocket/dll/mime/core.dll",
 	];
-	for(const cPathElement of defaultCPaths)
-	{
-		if(!existingAsList.includes(cPathElement))
-		{
-			existingAsList.push(cPathElement);
-		}
-	}
-	
-	return existingAsList.join(";");
+
+	return defaultCPaths.join(";");
 }
 
 export function updateLuaLibraryPaths(context: vscode.ExtensionContext, folder:vscode.WorkspaceFolder|undefined) {

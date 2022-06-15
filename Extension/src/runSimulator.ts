@@ -51,6 +51,99 @@ __simulator:_giveControlToMainLoop()
 
 --- @diagnostic enable: undefined-global
 `;
+
+    contents = `
+
+    require("LifeBoatAPI.Tools.Simulator.Simulator");
+
+    -- command line input
+    for k,v in pairs(arg) do
+        arg[k] = v:gsub("##LBNEWLINE##", "\\n")
+    end
+    
+    local simPath = arg[1]
+    local simLog = arg[2]
+    local rootDirs = {};
+    for i=3, #arg do
+        table.insert(rootDirs, LifeBoatAPI.Tools.Filepath:new(arg[i]));
+    end
+    
+    
+    -- sandbox environment, that MCs are run in
+    local sandboxEnv = {
+        ipairs = ipairs,
+        next = next,
+        pairs = pairs,
+        tonumber = tonumber,
+        tostring = tostring,
+        type = type,
+        print = print,
+    
+        -- library tables
+        string = string,
+        table = table,
+        math = math, -- etc.
+    
+        -- simulator stuff
+        screen = screen,
+        input = input,
+        output = output
+    }
+    
+    -- load the requires
+    local loadRequires = function(rootDirectory, requiresToFilenames)
+        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {["_build"]=1, [".git"]=1}, {["lua"]=1, ["luah"]=1})
+    
+        for _, filename in ipairs(files) do
+            -- if the file is init.lua, we add it as the parent require path as well
+    
+            local requireName = filename:linux():gsub(LifeBoatAPI.Tools.StringUtils.escape(rootDirectory:linux()) .. "/", "")
+            
+            requireName = requireName:gsub("/", ".") -- slashes -> . style
+            requireName = requireName:gsub("%.init.lua$", "") -- if name is init.lua, strip it
+            requireName = requireName:gsub("%.lua$", "") -- if name ends in .lua, strip it
+            requireName = requireName:gsub("%.luah$", "") -- "hidden" lua files
+    
+            requiresToFilenames[requireName] = requiresToFilenames[requireName] or filename:linux()
+        end
+    end;
+    
+    local filesnamesByRequirePattern = {}
+    for i=1, #rootDirs do
+        loadRequires(rootDirs[i], filesnamesByRequirePattern)
+    end
+    
+    local loadedRequires = {}
+    sandboxEnv.require = function(pattern)
+        local filePath = filesnamesByRequirePattern[pattern]
+        if not filePath then
+            error("Could not find require: " .. pattern)
+        end
+    
+        if not loadedRequires[pattern] then
+            loadedRequires[pattern] = loadfile(filePath, "t", sandboxEnv)
+            loadedRequires[pattern]()
+        end
+    end;
+    
+    
+    
+    --- @diagnostic disable: undefined-global
+    
+    local simulator = LifeBoatAPI.Tools.Simulator:new(sandboxEnv) 
+    simulator:_beginSimulation(false, arg[1], arg[2])
+    sandboxEnv.simulator = simulator
+    
+    
+    -- entrypoint require
+    sandboxEnv.require("${relativePath}")
+    
+    
+    simulator:_giveControlToMainLoop()
+    
+    --- @diagnostic enable: undefined-global
+    
+`;
     return projectCreation.addBoilerplate(contents);
 }
 
@@ -94,6 +187,13 @@ export function beginSimulator(context:vscode.ExtensionContext)
                     ]
                 };
                 
+                // add library paths
+                const libPaths = settingsManagement.getLibraryPaths(context, utils.getCurrentWorkspaceFolder());
+                for(let dir of libPaths)
+                {
+                    config.arg.push(dir);
+                }
+
                 // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
                 config.arg.forEach(function(val, index, arr) {
                     arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");

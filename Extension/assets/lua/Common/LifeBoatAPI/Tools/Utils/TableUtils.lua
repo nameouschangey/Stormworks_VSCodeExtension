@@ -90,8 +90,8 @@ LifeBoatAPI.Tools.TableUtils = {
     --- @param from table list of values to append to lhs table
     ---@section iaddRange
     iaddRange = function(tbl, from)
-        for i,v in ipairs(from) do
-            LifeBoatAPI.Tools.TableUtils.add(tbl, v)
+        for i=1, #from do
+            tbl[#tbl+1] = from[i]
         end
     end;
     ---@endsection

@@ -46,27 +46,27 @@ LifeBoatAPI.Tools.FileSystemUtils = {
     end;
 
     ---@param dirPath Filepath directory to search in
-    ---@return Filepath[] list of directory paths
+    ---@return string[] list of directory paths
     findDirsInDir = function (dirPath)
         return LifeBoatAPI.Tools.FileSystemUtils.findPathsInDir(dirPath, "/ad")
     end;
 
     ---@param dirPath Filepath directory to search in
-    ---@return Filepath[] list of filepaths
+    ---@return string[] list of filepaths
     findFilesInDir = function (dirPath)
         return LifeBoatAPI.Tools.FileSystemUtils.findPathsInDir(dirPath, "/a-d")
     end;
 
     ---@param dirPath Filepath directory to search in
     ---@param commandlinePattern string pattern to use to select the type of file/directory desired
-    ---@return Filepath[] list of filepaths
+    ---@return string[] list of filepaths
     findPathsInDir = function (dirPath, commandlinePattern)
         local result = {}
         local processCommand = 'dir "'..dirPath:win()..'" /b ' .. commandlinePattern .. ' 2>nul'
         local process = io.popen('"' .. processCommand .. '"')
 
         for filename in process:lines() do
-            LifeBoatAPI.Tools.TableUtils.add(result, LifeBoatAPI.Tools.Filepath:new(filename))
+            result[#result+1] = filename
         end
         process:close()
         return result
@@ -74,20 +74,31 @@ LifeBoatAPI.Tools.FileSystemUtils = {
 
     ---@param dirPath Filepath root to start search in
     ---@return Filepath[] list of filepaths in all subfolders
-    findFilesRecursive = function (dirPath)
+    findFilesRecursive = function (dirPath, ignore, extensions)
         local files = {}
-        for _, dirname in ipairs(LifeBoatAPI.Tools.FileSystemUtils.findDirsInDir(dirPath)) do
-            local dir = dirPath:add("/" .. dirname:linux())
-            local filesInDir = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(dir)
 
-            LifeBoatAPI.Tools.TableUtils.iaddRange(files, filesInDir)
+        local filesInDir = LifeBoatAPI.Tools.FileSystemUtils.findFilesInDir(dirPath)
+        for i=1, #filesInDir do
+            local filename = filesInDir[i]
+            if (not ignore or not ignore[filename]) then
+                local ext = LifeBoatAPI.Tools.StringUtils.split(filename, ".")
+                if (not extensions or extensions[ext[2]]) then
+                    local file = dirPath:add("/" .. filename)
+                    files[#files+1] = file
+                end
+            end
         end
 
-        for _, filename in ipairs(LifeBoatAPI.Tools.FileSystemUtils.findFilesInDir(dirPath)) do
-            local file = dirPath:add("/" .. filename:linux())
-            LifeBoatAPI.Tools.TableUtils.add(files, file)
+        local dirsInDir = LifeBoatAPI.Tools.FileSystemUtils.findDirsInDir(dirPath)
+        for i=1, #dirsInDir do
+            local dirname = dirsInDir[i]
+            if not ignore or not ignore[dirname] then
+                local dir = dirPath:add("/" .. dirname)
+                local filesInDir = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(dir, ignore, extensions)
+                LifeBoatAPI.Tools.TableUtils.iaddRange(files, filesInDir)
+            end
         end
-
+        
         return files
     end;
 }

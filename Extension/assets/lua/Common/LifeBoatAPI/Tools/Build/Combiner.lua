@@ -83,19 +83,14 @@ LifeBoatAPI.Tools.Combiner = {
     ---@param rootDirectory Filepath
     _getDataByRequire = function(this, rootDirectory)
         local requiresToFilecontents = {}
-        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory)
+        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {[".vscode"]=1, ["libs"]=1, ["out"]=1, [".git"]=1}, {["lua"]=1, ["luah"]=1})
 
         for _, filename in ipairs(files) do
-            -- if the file is init.lua, we add it as the parent require path as well
-
             local requireName = filename:linux():gsub(LifeBoatAPI.Tools.StringUtils.escape(rootDirectory:linux()) .. "/", "")
-            requireName = requireName:gsub("/", ".")
-
-            -- if name is init.lua, strip it
-            requireName = requireName:gsub("%.init.lua$", "")
-
-            -- if name ends in .lua, strip it
-            requireName = requireName:gsub("%.lua$", "")
+            requireName = requireName:gsub("/", ".") -- slashes -> . style
+            requireName = requireName:gsub("%.init.lua$", "") -- if name is init.lua, strip it
+            requireName = requireName:gsub("%.lua$", "") -- if name ends in .lua, strip it
+            requireName = requireName:gsub("%.luah$", "") -- "hidden" lua files
 
             requiresToFilecontents[requireName] = LifeBoatAPI.Tools.FileSystemUtils.readAllText(filename)
         end

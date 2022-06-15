@@ -31,11 +31,12 @@ local _socket = require("socket")
 ---@field _currentScreen SimulatorScreen (internal) screen currently being rendered to or nil
 ---@field _isInputOutputChanged boolean (internal) true if the input/output was changed within this frame
 ---@field running boolean whether or not it's running
+---@field sandboxEnv table
 LifeBoatAPI.Tools.Simulator = {
 
     ---@param this Simulator
     ---@return Simulator
-    new = function (this)
+    new = function (this, sandboxEnv)
         this = LifeBoatAPI.Tools.BaseClass.new(this)
         this._handlers = {}
         this.config = LifeBoatAPI.Tools.SimulatorConfig:new(this) -- can't be renamed due to older "handlers" config
@@ -46,6 +47,7 @@ LifeBoatAPI.Tools.Simulator = {
         this._sendOutputSkip = 1
         this._isRendering = false
         this.running = false
+        this.sandboxEnv = sandboxEnv
 
         this:_registerHandler("TOUCH",
             function(simulator, screenNumber, isTouched, isTouchedAlt, x, y, xAlt, yAlt)
@@ -310,9 +312,9 @@ LifeBoatAPI.Tools.Simulator = {
                 this:_readSimulatorMessages()
 
                 -- run tick
-                onSimulate = onLBSimulatorTick or LifeBoatAPI.Tools.Empty
-                onTick = onTick or LifeBoatAPI.Tools.Empty
-                onDraw = onDraw or LifeBoatAPI.Tools.Empty
+                onSimulate = this.sandboxEnv.onLBSimulatorTick or LifeBoatAPI.Tools.Empty
+                onTick = this.sandboxEnv.onTick or LifeBoatAPI.Tools.Empty
+                onDraw = this.sandboxEnv.onDraw or LifeBoatAPI.Tools.Empty
 
                 this._isRendering = false
 
