@@ -244,12 +244,20 @@ export function addLibraryFromURL(context : vscode.ExtensionContext, file: vscod
                                         gitLibs.push({ name: libName, gitUrl: url });
                                         return config.update("gitLibraries", gitLibs);
                                     }
+                                    else
+                                    {
+                                        return vscode.window.showErrorMessage("Git process failed with error code: " + terminal.exitStatus).then(() => {});
+                                    }
                                 });
                         }
                         else
                         {
                             return vscode.window.showErrorMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git");
                         }
+                    }
+                    else
+                    {
+                        return vscode.window.showErrorMessage("Can't add library without a valid SW project selected");
                     }
                 }
             })
@@ -335,21 +343,31 @@ export function updateLibraries(context: vscode.ExtensionContext, file: vscode.U
                 let promise = utils.doesFileExist(vscode.Uri.file(libPath), 
                     () => {
                         // update latest
-                        TerminalHandler.get().awaitTerminal({
+                        return TerminalHandler.get().awaitTerminal({
                             cwd: libPath,
                             shellArgs: ["pull"],
                             name: "update libraries",
                             hideFromUser: false,
                             shellPath: gitPath,
+                        }).then((terminal) => {
+                            if(terminal.exitStatus?.code !== 0)
+                            {
+                                return vscode.window.showErrorMessage("Git process failed with error code: " + terminal.exitStatus).then(() => {});
+                            }
                         });
                     },
                     () => {
-                        TerminalHandler.get().awaitTerminal({
+                        return TerminalHandler.get().awaitTerminal({
                             cwd: utils.sanitizeFolderPath(workspaceFolder?.uri.fsPath ?? "") + "_build/libs/",
                             shellArgs: ["clone", lib.gitUrl, lib.name],
                             name: "clone missing lib",
                             hideFromUser: false,
                             shellPath: gitPath,
+                        }).then((terminal) => {
+                            if(terminal.exitStatus?.code !== 0)
+                            {
+                                return vscode.window.showErrorMessage("Git process failed with error code: " + terminal.exitStatus).then(() => {});
+                            }
                         });
                     });
 
@@ -358,7 +376,11 @@ export function updateLibraries(context: vscode.ExtensionContext, file: vscode.U
         }
         else if(!gitExtension)
         {
-            promises.push(vscode.window.showErrorMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git"));
+            promises.push(vscode.window.showWarningMessage("VSCode git extension may be disabled. Please check your settings and enable vscode.git"));
+        }
+        else
+        {
+            promises.push(vscode.window.showErrorMessage("Unexpected error while updating libraries"));
         }
         return Promise.all(promises);
     });

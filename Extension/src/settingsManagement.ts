@@ -14,14 +14,12 @@ export function getLibraryPaths(context : vscode.ExtensionContext, folder: vscod
 
 	// sanitized library paths from settings
 	let uniquePaths : Set<string> = new Set();
-	for (let path of libraryPaths)
-    {
-        uniquePaths.add(utils.sanitizeFolderPath(path));
-    }
 
-	uniquePaths.add(utils.sanitizeFolderPath(folder?.uri.fsPath ?? "") + "_build/libs/");
+	// current workspace
+	uniquePaths.add(utils.sanitizeFolderPath(folder?.uri.fsPath ?? ""));
+
+	// default extension paths
 	uniquePaths.add(utils.sanitizeFolderPath(context.extensionPath) + "assets/lua/Common/");
-
 	if(utils.isMicrocontrollerProject(folder))
 	{
 		uniquePaths.add(utils.sanitizeFolderPath(context.extensionPath) + "assets/lua/Microcontroller/");
@@ -31,6 +29,15 @@ export function getLibraryPaths(context : vscode.ExtensionContext, folder: vscod
 		uniquePaths.add(utils.sanitizeFolderPath(context.extensionPath) + "assets/lua/Addon/");
 	}
 
+	// hardcoded user paths
+	for (let path of libraryPaths)
+    {
+        uniquePaths.add(utils.sanitizeFolderPath(path));
+    }
+
+	// lastly, git library paths
+	uniquePaths.add(utils.sanitizeFolderPath(folder?.uri.fsPath ?? "") + "_build/libs/");
+	
 	return Array.from(uniquePaths);
 }
 
