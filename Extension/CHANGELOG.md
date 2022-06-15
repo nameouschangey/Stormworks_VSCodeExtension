@@ -1,9 +1,13 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
-#### [0.0.22] - 14th June 2022
+#### [0.0.22] - 15th June 2022
 **major**
 - Improved simulator sandboxing, more accurately reflects the functionality available to the game
+- Performance improvements in the build process
+- Simulator and Build process "require" functionality now match
+**minor**
+- Fixed issue with using '' quotes in require
 
 #### [0.0.21] - 14th June 2022
 **minor**

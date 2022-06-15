@@ -38,7 +38,6 @@ LifeBoatAPI.Tools.SimulatorSandbox.createSandbox = function(rootDirs)
         tonumber = tonumber,
         tostring = tostring,
         type = type,
-        print = print,
 
         -- library tables
         string = string,
