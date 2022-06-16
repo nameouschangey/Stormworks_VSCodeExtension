@@ -77,7 +77,7 @@ LifeBoatAPI.Tools.StringUtils = {
         separatorPattern = separatorPattern or "%s"
         local result = {}
         for value in str:gmatch("([^"..separatorPattern.."]+)") do
-            LifeBoatAPI.Tools.TableUtils.add(result, value)
+            result[#result+1] = value
         end
         return result
     end;
@@ -97,7 +97,7 @@ LifeBoatAPI.Tools.StringUtils = {
             local match = LifeBoatAPI.Tools.StringMatch:new(text:find(pattern, index))
             if(match.startIndex) then
                 index = match.endIndex
-                LifeBoatAPI.Tools.TableUtils.add(found, match)
+                found[#found+1] = match
             else
                 searching = false
             end

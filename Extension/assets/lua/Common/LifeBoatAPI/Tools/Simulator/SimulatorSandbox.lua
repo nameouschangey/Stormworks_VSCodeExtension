@@ -12,7 +12,7 @@ LifeBoatAPI.Tools.SimulatorSandbox.createSandbox = function(rootDirs)
 
     -- load the requires
     local loadRequires = function(rootDirectory, requiresToFilenames)
-        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {["_build"]=1, [".git"]=1, [".vscode"]=1}, {["lua"]=1, ["luah"]=1})
+        local files = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(rootDirectory, {["/_build/libs"]=1, [".git"]=1, [".vscode"]=1}, {["lua"]=1, ["luah"]=1})
 
         for _, filename in ipairs(files) do
             local requireName = filename:linux():gsub(LifeBoatAPI.Tools.StringUtils.escape(rootDirectory:linux()) .. "/", "")
@@ -44,7 +44,8 @@ LifeBoatAPI.Tools.SimulatorSandbox.createSandbox = function(rootDirs)
         table = table,
         math = math, -- etc.
         debug = {log = print},
-
+        os = {clock = os.clock},
+        
         -- simulator stuff
         screen = screen,
         input = input,

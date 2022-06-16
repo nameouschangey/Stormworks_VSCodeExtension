@@ -74,27 +74,27 @@ LifeBoatAPI.Tools.FileSystemUtils = {
 
     ---@param dirPath Filepath root to start search in
     ---@return Filepath[] list of filepaths in all subfolders
-    findFilesRecursive = function (dirPath, ignore, extensions)
+    findFilesRecursive = function (dirPath, ignore, extensions, addedDirs)
+        addedDirs = addedDirs or ""
         local files = {}
 
         local filesInDir = LifeBoatAPI.Tools.FileSystemUtils.findFilesInDir(dirPath)
         for i=1, #filesInDir do
             local filename = filesInDir[i]
-            if (not ignore or not ignore[filename]) then
-                local ext = LifeBoatAPI.Tools.StringUtils.split(filename, ".")
-                if (not extensions or extensions[ext[2]]) then
-                    local file = dirPath:add("/" .. filename)
-                    files[#files+1] = file
-                end
+            local ext = LifeBoatAPI.Tools.StringUtils.split(filename, ".")
+            if (not extensions or extensions[ext[2]]) then
+                local file = dirPath:add("/" .. filename)
+                files[#files+1] = file
             end
         end
 
         local dirsInDir = LifeBoatAPI.Tools.FileSystemUtils.findDirsInDir(dirPath)
         for i=1, #dirsInDir do
             local dirname = dirsInDir[i]
-            if not ignore or not ignore[dirname] then
+            local addedDir = addedDirs .. "/" .. dirname
+            if not ignore or (not ignore[dirname] and not ignore[addedDir]) then
                 local dir = dirPath:add("/" .. dirname)
-                local filesInDir = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(dir, ignore, extensions)
+                local filesInDir = LifeBoatAPI.Tools.FileSystemUtils.findFilesRecursive(dir, ignore, extensions, addedDir)
                 LifeBoatAPI.Tools.TableUtils.iaddRange(files, filesInDir)
             end
         end

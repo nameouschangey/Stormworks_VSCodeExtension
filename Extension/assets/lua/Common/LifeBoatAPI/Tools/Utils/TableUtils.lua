@@ -136,7 +136,7 @@ LifeBoatAPI.Tools.TableUtils = {
         local result = {}
         for k,v in pairs(tbl) do
             if(type(k) == "number") then
-                LifeBoatAPI.Tools.TableUtils.add(result, v)
+                result[#result+1] = v
             else
                 result[k] = v
             end
@@ -159,7 +159,8 @@ LifeBoatAPI.Tools.TableUtils = {
         for i=(startIndex and startIndex < 0 and #tbl-startIndex+1) or startIndex or 1,
             (endIndex and endIndex < 0 and #tbl-endIndex+1) or endIndex or #tbl,
             1 do
-            LifeBoatAPI.Tools.TableUtils.add(result, tbl[i])
+            
+            result[#result+1] = tbl[i]
         end
         return result
     end;
