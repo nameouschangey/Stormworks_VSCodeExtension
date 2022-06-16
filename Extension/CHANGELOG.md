@@ -1,6 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.23] - 16th June 2022
+**minor**
+- Re-enabled os.clock in the sandbox, due to request (note: this will still not work in SW)
+- - Also note, print is enabled, but you should debug.log instead
+- Re-enabled requring from /_build/ folder, without compromising performance
+
 #### [0.0.22] - 15th June 2022
 **major**
 - Improved simulator sandboxing, more accurately reflects the functionality available to the game

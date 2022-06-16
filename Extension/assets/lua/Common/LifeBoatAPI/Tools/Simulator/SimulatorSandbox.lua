@@ -43,6 +43,7 @@ LifeBoatAPI.Tools.SimulatorSandbox.createSandbox = function(rootDirs)
         string = string,
         table = table,
         math = math, -- etc.
+        print = print,
         debug = {log = print},
         os = {clock = os.clock},
         
