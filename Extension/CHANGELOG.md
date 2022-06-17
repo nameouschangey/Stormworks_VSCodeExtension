@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.24] - 17th June 2022
+**minor**
+- Fixed conflict this extension was causing in other formatters, e.g. python
+
 #### [0.0.23] - 16th June 2022
 **minor**
 - Re-enabled os.clock in the sandbox, due to request (note: this will still not work in SW)
