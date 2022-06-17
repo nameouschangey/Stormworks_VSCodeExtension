@@ -53,7 +53,7 @@ if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Fi
             for(let file of files)
             {
                 // turn the relative path into a lua require
-                let relativePath = file.fsPath.replaceAll(workspace.fsPath, "");
+                let relativePath = utils.strReplaceAll(file.fsPath, workspace.fsPath, "");
                 //relativePath = relativePath.replaceAll(path.extname(relativePath), "");
 
                 if(relativePath.substr(0,1) === "\\") // remove initial "." that might be left
@@ -144,7 +144,8 @@ export function beginBuild(context:vscode.ExtensionContext)
 
                 // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
                 config.arg.forEach(function(val, index, arr) {
-                    arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
+                    arr[index] = utils.strReplaceAll(val, "\r\n", "##LBNEWLINE##");
+                    arr[index] = utils.strReplaceAll(arr[index], "\n", "##LBNEWLINE##");
                 });
 
                 return vscode.debug.startDebugging(workspace, config);

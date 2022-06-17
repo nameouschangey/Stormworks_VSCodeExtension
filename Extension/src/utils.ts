@@ -4,17 +4,10 @@ import { Func } from 'mocha';
 import { TextEncoder } from 'util';
 import { settings } from 'cluster';
 
-declare global
+export function strReplaceAll(str: string, searchValue: string | RegExp, replacement: string)
 {
-	interface String {
-		replaceAll(searchValue: string | RegExp, replacement: string): string;
-	}
-}
-
-String.prototype.replaceAll = function (searchValue: string | RegExp, replacement: string)
-{
-	let current = String(this);
-	let changed = String(this);
+	let current = String(str);
+	let changed = String(str);
 	do 
 	{
 		current = changed;
@@ -53,7 +46,7 @@ export function ensureBuildFolderExists(folder : vscode.WorkspaceFolder | undefi
 
 export function sanitizeFolderPath(resourcePath : string)
 {
-	resourcePath = resourcePath.replaceAll("\\", "/");
+	resourcePath = strReplaceAll(resourcePath, "\\", "/");
 	if(resourcePath.charAt(resourcePath. length-1) !== "/")
 	{
 		return resourcePath + "/";
@@ -63,7 +56,7 @@ export function sanitizeFolderPath(resourcePath : string)
 
 export function sanitizeFilePath(resourcePath : string)
 {
-	resourcePath = resourcePath.replaceAll("\\", "/");
+	resourcePath = strReplaceAll(resourcePath, "\\", "/");
 	return resourcePath;
 }
 

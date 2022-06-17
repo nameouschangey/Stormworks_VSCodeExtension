@@ -10,11 +10,11 @@ import * as settingsManagement from "./settingsManagement";
 function generateSimulatorLua(workspaceFolder:vscode.Uri, fileToSimulate : vscode.Uri)
 {
     // turn the relative path into a lua require
-    let relativePath = fileToSimulate.fsPath.replaceAll(workspaceFolder.fsPath, "");
-    relativePath = relativePath.replaceAll(path.extname(relativePath), "");
-    relativePath = relativePath.replaceAll("\\", "/");
-    relativePath = relativePath.replaceAll("//", "/");
-    relativePath = relativePath.replaceAll("/", ".");
+    let relativePath = utils.strReplaceAll(fileToSimulate.fsPath, workspaceFolder.fsPath, "");
+    relativePath = utils.strReplaceAll(relativePath,path.extname(relativePath), "");
+    relativePath = utils.strReplaceAll(relativePath,"\\", "/");
+    relativePath = utils.strReplaceAll(relativePath,"//", "/");
+    relativePath = utils.strReplaceAll(relativePath,"/", ".");
 
     if(relativePath.substr(0,1) === ".") // remove initial "." that might be left
     {
@@ -101,7 +101,8 @@ export function beginSimulator(context:vscode.ExtensionContext)
 
                 // replace all newlines with ##LBNEWLINE## to be unpacked on the recieving end
                 config.arg.forEach(function(val, index, arr) {
-                    arr[index] = val.replaceAll("\r\n", "##LBNEWLINE##").replaceAll("\n", "##LBNEWLINE##");
+                    arr[index] = utils.strReplaceAll(val, "\r\n", "##LBNEWLINE##")
+                    arr[index] = utils.strReplaceAll(arr[index], "\n", "##LBNEWLINE##");
                 });
 
                 // todo, set the debugger setting here, it doesn't look like it reads it from above?

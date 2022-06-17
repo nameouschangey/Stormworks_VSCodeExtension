@@ -50,7 +50,7 @@ export function activate(context: vscode.ExtensionContext)
 			TerminalHandler.get().onTerminalClosed(t);
 		}, null, context.subscriptions);
 
-
+	
 	// when a lua file is created, if it's empty - add the boilerplate
 	vscode.workspace.onDidOpenTextDocument(
 		(document) => {
@@ -65,7 +65,8 @@ export function activate(context: vscode.ExtensionContext)
 				return vscode.workspace.applyEdit(edit);
 			}
 			return false;
-		}, null, context.subscriptions);
+		}, null, context.subscriptions); 
+
 
 	vscode.workspace.onDidChangeTextDocument(
 		(e) => {
@@ -84,7 +85,8 @@ export function activate(context: vscode.ExtensionContext)
 					}
 				}
 			}
-		}, null, context.subscriptions);
+		}, null, context.subscriptions); 
+		
 
 	// when the library paths are changed, this will have a knock-on to the other settings
 	vscode.workspace.onDidChangeConfiguration(
@@ -93,8 +95,9 @@ export function activate(context: vscode.ExtensionContext)
 			{
 				return vscode.commands.executeCommand("lifeboatapi.updateAllSettings");
 			}
-		}, null, context.subscriptions);
+		}, null, context.subscriptions); 
 
+	
 	// COMMAND HANDLING --------------------------------------------------------------------------------
 	// Simulate current file
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.simulate',
@@ -148,12 +151,13 @@ export function activate(context: vscode.ExtensionContext)
 		return handleGit.removeSelectedLibrary(context, file);
 	}));
 
+	
 	// Update Libraries
 	context.subscriptions.push(vscode.commands.registerCommand('lifeboatapi.updateLibraries',
 	(file) => {
 		return handleGit.updateLibraries(context, file);
 	}));
-
+ 
 	// Update All Settings
 	context.subscriptions.push(vscode.commands.registerCommand("lifeboatapi.updateAllSettings",
 	() => {
