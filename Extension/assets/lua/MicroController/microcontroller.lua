@@ -127,8 +127,8 @@ function screen.drawText(x, y, text) end
 --- @param width number The width of the textbox
 --- @param height number The height of the textbox
 --- @param text string The text to draw
---- @param horizontalAlign number How to align the text horizontally (-1 = left, 0 = center, 1 = right)
---- @param verticalAlign number How to align the text vertically (-1 = top, 0 = center, 1 = bottom)
+--- @param horizontalAlign number|nil How to align the text horizontally (-1 = left, 0 = center, 1 = right) - default -1
+--- @param verticalAlign number|nil How to align the text vertically (-1 = top, 0 = center, 1 = bottom) - default -1
 function screen.drawTextBox(x, y, width, height, text, horizontalAlign, verticalAlign) end
 
 --- Draw a map on the screen

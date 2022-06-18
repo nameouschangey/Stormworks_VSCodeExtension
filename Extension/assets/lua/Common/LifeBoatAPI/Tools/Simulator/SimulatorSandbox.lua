@@ -46,6 +46,7 @@ LifeBoatAPI.Tools.SimulatorSandbox.createSandbox = function(rootDirs)
         print = print,
         debug = {log = print},
         os = {clock = os.clock},
+        async = {httpGet = async.httpGet},
         
         -- simulator stuff
         screen = screen,
