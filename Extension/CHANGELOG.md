@@ -1,6 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.25] 
+**minor**
+- Minimizer performs better at renaming variables than before (prioritizes most used for smallest names)
+- Added optional param type-hints for screen.drawTextBox
+- Added async.httpGet into the sandbox (empty implementation)
+
 #### [0.0.24] - 17th June 2022
 **minor**
 - Fixed conflict this extension was causing in other formatters, e.g. python

@@ -52,7 +52,10 @@ LifeBoatAPI.Tools.NumberLiteralReducer = {
         end
 
         -- filter out variables not seen enough times
-        variables = LifeBoatAPI.Tools.TableUtils.iwhere(variables, function(v) return count[v.captures[1]] >= 3 end)
+        --1.5 because we don't know if the variable will end up being 1 or 2 chars long, + 2 for = and \n
+        variables = LifeBoatAPI.Tools.TableUtils.iwhere(variables, function(v)
+                                                                    local timesNeedingSeen = 1.5+2+(#v.captures[1])
+                                                                    return 1.5*count[v.captures[1]] >= timesNeedingSeen end)
 
         -- due to the pattern, we need to alter each variable, so it's start position exclude the non-variable character
         variables = LifeBoatAPI.Tools.TableUtils.iselect(variables, function(v) v.startIndex = v.startIndex + 1; return v end)

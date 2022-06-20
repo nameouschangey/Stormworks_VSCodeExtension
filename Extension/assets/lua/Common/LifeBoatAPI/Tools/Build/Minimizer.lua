@@ -78,7 +78,7 @@ LifeBoatAPI.Tools.Minimizer = {
         -- insert space at the start prevents issues where the very first character in the file, is part of a variable name
         text = " " .. text .. "\n\n"
 
-        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
+        
 
         -- remove all redundant strings and comments, avoid these confusing the parse
         local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
@@ -97,7 +97,9 @@ LifeBoatAPI.Tools.Minimizer = {
         -- re-parse to remove all code-section comments now we're done with them
         text = parser:removeStringsAndComments(text)
 
-        -- rename variables as short as we can get
+
+        -- rename variables so everything is consistent (if creating new globals happens, it's important they have unique names)
+        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
         if(this.params.shortenVariables) then
             local shortener = LifeBoatAPI.Tools.VariableShortener:new(variableRenamer, this.constants)
             text = shortener:shortenVariables(text)
@@ -118,6 +120,15 @@ LifeBoatAPI.Tools.Minimizer = {
             local numberShortener = LifeBoatAPI.Tools.NumberLiteralReducer:new(variableRenamer)
             text = numberShortener:shortenNumbers(text)
         end
+
+
+        -- rename variables as short as we can get (second pass)
+        -- New renamer, so everything gets a new name again - now we can do it regarding frequency of use
+        if(this.params.shortenVariables) then
+            local shortener = LifeBoatAPI.Tools.VariableShortener:new(LifeBoatAPI.Tools.VariableRenamer:new(this.constants), this.constants)
+            text = shortener:shortenVariables(text)
+        end
+
 
         -- remove all unnecessary whitespace, etc. (a real minifier will do a better job, but this gets close enough for us)
         if(this.params.reduceNewlines) then
@@ -145,7 +156,7 @@ LifeBoatAPI.Tools.Minimizer = {
 [[-- Developed & Minimized using LifeBoatAPI - Stormworks Lua plugin for VSCode
 -- https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --      By Nameous Changey]]
-.. "\n-- Minimized Size: " .. tostring(sizeWithoutBoilerplate) .. " (" .. tostring(sizeWithoutBoilerplate + predictedBoilerplateSize) ..  ") chars"
+.. "\n-- Minimized Size: " .. tostring(sizeWithoutBoilerplate) .. " (" .. tostring(sizeWithoutBoilerplate + predictedBoilerplateSize) ..  " with comment) chars"
 
         local addedSpacing = not this.params.removeComments and "\n\n" or ""
         -- add boilerplate if the file is small enough (4000 chars instead of 4096, gives some slight wiggle room)
@@ -177,6 +188,8 @@ LifeBoatAPI.Tools.Minimizer = {
             text = this:_reduceWhitespaceCharacter(text, character)
         end
 
+        -- ,} ;} -> }
+        text = LifeBoatAPI.Tools.StringUtils.subAll(text, "[,;]}", "}")
         return text
     end;
 
