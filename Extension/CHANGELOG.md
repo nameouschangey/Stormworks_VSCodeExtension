@@ -4,6 +4,8 @@ Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issu
 #### [0.0.25] 
 **minor**
 - Minimizer performs better at renaming variables than before (prioritizes most used for smallest names)
+- Minimizer removes unnecessary line-endings from table definitions ,} and ;}
+- Minimizer more careful about reducing number-literals
 - Added optional param type-hints for screen.drawTextBox
 - Added async.httpGet into the sandbox (empty implementation)
 

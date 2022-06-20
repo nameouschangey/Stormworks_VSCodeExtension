@@ -33,7 +33,7 @@ LifeBoatAPI.Tools.StringCommentsParser = {
     ---Comments are discarded as this is designed for use in a Minimizer
     ---@param this StringCommentsParser
     ---@param text string text to parse
-    ---@param commentException fun(i:number, text:string):boolean exceptions function, that allows certain comments to remain - for other build tool purposes. (bodge)
+    ---@param commentException nil|fun(i:number, text:string):boolean  exceptions function, that allows certain comments to remain - for other build tool purposes. (bodge)
     ---@return string text without the strings and comments
     removeStringsAndComments = function(this, text, commentException)
         local outputString = LifeBoatAPI.Tools.StringBuilder:new()

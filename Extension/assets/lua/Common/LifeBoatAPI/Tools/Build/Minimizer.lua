@@ -78,9 +78,8 @@ LifeBoatAPI.Tools.Minimizer = {
         -- insert space at the start prevents issues where the very first character in the file, is part of a variable name
         text = " " .. text .. "\n\n"
 
-        
-
         -- remove all redundant strings and comments, avoid these confusing the parse
+        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
         local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
         text = parser:removeStringsAndComments(text,
                                                 function(i,text)
@@ -99,7 +98,6 @@ LifeBoatAPI.Tools.Minimizer = {
 
 
         -- rename variables so everything is consistent (if creating new globals happens, it's important they have unique names)
-        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
         if(this.params.shortenVariables) then
             local shortener = LifeBoatAPI.Tools.VariableShortener:new(variableRenamer, this.constants)
             text = shortener:shortenVariables(text)
