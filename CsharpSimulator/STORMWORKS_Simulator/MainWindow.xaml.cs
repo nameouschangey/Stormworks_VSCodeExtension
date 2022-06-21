@@ -147,6 +147,7 @@ namespace STORMWORKS_Simulator
             //FakeDraw(10, 55, 40, 10, "TOGGLE");
             //FakeDraw(64, 10, 30, 10, "DAN DAN DAN DAN DAN");
             //
+            //TickHandler.OnLineRead(this, "SCREENCONFIG|1|1|30x15|0");
             //TickHandler.OnLineRead(this, "TICKEND|1");
         }
 

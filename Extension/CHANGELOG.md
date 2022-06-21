@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.26] 
+**minor**
+- Removed restrictions on simulator screensize, can now use arbitrarily large screens, set via simulator.setScreen, e.g. 30x15 - for fun.
+
 #### [0.0.25] 
 **minor**
 - Minimizer performs better at renaming variables than before (prioritizes most used for smallest names)
