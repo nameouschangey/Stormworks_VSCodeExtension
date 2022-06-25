@@ -52,11 +52,11 @@ namespace STORMWORKS_Simulator
                 Style=SKPaintStyle.StrokeAndFill
             };
 
-            var canvas = screen.MapCanvas.Canvas;
+            var canvas = screen.DrawingCanvas.Canvas;
 
             // draw the ocean
             paint.Color = vm.MapOceanColour;
-            screen.MapCanvas.Canvas.DrawRect(0, 0, screenWidth, screenHeight, paint);
+            screen.DrawingCanvas.Canvas.DrawRect(0, 0, screenWidth, screenHeight, paint);
 
             // draw a bunch of janky overlapping ovals to represent the "islands"
             // it's better than nothing

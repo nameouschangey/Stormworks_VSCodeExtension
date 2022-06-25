@@ -1,6 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.27] - 25th June 2022
+**minor**
+- Fixed issue with map draw always being on the background
+- Fixed intellisense for math.cos previously not giving return value
+
+
 #### [0.0.26] 
 **minor**
 - Removed restrictions on simulator screensize, can now use arbitrarily large screens, set via simulator.setScreen, e.g. 30x15 - for fun.

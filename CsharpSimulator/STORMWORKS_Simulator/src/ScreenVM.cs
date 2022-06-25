@@ -77,11 +77,11 @@ namespace STORMWORKS_Simulator
                 FrontBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
                 _BackBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
 
-                MapBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
-                _BackMapBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
+                //MapBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
+                //_BackMapBuffer = new WriteableBitmap((int)Monitor.Size.X, (int)Monitor.Size.Y, 96, 96, PixelFormats.Bgra32, null);
 
                 PrepareBufferForDrawing(_BackBuffer, ref DrawingCanvas);
-                PrepareBufferForDrawing(_BackMapBuffer, ref MapCanvas);
+                //PrepareBufferForDrawing(_BackMapBuffer, ref MapCanvas);
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 
@@ -135,9 +135,9 @@ namespace STORMWORKS_Simulator
         #endregion
 
         #region MapDrawing
-        public SKSurface MapCanvas;
-        public WriteableBitmap MapBuffer { get; private set; }
-        private WriteableBitmap _BackMapBuffer;
+        //public SKSurface MapCanvas;
+        //public WriteableBitmap MapBuffer { get; private set; }
+        //private WriteableBitmap _BackMapBuffer;
         #endregion
 
         public int ScreenNumber { get; private set; }
@@ -178,14 +178,14 @@ namespace STORMWORKS_Simulator
 
 
             // swap map buffers
-            _BackMapBuffer.AddDirtyRect(new Int32Rect(0, 0, (int)_BackMapBuffer.Width, (int)_BackMapBuffer.Height));
-            _BackMapBuffer.Unlock();
-
-            temp = MapBuffer;
-            MapBuffer = _BackMapBuffer;
-            _BackMapBuffer = temp;
-
-            PrepareBufferForDrawing(_BackMapBuffer, ref MapCanvas);
+            // _BackMapBuffer.AddDirtyRect(new Int32Rect(0, 0, (int)_BackMapBuffer.Width, (int)_BackMapBuffer.Height));
+            // _BackMapBuffer.Unlock();
+            // 
+            // temp = MapBuffer;
+            // MapBuffer = _BackMapBuffer;
+            // _BackMapBuffer = temp;
+            // 
+            // PrepareBufferForDrawing(_BackMapBuffer, ref MapCanvas);
 
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
