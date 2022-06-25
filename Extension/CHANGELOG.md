@@ -2,10 +2,12 @@
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
 #### [0.0.27] - 25th June 2022
+**major**
+- Added UI Buttons and Sliders to the Simulator
+- Can now use `simulator.getIsToggled` `simulator.getIsClicked` and `simulator.getSlider` from the `onLBSimulatorTick` function
 **minor**
 - Fixed issue with map draw always being on the background
 - Fixed intellisense for math.cos previously not giving return value
-
 
 #### [0.0.26] 
 **minor**
