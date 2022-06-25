@@ -200,6 +200,18 @@ namespace STORMWORKS_Simulator
             }
         }
 
+        // TODO: The whole thing is handled in code behind
+        // If you ever feel like doing it properly; move to Commands + VM
+        // But doing it wrong is the fun of sideprojects, surely.
+        private void SendButtonValueUpdate(Button clicked)
+        {
+            var command = $"{Slider1.Value}|{Slider2.Value}|{Slider3.Value}|{Slider4.Value}|{Slider5.Value}|{Slider6.Value}|{Slider7.Value}|{Slider8.Value}|{Slider9.Value}|{Slider10.Value}|";
+            command += $"{(Button1 == clicked?1:0)}|{(Button2 == clicked?1:0)}|{(Button3 == clicked?1:0)}|{(Button4 == clicked?1:0)}|{(Button5 == clicked?1:0)}|";
+            command += $"{(Button6 == clicked?1:0)}|{(Button7 == clicked?1:0)}|{(Button8 == clicked?1:0)}|{(Button9 == clicked?1:0)}|{(Button10 == clicked?1:0)}";
+
+            VSConnection.SendMessage("BUTTON_INPUTS", command);
+        }
+
         private void OnAddScreenClicked(object sender, RoutedEventArgs e)
         {
             ViewModel.GetOrAddScreen(ViewModel.ScreenVMs.Count + 1);
@@ -220,5 +232,20 @@ namespace STORMWORKS_Simulator
         private void Canvas_MouseEnter(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseEnter(sender as Canvas, e); }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e) { ((sender as Canvas).DataContext as ScreenVM).OnMouseMove(sender as Canvas, e); }
+
+
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if(e.NewValue != e.OldValue)
+            {
+                SendButtonValueUpdate(null);
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            SendButtonValueUpdate(sender as Button);
+        }
     }
 }

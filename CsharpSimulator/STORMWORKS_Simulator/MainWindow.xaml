@@ -56,8 +56,10 @@
         <!-- Center Block -->
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="25"/>
                 <RowDefinition Height="*" />
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="25"/>
                 <RowDefinition Height="100" />
                 
             </Grid.RowDefinitions>
@@ -109,22 +111,8 @@
                           Content="Hardware Accelerated" />
             </DockPanel>
 
-            <!--<Border Grid.Row="1"
-                    BorderBrush="Black"
-                    BorderThickness="10"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <Image  
-                    Name ="MyImage"
-                    Width="250"
-                    Height="250"
-                    IsHitTestVisible="False"
-                    RenderOptions.BitmapScalingMode="NearestNeighbor"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"></Image>
-                
-            </Border> -->
             
+
             <!-- Main Canvas Area -->
             <local:ZoomBorder x:Name="CanvasZoom"
                               Grid.Row="1"
@@ -175,7 +163,7 @@
                                     </Style>
                                 </Canvas.Style>
                                 <Grid>
-                                <Image Source="{Binding FrontBuffer}"
+                                    <Image Source="{Binding FrontBuffer}"
                                        Width="{Binding CanvasSize.X}"
                                        Height="{Binding CanvasSize.Y}"
                                        Panel.ZIndex="1"
@@ -183,25 +171,202 @@
                                        RenderOptions.BitmapScalingMode="NearestNeighbor"
                                        HorizontalAlignment="Stretch"
                                        VerticalAlignment="Stretch"></Image>
-                                <Image Source="{Binding MapBuffer}"
-                                       Panel.ZIndex="-1"
-                                       Width="{Binding CanvasSize.X}"
-                                       Height="{Binding CanvasSize.Y}"
-                                       IsHitTestVisible="False"
-                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"></Image>
                                 </Grid>
                             </Canvas>
-
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </local:ZoomBorder>
 
+            <!-- Buttons -->
+            <DockPanel Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Button x:Name="Button1" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button1"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button2" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button2"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button3" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button3"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button4" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button4"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button5" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button5"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button6" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button6"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button7" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button7"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button8" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button8"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button9" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button9"
+                        Click="Button_Click"/>
+
+                <Button x:Name="Button10" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Manually reset the view if you've scrolled off the page, etc."
+                        Content="Button10"
+                        Click="Button_Click"/>
+            </DockPanel>
+
+            <!-- Buttons -->
+            <DockPanel Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Slider x:Name="Slider1"
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider1"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider2" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider2"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider3" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider3"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider4" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider4"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider5" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider5"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider6" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider6"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider7" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider7"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider8" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider8"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider9" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider9"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+
+                <Slider x:Name="Slider10" 
+                        DockPanel.Dock="Left"
+                        Margin="10,0"
+                        Width="50"
+                        ToolTip="Slider10"
+                        Value="0.0"
+                        Minimum="0"
+                        Maximum="1"
+                        ValueChanged="Slider_ValueChanged"/>
+            </DockPanel>
+
             <!--- List of screen settings -->
             <ListView
-                Grid.Row="2"
+                Grid.Row="4"
                 ItemsSource="{Binding ScreenVMs}">
                 <ListView.ItemTemplate>
                     <DataTemplate>

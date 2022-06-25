@@ -124,7 +124,7 @@
     <Compile Include="src\PipedCommands\ScreenCommands.cs" />
     <Compile Include="src\PipedCommands\InputOutputCommands.cs" />
     <Compile Include="src\TickHandler.cs" />
-    <Compile Include="src\ScreenVM.cs" />
+    <Compile Include="src\VMs\ScreenVM.cs" />
     <Compile Include="src\SocketConnection.cs" />
     <Page Include="AppStyles.xaml">
       <SubType>Designer</SubType>
@@ -138,7 +138,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\MainVM.cs" />
+    <Compile Include="src\VMs\MainVM.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

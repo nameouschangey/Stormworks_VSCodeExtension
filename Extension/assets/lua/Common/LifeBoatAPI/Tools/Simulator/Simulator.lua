@@ -32,6 +32,9 @@ local _socket = require("socket")
 ---@field _isInputOutputChanged boolean (internal) true if the input/output was changed within this frame
 ---@field running boolean whether or not it's running
 ---@field sandboxEnv table
+---@field buttons boolean[]
+---@field buttonToggles boolean[]
+---@field sliders number[]
 LifeBoatAPI.Tools.Simulator = {
 
     ---@param this Simulator
@@ -48,6 +51,9 @@ LifeBoatAPI.Tools.Simulator = {
         this._isRendering = false
         this.running = false
         this.sandboxEnv = sandboxEnv
+        this.buttons = {false,false,false,false,false,false,false,false,false,false}
+        this.buttonToggles = {false,false,false,false,false,false,false,false,false,false}
+        this.sliders = {0,0,0,0,0,0,0,0,0,0}
 
         this:_registerHandler("TOUCH",
             function(simulator, screenNumber, isTouched, isTouchedAlt, x, y, xAlt, yAlt)
@@ -67,6 +73,38 @@ LifeBoatAPI.Tools.Simulator = {
                 thisScreen.touchY = y
                 thisScreen.touchAltX = xAlt
                 thisScreen.touchAltY = yAlt
+            end)
+
+        this:_registerHandler("BUTTON_INPUTS",
+            function(simulator, s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,b1,b2,b3,b4,b5,b6,b7,b8,b9,b10)
+                simulator.sliders[1] = tonumber(s1)
+                simulator.sliders[2] = tonumber(s2)
+                simulator.sliders[3] = tonumber(s3)
+                simulator.sliders[4] = tonumber(s4)
+                simulator.sliders[5] = tonumber(s5)
+                simulator.sliders[6] = tonumber(s6)
+                simulator.sliders[7] = tonumber(s7)
+                simulator.sliders[8] = tonumber(s8)
+                simulator.sliders[9] = tonumber(s9)
+                simulator.sliders[10] = tonumber(s10)
+
+                simulator.buttons[1] =  b1 == "1"
+                simulator.buttons[2] =  b2 == "1"
+                simulator.buttons[3] =  b3 == "1"
+                simulator.buttons[4] =  b4 == "1"
+                simulator.buttons[5] =  b5 == "1"
+                simulator.buttons[6] =  b6 == "1"
+                simulator.buttons[7] =  b7 == "1"
+                simulator.buttons[8] =  b8 == "1"
+                simulator.buttons[9] =  b9 == "1"
+                simulator.buttons[10] = b10 == "1"
+
+                -- handle toggles
+                for i=1,10 do
+                    if simulator.buttons[i] then
+                        simulator.buttonToggles[i] = not simulator.buttonToggles[i]
+                    end
+                end
             end)
 
         this:_registerHandler("SCREENSIZE",
@@ -116,6 +154,27 @@ LifeBoatAPI.Tools.Simulator = {
     getTouchScreen = function (this, screenNumber)
         screenNumber = screenNumber or 1
         return this._screens[screenNumber] or LifeBoatAPI.Tools.SimulatorScreen:new(screenNumber)
+    end;
+
+    ---@param this Simulator
+    ---@param buttonNumber number
+    ---@return boolean
+    getIsClicked = function (this, buttonNumber)
+        return this.buttons[buttonNumber] or false
+    end;
+
+    ---@param this Simulator
+    ---@param buttonNumber number
+    ---@return boolean
+    getIsToggled = function (this, buttonNumber)
+        return this.buttonToggles[buttonNumber] or false
+    end;
+
+    ---@param this Simulator
+    ---@param sliderNumber number
+    ---@return SimulatorScreen screen screen data for the requested screen, to be used in onLBSimulatorTick
+    getSlider = function (this, sliderNumber)
+        return this.sliders[sliderNumber] or 0
     end;
 
     ---@param this Simulator
@@ -293,6 +352,11 @@ LifeBoatAPI.Tools.Simulator = {
 
             if timeSinceFrame > this._timePerFrame then
                 timeSinceFrame = 0.0
+                
+                -- reset button clicks
+                for i=1,10 do
+                    this.buttons[i] = false
+                end
 
                 -- messages incoming from the server
                 this:_readSimulatorMessages()
