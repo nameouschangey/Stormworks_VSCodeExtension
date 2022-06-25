@@ -61,3 +61,7 @@ tostring = function(value) end
 ---@param value string|number
 ---@return number converted
 tonumber = function (value) end
+
+
+---@return number
+math.cos = function(x) end -- fix for missing return type in Lua's built-in docs
