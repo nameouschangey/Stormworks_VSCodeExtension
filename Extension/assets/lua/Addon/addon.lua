@@ -146,7 +146,7 @@ function onButtonPress(vehicle_id, peer_id, button_name) end
 --- Called when a vehicle or object is spawned by a script.
 --- @param vehicle_or_object_id number The vehicle ID or object ID that was spawned.
 --- @param component_name string The display name of the component that was spawned.
---- @param TYPE_STRING TYPE_STRING The type of the component as a string ("zone", "object", "character", "vehicle", "flare", "fire", "loot", "button", "animal", "ice")
+--- @param TYPE_STRING string The type of the component as a string ("zone", "object", "character", "vehicle", "flare", "fire", "loot", "button", "animal", "ice")
 --- @param addon_index number The internal index of the addon which spawned the vehicle or object.
 function onSpawnAddonComponent(vehicle_or_object_id, component_name, TYPE_STRING, addon_index) end
 
@@ -206,6 +206,7 @@ function onWhirlpool(transform, magnitude) end
 --- Called when a Volcano erupts.
 --- @param transform SWMatrix Where the Volcano was spawned.
 function onVolcano(transform) end
+
 
 ---------------------------------------------------------------------------------------------------------------------
 -- MATRICES

@@ -151,7 +151,7 @@ LifeBoatAPI.Tools.TableUtils = {
     --- @generic T
     --- @param tbl T table to act on
     --- @param startIndex number
-    --- @param endIndex number
+    --- @param endIndex number|nil
     --- @return T slice
     ---@section islice
     islice = function(tbl, startIndex, endIndex)
