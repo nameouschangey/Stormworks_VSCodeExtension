@@ -1,6 +1,11 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.28] - 2nd July 2022
+**minor**
+- Fixed simulator overwriting inputs each tick
+- Removed deprecated InputHandlers and SimulatorConfig, not been in use for a long time.
+
 #### [0.0.27] - 25th June 2022
 **major**
 - Added UI Buttons and Sliders to the Simulator
