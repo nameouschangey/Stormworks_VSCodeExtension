@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.29] - 3nd July 2022
+** minor **
+- Matched ingame behaviour for input/output and screen functions, where improper params are given (i.e. how these functions handle nil in-game, etc.)
+
 #### [0.0.28] - 2nd July 2022
 **minor**
 - Fixed simulator overwriting inputs each tick
