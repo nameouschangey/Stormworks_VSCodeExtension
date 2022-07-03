@@ -34,12 +34,14 @@ input = {
     getBool = function(...)
         input._ensureNotRendering()
 
-        if select("#", ...) < 1 then return end
+        local args = {...}
+        if #args < 1 then return end
 
-        local index = select(1, ...)
+        local index = tonumber(args[1])
 
-        if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " getting bool ") end
-        if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " getting bool ") end
+        if not index then return false end
+        if(index > 32) then return false end
+        if(index < 1) then  return false end
 
         return input._bools[index] or false
     end;
@@ -49,14 +51,16 @@ input = {
     getNumber = function(...)
         input._ensureNotRendering()
 
-        if select("#", ...) < 1 then return end
+        local args = {...}
+        if #args < 1 then return end
 
-        local index = select(1, ...)
-        
-        if(index > 32) then error("Index > 32 for input " .. tostring(index) .. " getting number ") end
-        if(index < 1) then error("Index < 1 for input " .. tostring(index) .. " getting number ") end
+        local index = tonumber(args[1])
 
-        return input._numbers[index] or 0
+        if not index then return 0.0 end
+        if(index > 32) then return 0.0 end
+        if(index < 1) then return 0.0 end
+
+        return input._numbers[index] or 0.0
     end;
 }
 
@@ -84,17 +88,15 @@ output = {
     ---@overload fun(index:number, value:boolean)
     setBool = function(...)
         output._ensureNotRendering()
+        local args = {...}
+        if #args < 2 then return end
 
-        if select("#", ...) < 2 then return end
+        local index = tonumber(args[1])
+        local value = args[2] or false
 
-        local index = select(1, ...)
-        local value = select(2, ...)
-
-        
-        if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
-        if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting bool " .. tostring(value)) end
-
-        value = value or false
+        if not index then return end
+        if(index > 32) then return end
+        if(index < 1) then return end
 
         if(value ~= output._bools[index]) then
             ---@diagnostic disable: undefined-global
@@ -115,17 +117,15 @@ output = {
     setNumber = function(...)
         output._ensureNotRendering()
 
-        if select("#", ...) < 2 then return end
+        local args = {...}
+        if #args < 2 then return end
 
-        local index = select(1, ...)
-        local value = select(2, ...)
+        local index = tonumber(args[1])
+        local value = tonumber(args[2]) or 0.0
 
-        if(index > 32) then error("Index > 32 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
-        if(index < 1) then error("Index < 1 for output " .. tostring(index) .. " setting number " .. tostring(value)) end
-
-        if type(value) ~= "number" then
-            value = 0
-        end
+        if not index then return end
+        if(index > 32) then return end
+        if(index < 1) then return end
 
         if(value ~= output._numbers[index]) then
 
@@ -154,39 +154,42 @@ property = {
     --- @param label string The name of the property to read
     --- @return number value
     getNumber = function(...)
-        if select("#", ...) < 1 then return end
-        local label = select(1, ...)
+        local args = {...}
+        if #args < 1 then return end
 
-        return property._numbers[label] or 0
+        local label = tostring(args[1])
+        return property._numbers[tostring(label)] or 0.0
     end;
 
     --- Get a bool value from a property
     --- @param label string The name of the property to read
     --- @return boolean value
     getBool = function(...)
-        if select("#", ...) < 1 then return end
-        local label = select(1, ...)
+        local args = {...}
+        if #args < 1 then return end
 
-        return property._bools[label] or false
+        local label = tostring(args[1])
+        return property._bools[tostring(label)] or false
     end;
 
     --- Get a text value from a property
     --- @param label string The name of the property to read
     --- @return string value
     getText = function(...)
-        if select("#", ...) < 1 then return end
-        local label = select(1, ...)
+        local args = {...}
+        if #args < 1 then return end
 
+        local label = tostring(args[1])
         return property._texts[label] or ""
     end;
 }
 
 --- Pre-processing, the game normally starts with all values at 0/false not nil
 for i=1,32 do
-    input._numbers[i] = 0
+    input._numbers[i] = 0.0
     input._bools[i] = false
 
-    output._numbers[i] = 0
+    output._numbers[i] = 0.0
     output._bools[i] = false
 end
 

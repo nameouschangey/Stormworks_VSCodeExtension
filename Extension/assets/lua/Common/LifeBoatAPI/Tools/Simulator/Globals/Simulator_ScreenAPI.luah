@@ -21,12 +21,8 @@ LifeBoatAPI.Tools.AreNumbersNan = function(...)
 end;
 
 LifeBoatAPI.Tools.SelectNumber = function(index, default, ...)
-    local value = select(index, ...)
-    if not value or type(value) ~= "number" then
-        return default
-    else
-        return value
-    end 
+    local args = {...}
+    return tonumber(args[index]) or default
 end;
 
 
@@ -265,11 +261,10 @@ screen = {
         if select("#", ...) < 3 then return end
         screen._ensureIsRendering()
 
+        local args = {...}
         local x    = LifeBoatAPI.Tools.SelectNumber(1,0, ...)
         local y    = LifeBoatAPI.Tools.SelectNumber(2,0, ...)
-        local text = select(3, ...)
-
-        if type(text) ~= "string" then return end
+        local text = tostring(args[3])
 
         if LifeBoatAPI.Tools.AreNumbersNan(x,y) then return end
 
@@ -288,15 +283,14 @@ screen = {
         if select("#", ...) < 5 then return end
         screen._ensureIsRendering()
 
+        local args = {...}
         local x                 = LifeBoatAPI.Tools.SelectNumber(1,0, ...)
         local y                 = LifeBoatAPI.Tools.SelectNumber(2,0, ...)
         local width             = LifeBoatAPI.Tools.SelectNumber(3,0, ...)
         local height            = LifeBoatAPI.Tools.SelectNumber(4,0, ...)
-        local text              = select(5, ...)
+        local text              = tostring(args[5])
         local horizontalAlign   = LifeBoatAPI.Tools.SelectNumber(6,-1, ...)
         local verticalAlign     = LifeBoatAPI.Tools.SelectNumber(7,-1, ...)
-
-        if type(text) ~= "string" then return end
 
         if LifeBoatAPI.Tools.AreNumbersNan(x, y, width, height, horizontalAlign, verticalAlign) then return end
 
