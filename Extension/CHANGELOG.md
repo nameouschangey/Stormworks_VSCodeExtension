@@ -1,7 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
-#### [0.0.29] - 3nd July 2022
+#### [0.0.30] - 8th July 2022
+** minor **
+- Fixed globalization issue in Simulator, affecting people using it in certain countries (sliders & buttons weren't functioning for some users)
+- Added default file-data when creating a new lua file
+
+#### [0.0.29] - 3rd July 2022
 ** minor **
 - Matched ingame behaviour for input/output and screen functions, where improper params are given (i.e. how these functions handle nil in-game, etc.)
 
