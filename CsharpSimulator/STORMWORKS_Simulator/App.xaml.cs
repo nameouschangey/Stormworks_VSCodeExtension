@@ -34,6 +34,11 @@ namespace STORMWORKS_Simulator
 
         public void AppStart(object sender, StartupEventArgs e)
         {
+            //var info = System.Globalization.CultureInfo.GetCultureInfoByIetfLanguageTag("ru");
+            //System.Globalization.CultureInfo.CurrentCulture = info;
+            //System.Globalization.CultureInfo.DefaultThreadCurrentCulture = info;
+            //System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = info;
+
             var args = new CommandLineArgs(e.Args);
             Window = new MainWindow(args);
             Window.Show();

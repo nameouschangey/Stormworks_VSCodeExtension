@@ -102,17 +102,22 @@ namespace STORMWORKS_Simulator
             });
         }
 
+        public string PrepareMessageArgs(params object[] args)
+        {
+            return string.Join("|", args.Select(x => Convert.ToString(x, CultureInfo.InvariantCulture)));
+        }
+
         public void SendMessage(string commandName, params object[] args)
         {
             try
             {
                 if (_Client != null && _Client.Connected)
                 {
-                    var stringArgs = string.Join("|", args.Select(x => x.ToString()));
+                    var stringArgs = PrepareMessageArgs(args);
                     var output = $"{commandName}|{stringArgs}";
 
                     var buffer = System.Text.Encoding.UTF8.GetBytes(output);
-                    var lenBuffer = System.Text.Encoding.UTF8.GetBytes(buffer.Length.ToString("0000"));
+                    var lenBuffer = System.Text.Encoding.UTF8.GetBytes(buffer.Length.ToString("0000", CultureInfo.InvariantCulture));
                     _Client.GetStream().Write(lenBuffer, 0, lenBuffer.Length);
                     _Client.GetStream().Write(buffer, 0, buffer.Length);
                 }

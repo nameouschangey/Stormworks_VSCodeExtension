@@ -57,10 +57,10 @@ namespace STORMWORKS_Simulator
                     CanvasZoom.Reset();
                 }
             };
-            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", $"{vm.ScreenNumber + 1}|{vm.Monitor.Size.X}|{vm.Monitor.Size.Y}");
+            ViewModel.OnScreenResolutionChanged += (s, vm) => VSConnection.SendMessage("SCREENSIZE", vm.ScreenNumber + 1, vm.Monitor.Size.X, vm.Monitor.Size.Y);
             ViewModel.OnScreenTouchChanged += SendTouchDataIfChanged;
-            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", $"{vm.ScreenNumber + 1}|{ (vm.IsPowered ? "1" : "0") }");
-            ViewModel.OnTickrateChanged += (s, vm) => VSConnection.SendMessage("TICKRATE", $"{vm.TickRate}|{vm.FrameSkip}");
+            ViewModel.OnPowerChanged += (s, vm) => VSConnection.SendMessage("SCREENPOWER", vm.ScreenNumber + 1, (vm.IsPowered ? "1" : "0"));
+            ViewModel.OnTickrateChanged += (s, vm) => VSConnection.SendMessage("TICKRATE", vm.TickRate, vm.FrameSkip);
 
             CanvasZoom.OnPanChanged += (s, transform) => {
                 Properties.Settings.Default.LastPanX = transform.X;
@@ -192,7 +192,14 @@ namespace STORMWORKS_Simulator
             var xAltTouchPos = Math.Min(Math.Max(vm.TouchAltPosition.X, 0), vm.Monitor.Size.X - 1);
             var yAltTouchPos = Math.Min(Math.Max(vm.TouchAltPosition.Y, 0), vm.Monitor.Size.Y - 1);
 
-            var newCommand = $"{vm.ScreenNumber + 1}|{(vm.IsLDown || vm.IsRDown ? '1' : '0') }|{ (vm.IsLDown && vm.IsRDown ? '1' : '0') }|{xTouchPos}|{yTouchPos}|{xAltTouchPos}|{yAltTouchPos}";
+            var newCommand = VSConnection.PrepareMessageArgs(vm.ScreenNumber + 1,
+                vm.IsLDown || vm.IsRDown ? '1' : '0',
+                (vm.IsLDown && vm.IsRDown ? '1' : '0'),
+                xTouchPos,
+                yTouchPos,
+                xAltTouchPos,
+                yAltTouchPos);
+
             if (newCommand != vm.LastTouchCommand)
             {
                 vm.LastTouchCommand = newCommand;
@@ -205,11 +212,10 @@ namespace STORMWORKS_Simulator
         // But doing it wrong is the fun of sideprojects, surely.
         private void SendButtonValueUpdate(Button clicked)
         {
-            var command = $"{Slider1.Value}|{Slider2.Value}|{Slider3.Value}|{Slider4.Value}|{Slider5.Value}|{Slider6.Value}|{Slider7.Value}|{Slider8.Value}|{Slider9.Value}|{Slider10.Value}|";
-            command += $"{(Button1 == clicked?1:0)}|{(Button2 == clicked?1:0)}|{(Button3 == clicked?1:0)}|{(Button4 == clicked?1:0)}|{(Button5 == clicked?1:0)}|";
-            command += $"{(Button6 == clicked?1:0)}|{(Button7 == clicked?1:0)}|{(Button8 == clicked?1:0)}|{(Button9 == clicked?1:0)}|{(Button10 == clicked?1:0)}";
-
-            VSConnection.SendMessage("BUTTON_INPUTS", command);
+            VSConnection.SendMessage("BUTTON_INPUTS",
+                Slider1.Value, Slider2.Value, Slider3.Value, Slider4.Value, Slider5.Value, Slider6.Value, Slider7.Value, Slider8.Value, Slider9.Value, Slider10.Value,
+                 Button1 == clicked?1:0 ,  Button2 == clicked?1:0 ,  Button3 == clicked?1:0 ,  Button4 == clicked?1:0 ,  Button5 == clicked?1:0,
+                 Button6 == clicked?1:0 ,  Button7 == clicked?1:0 ,  Button8 == clicked?1:0 ,  Button9 == clicked?1:0 ,  Button10 == clicked?1:0);
         }
 
         private void OnAddScreenClicked(object sender, RoutedEventArgs e)
