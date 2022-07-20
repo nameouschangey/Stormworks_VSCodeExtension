@@ -1,9 +1,3 @@
--- Auto generated docs by StormworksLuaDocsGen (https://github.com/Rene-Sackers/StormworksLuaDocsGen)
--- Based on data in: https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y
--- Notice issues/missing info? Please contribute here: https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y, then create an issue on the GitHub repo
-
--- Edits by NameousChangey to bring this up to date
-
 --- @diagnostic disable: lowercase-global
 
 server = {}
@@ -307,8 +301,202 @@ function matrix.rotationToFaceXZ(x, z) end
 
 
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+---This is not a usable class
+---Used as quick docs for the different ObjecType constants available in the game, as an enumeration
+---@class SWObjectTypeEnum : number
+---@field [0] none
+---@field [1] character,
+---@field [2] crate_small,
+---@field [3] collectable, (Not spawnable)
+---@field [4] basketball,
+---@field [5] television,
+---@field [6] barrel,
+---@field [7] schematic,  (Not spawnable)
+---@field [8] debris,  (Not spawnable)
+---@field [9] chair,
+---@field [10] trolley_food,
+---@field [11] trolley_med,
+---@field [12] clothing,  (Not spawnable)
+---@field [13] office_chair,
+---@field [14] book,
+---@field [15] bottle,
+---@field [16] fryingpan,
+---@field [17] mug,
+---@field [18] saucepan,
+---@field [19] stool,
+---@field [20] telescope,
+---@field [21] log,
+---@field [22] bin,
+---@field [23] book_2,
+---@field [24] loot,
+---@field [25] blue_barrel,
+---@field [26] buoyancy_ring,
+---@field [27] container,
+---@field [28] gas_canister,
+---@field [29] pallet,
+---@field [30] storage_bin,
+---@field [31] fire_extinguisher,
+---@field [32] trolley_tool,
+---@field [33] cafetiere,
+---@field [34] drawers_tools,
+---@field [35] glass,
+---@field [36] microwave,
+---@field [37] plate,
+---@field [38] box_closed,
+---@field [39] box_open,
+---@field [40] desk_lamp,
+---@field [41] eraser_board,
+---@field [42] folder,
+---@field [43] funnel,
+---@field [44] lamp,
+---@field [45] microscope,
+---@field [46] notebook,
+---@field [47] pen_marker,
+---@field [48] pencil,
+---@field [49] scales,
+---@field [50] science_beaker,
+---@field [51] science_cylinder,
+---@field [52] science_flask,
+---@field [53] tub_1,
+---@field [54] tub_2,
+---@field [55] filestack,
+---@field [56] barrel_toxic,
+---@field [57] flare,
+---@field [58] fire,
+---@field [59] animal,
+---@field [60] map_label,  (Not spawnable)
+---@field [61] iceberg,    (Not spawnable)
+---@field [62] gun_flare,
+---@field [63] vehicle_flare,
+---@field [64] ammo_shell,
+---@field [65] binoculars,
+---@field [66] C4,
+---@field [67] grenade,
+---@field [68] vehicle_flare,
+---@field [69] coal,
+---@field [70] meteorite,
+---@field [71] glowstick,
+
+---@class SWAddonComponentDataTypeEnum : number
+---@field [0] zone
+---@field [1] object
+---@field [2] character
+---@field [3] vehicle
+---@field [4] flare
+---@field [5] fire
+---@field [6] loot
+---@field [7] button
+---@field [8] animal
+---@field [9] ice
+---@field [10] cargo_zone
+
+---@class SWTankFluidTypeEnum : number
+---@field [0] freshwater
+---@field [1] diesel,
+---@field [2] jetfuel,
+---@field [3] air,
+---@field [4] exhaust,
+---@field [5] oil,
+---@field [6] seawater,
+---@field [7] steam,
 
 
+---@class SWGameSettingEnum : string
+---@field third_person  string, 
+---@field third_person_vehicle  string, 
+---@field vehicle_damage    string, 
+---@field player_damage     string, 
+---@field npc_damage    string, 
+---@field sharks    string, 
+---@field fast_travel   string, 
+---@field teleport_vehicle  string, 
+---@field rogue_mode    string, 
+---@field auto_refuel   string, 
+---@field megalodon     string, 
+---@field map_show_players  string, 
+---@field map_show_vehicles     string, 
+---@field show_3d_waypoints     string, 
+---@field show_name_plates  string, 
+---@field day_night_length  string,  -- currently cannot be written to
+---@field sunrise   string,  -- currently cannot be written to
+---@field sunset    string,  -- currently cannot be written to
+---@field infinite_money    string, 
+---@field settings_menu     string, 
+---@field unlock_all_islands    string, 
+---@field infinite_batteries    string, 
+---@field infinite_fuel     string, 
+---@field engine_overheating    string, 
+---@field no_clip   string, 
+---@field map_teleport  string, 
+---@field cleanup_vehicle   string, 
+---@field clear_fow     string,  -- clear fog of war
+---@field vehicle_spawning  string, 
+---@field photo_mode    string, 
+---@field respawning    string, 
+---@field settings_menu_lock    string, 
+---@field despawn_on_leave  string,  -- despawn player characters when they leave a server
+---@field unlock_all_components     string, 
+---@field override_weather  string, 
+
+---@class SWLabelTypeEnum : number
+---@field [0] none,
+---@field [1] cross,
+---@field [2] wreckage,
+---@field [3] terminal,
+---@field [4] military,
+---@field [5] heritage,
+---@field [6] rig,
+---@field [7] industrial,
+---@field [8] hospital,
+---@field [9] science,
+---@field [10] airport,
+---@field [11] coastguard,
+---@field [12] lighthouse,
+---@field [13] fuel,
+---@field [14] fuel_sell
+
+
+---@class SWPositionTypeEnum : number
+---@field [0] fixed,
+---@field [1] vehicle,
+---@field [2] object
+
+---@class SWMarkerTypeEnum : number
+---@field [0] delivery_target,
+---@field [1] survivor,
+---@field [2] object,
+---@field [3] waypoint,
+---@field [4] tutorial,
+---@field [5] fire,
+---@field [6] shark,
+---@field [7] ice,
+---@field [8] search_radius
+---@field [9] flag_1
+---@field [10] flag_2
+---@field [11] house
+---@field [12] car
+---@field [13] plane
+---@field [14] tank
+---@field [15] heli
+---@field [16] ship
+---@field [17] boat
+---@field [18] attack
+---@field [19] defend
+
+---@class SWNotifiationTypeEnum : number
+---@field [0] new_mission,
+---@field [1] new_mission_critical,
+---@field [2] failed_mission,
+---@field [3] failed_mission_critical,
+---@field [4] complete_mission,
+---@field [5] network_connect,
+---@field [6] network_disconnect,
+---@field [7] network_info,
+---@field [8] chat_message,
+---@field [9] network_info_critical
 --------------------------------------------------------------------------------
 -- ADDON
 ------------------------------------------------------------------------------
@@ -340,24 +528,26 @@ function matrix.rotationToFaceXZ(x, z) end
 --- @field env_mod          boolean Whether the location is an environment mod
 --- @field component_count  number The amount of components in this location
 
---- @class SWComponentData
+
+
+--- @class SWAddonComponentData
 --- @field tags_full                        string
 --- @field tags                             table<number, string> The tags on the component
 --- @field display_name                     string The display name of the component
---- @field type                             number The type of the component (0 = zone, 1 = object, 2 = character, 3 = vehicle, 4 = flare, 5 = fire, 6 = loot, 7 = button, 8 = animal, 9 = ice, 10 = cargo_zone)
---- @field id                               number The ID of the component
---- @field dynamic_object_type              number The object type of the component (See Object Type)
+--- @field type                             SWAddonComponentDataTypeEnum The type of the component (0 = zone, 1 = object, 2 = character, 3 = vehicle, 4 = flare, 5 = fire, 6 = loot, 7 = button, 8 = animal, 9 = ice, 10 = cargo_zone)
+--- @field id                               number The ID of the component from the missions editor e.g. ID_27
+--- @field dynamic_object_type              SWObjectTypeEnum The object type of the component (number for pan/character/pot/whatever)
 --- @field transform                        SWMatrix The position of the component
 --- @field vehicle_parent_component_id      number 
 --- @field character_outfit_type            number The character outfit type (See Outfit type)
 
---- @class SWAddonComponent
---- @field tags_full string The tags as a string (ex. "tag1,tag2,tag3")
---- @field tags table<number, string> The tags of the component
---- @field display_name string The display name of the component
---- @field type string The type of the component
---- @field transform SWMatrix The location of the component
---- @field id number The ID of the component
+--- @class SWAddonComponentSpawned
+--- @field tags_full            string The tags as a string (ex. "tag1,tag2,tag3")
+--- @field tags                 table<number, string> The tags of the component
+--- @field display_name         string The display name of the component
+--- @field type                 SWAddonComponentDataTypeEnum The type of the component
+--- @field transform            SWMatrix The location of the component
+--- @field id                   number object_id/vehicle id of spawned item
 
 --- Get the internal index of an active addon (useful if you want to spawn objects from another script). Omitting the name argument will return this addon's index
 --- @param name string|nil The name of the addon as it appears in xml file. Not the filename
@@ -412,7 +602,7 @@ function server.getAddonData(addon_index) end
 --- @param addon_index number The index of the addon as it is found in the missions folder. There is no set order and it may not be the same next execution.
 --- @param location_index number The unique index of the location that the component is in
 --- @param component_index number The index of the component that can be read from the COMPONENT_DATA table using server.getLocationComponentData()
---- @return SWAddonComponent component, boolean is_success
+--- @return SWAddonComponentSpawned component, boolean is_success
 function server.spawnAddonComponent(matrix, addon_index, location_index, component_index) end
 
 --- Returns data on a specific location in the addon
@@ -425,7 +615,7 @@ function server.getLocationData(addon_index, location_index) end
 --- @param addon_index number The index of the addon as it is found in the missions folder. There is no set order and it may not be the same next execution. INDEX STARTS AT 0
 --- @param location_index number The index of the location in the addon
 --- @param component_index number The index of the component in the addon
---- @return SWComponentData component_data, boolean is_success
+--- @return SWAddonComponentData component_data, boolean is_success
 function server.getLocationComponentData(addon_index, location_index, component_index) end
 
 
@@ -452,7 +642,7 @@ function server.announce(name, message, peerID) end
 --- @param peerID number The peerID of the player you want to message. -1 messages all players
 --- @param title string The title of the notification
 --- @param message string The message you want to send the player(s)
---- @param notificationType number Changes how the notification looks. Refer to notificationTypes https://cutt.ly/Nmc3SrM
+--- @param notificationType SWNotifiationTypeEnum number, Changes how the notification looks. Refer to notificationTypes
 function server.notify(peerID, title, message, notificationType) end
 
 --- Gets a unique ID to be used with other UI functions. Functions similar to a vehicle ID. A UI id can be used for multiple lines and map objects but each popup with a different text or position must have it's own ID
@@ -467,12 +657,12 @@ function server.removeMapID(peer_id, ui_id) end
 --- Add a map marker for the specified peer(s). x, z represent the worldspace location of the marker, since the map is 2D a y coordinate is not required. If POSITION_TYPE is set to 1 or 2 (vehicle or object) then the marker will track the object/vehicle of object_id/vehicle_id and offset the position by parent_local_x, parent_local_z. 
 --- @param peer_id number The peer id of the affected player. -1 affects all players
 --- @param ui_id number The unique ui id to use
---- @param position_type number Refer to POSTION_TYPE. Defines what type (object/vehicle) the marker should follow. Or if it should not follow anything. If the vehicle/object that object is set to follow cannot be found, this defaults to 0 meaning it becomes static, when the vehicle/object is reloacated, it reverts back to the previous value. https://cutt.ly/omc3FjC
---- @param marker_type number Refer to MARKER_TYPE https://cutt.ly/Amc3HCb
---- @param x number Refer to World Space. Overrides parent_local_x https://cutt.ly/smc3L3C
---- @param z number Refer to World Space. Overrrides parent_local_z https://cutt.ly/smc3L3C
---- @param parent_local_x number The x offset relative to the parent. Refer to World Space https://cutt.ly/smc3L3C
---- @param parent_local_z number The y offset relative to the parent. Refer to World Space https://cutt.ly/smc3L3C
+--- @param position_type SWPositionTypeEnum number, Defines what type (object/vehicle) the marker should follow. Or if it should not follow anything. If the vehicle/object that object is set to follow cannot be found, this defaults to 0 meaning it becomes static, when the vehicle/object is reloacated, it reverts back to the previous value.
+--- @param marker_type SWMarkerTypeEnum number
+--- @param x number Refer to World Space. Overrides parent_local_x
+--- @param z number Refer to World Space. Overrrides parent_local_z 
+--- @param parent_local_x number The x offset relative to the parent. Refer to World Space
+--- @param parent_local_z number The y offset relative to the parent. Refer to World Space
 --- @param vehicle_id number The vehicle to follow if POSITION_TYPE is set to 1. Set to 0 to ignore
 --- @param object_id number The object to follow if POSITION_TYPE is set to 2. Set to 0 to ignore
 --- @param label string The text that appears when mousing over the icon. Appears like a title
@@ -488,10 +678,10 @@ function server.removeMapObject(peer_id, ui_id) end
 --- 
 --- @param peer_id number The peer id of the affected player. -1 affects all players
 --- @param ui_id number The unique ui id to use
---- @param LABEL_TYPE number Refer to LABEL_TYPE (Refer to cells "Types!A16:B31" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param LABEL_TYPE SWLabelTypeEnum number
 --- @param name string The text that appears on the label
---- @param x number Refer to World Space https://cutt.ly/smc3L3C
---- @param z number Refer to World Space https://cutt.ly/smc3L3C
+--- @param x number Refer to World Space
+--- @param z number Refer to World Space
 function server.addMapLabel(peer_id, ui_id, LABEL_TYPE, name, x, z) end
 
 --- 
@@ -502,7 +692,7 @@ function server.removeMapLabel(peer_id, ui_id) end
 --- 
 --- @param peer_id number The peer id of the affected player. -1 affects all players
 --- @param ui_id number The ui id to use
---- @param start_matrix SWMatrix Line start position. Refer to World Space https://cutt.ly/smc3L3C
+--- @param start_matrix SWMatrix Line start position. worldspace
 --- @param end_matrix SWMatrix Line stop position
 --- @param width number Line width
 function server.addMapLine(peer_id, ui_id, start_matrix, end_matrix, width) end
@@ -518,9 +708,9 @@ function server.removeMapLine(peer_id, ui_id) end
 --- @param name string ? Appears to do nothing. Can be left as an empty string: ""
 --- @param is_show boolean If the popup is currently being shown
 --- @param text string The text inside the popup. You can fit 13 characters in a line before it will wrap.
---- @param x number X position of the popup. Refer to World Space https://cutt.ly/smc3L3C
---- @param y number Y position of the popup. Refer to World Space https://cutt.ly/smc3L3C
---- @param z number Z position of the popup. Refer to World Space https://cutt.ly/smc3L3C
+--- @param x number X position of the popup. worldspace
+--- @param y number Y position of the popup. worldspace
+--- @param z number Z position of the popup. worldspace
 --- @param render_distance number The distance the popup will be viewable from in meters
 --- @param vehicle_parent_id number The vehicle to attach the popup to
 --- @param object_parent_id number The object to attach the popup to
@@ -600,7 +790,7 @@ function server.getPlayerCharacterID(peer_id) end
 
 --- Spawns an object at the specified matrix
 --- @param matrix SWMatrix The matrix that the object should be spawned at
---- @param object_type number Refer to OBJECT_TYPE (Refer to cells "Types!A90:B90" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param  object_type SWObjectTypeEnum number, object type
 --- @return number object_id, boolean is_success
 function server.spawnObject(matrix, object_type) end
 
@@ -617,13 +807,13 @@ function server.spawnFire(matrix, size, magnitude, is_lit, is_explosive, parent_
 
 --- Spawns an NPC.
 --- @param matrix SWMatrix The matrix the character will be spawned at
---- @param outfit_id number Refer to OUTFIT_TYPE. If is_interactable is false, outfit_id is the name that shows up when looking at the NPC . This is the only place to give the character a name. (Refer to cells "Types!A155:B155" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param outfit_id SWOutfitTypeEnum If is_interactable is false, outfit_id is the name that shows up when looking at the NPC . This is the only place to give the character a name.
 --- @return number object_id, boolean is_success
 function server.spawnCharacter(matrix, outfit_id) end
 
 --- Spawns an animal (penguin, shark, etc.)
 --- @param matrix SWMatrix The matrix the animal will be spawned at
---- @param animal_type number Refer to ANIMAL_TYPE (Refer to cells "Types!A168:B168" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param animal_type SWAnimalTypeEnum number
 --- @param size_multiplier number The scale multiplier of the animal
 --- @return number object_id, boolean is_success
 function server.spawnAnimal(matrix, animal_type, size_multiplier) end
@@ -695,29 +885,127 @@ function server.setCharacterData(object_id, hp, is_interactable, is_ai) end
 
 --- Set the equipment a character has
 --- @param object_id number The unique id of the character
---- @param slot number Refer to Character Slots https://cutt.ly/nmc3m02
---- @param EQUIPMENT_ID number Refer to EQUIPMENT_ID https://cutt.ly/7mc3IIN
+--- @param slot SWSlotNumberEnum number
+--- @param EQUIPMENT_ID SWEquipmentTypeEnum number 
 --- @param is_active boolean Activates equipment such as strobe lights and fire exstinguishers.
---- @param integer_value number|nil Depending on the item, sets the integer value (charges, ammo, channel, etc.). See: Items int/float https://cutt.ly/7mc9QDb
---- @param float_value number|nil Depending on the item, sets the float value (ammo, battery, etc.). See: Items int/float https://cutt.ly/7mc9QDb
+--- @param integer_value number|nil Depending on the item, sets the integer value (charges, ammo, channel, etc.)
+--- @param float_value number|nil Depending on the item, sets the float value (ammo, battery, etc.)
 --- @return boolean is_success
 function server.setCharacterItem(object_id, slot, EQUIPMENT_ID, is_active, integer_value, float_value) end
 
 --- Returns the id of the equipment that the character has in the provided slot
 --- @param object_id number The unique id of the character to check
---- @param SLOT_NUMBER number The slot to check on the character (Refer to cells "Returned Tables!A14:C14" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param SLOT_NUMBER SWSlotNumberEnum number
 --- @return number equipment_id, boolean is_success
 function server.getCharacterItem(object_id, SLOT_NUMBER) end
 
 
 
+---@class SWOutfitTypeEnum : number
+---@field [0] none,
+---@field [1] worker,
+---@field [2] fishing,
+---@field [3] waiter,
+---@field [4] swimsuit,
+---@field [5] military,
+---@field [6] office,
+---@field [7] police,
+---@field [8] science,
+---@field [9] medical,
+---@field [10] wetsuit,
+---@field [11] civilian
 
 
+---@class SWAnimalTypeEnum : number
+---@field [0] shark,
+---@field [1] whale,
+---@field [2] seal,
+---@field [3] penguin
 
 
+---@class SWSlotNumberEnum : number
+---@field [1] Large_Equipment_Slot, 
+---@field [2] Small_Equipment_Slot, 
+---@field [3] Small_Equipment_Slot, 
+---@field [4] Small_Equipment_Slot, 
+---@field [5] Small_Equipment_Slot, 
+---@field [6] Outfit_Slot
 
 
-
+---@class SWEquipmentTypeEnum
+---@field [0] none,
+---@field [1] diving,
+---@field [2] firefighter,
+---@field [3] scuba,
+---@field [4] parachute, [int = {0 = deployed, 1 = ready}]
+---@field [5] arctic,
+---@field [29] hazmat
+---@field [6] binoculars,
+---@field [7] cable,
+---@field [8] compass,
+---@field [9] defibrillator, [int = charges]
+---@field [10] fire_extinguisher, [float = ammo]
+---@field [11] first_aid, [int = charges]
+---@field [12] flare, [int = charges]
+---@field [13] flaregun, [int = ammo]
+---@field [14] flaregun_ammo, [int = ammo]
+---@field [15] flashlight, [float = battery]
+---@field [16] hose, [int = {0 = hose off, 1 = hose on}]
+---@field [17] night_vision_binoculars, [float = battery]
+---@field [18] oxygen_mask, [float = oxygen]
+---@field [19] radio, [int = channel] [float = battery]
+---@field [20] radio_signal_locator, [float = battery]
+---@field [21] remote_control, [int = channel] [float = battery]
+---@field [22] rope,
+---@field [23] strobe_light, [int = {0 = off, 1 = on}] [float = battery]
+---@field [24] strobe_light_infrared, [int = {0 = off, 1 = on}] [float = battery]
+---@field [25] transponder, [int = {0 = off, 1 = on}] [float = battery]
+---@field [26] underwater_welding_torch, [float = charge]
+---@field [27] welding_torch, [float = charge]
+---@field [28] coal,
+---@field [30] radiation_detector, [float = battery]
+---@field [31] c4, [int = ammo]
+---@field [32] c4_detonator,
+---@field [33] speargun, [int = ammo]
+---@field [34] speargun_ammo,
+---@field [35] pistol, [int = ammo]
+---@field [36] pistol_ammo,
+---@field [37] smg, [int = ammo]
+---@field [38] smg_ammo,
+---@field [39] rifle, [int = ammo]
+---@field [40] rifle_ammo,
+---@field [41] grenade, [int = ammo]
+---@field [42] machine_gun_ammo_box_k,
+---@field [43] machine_gun_ammo_box_he,
+---@field [44] machine_gun_ammo_box_he_frag,
+---@field [45] machine_gun_ammo_box_ap,
+---@field [46] machine_gun_ammo_box_i,
+---@field [47] light_auto_ammo_box_k,
+---@field [48] light_auto_ammo_box_he,
+---@field [49] light_auto_ammo_box_he_frag,
+---@field [50] light_auto_ammo_box_ap,
+---@field [51] light_auto_ammo_box_i,
+---@field [52] rotary_auto_ammo_box_k,
+---@field [53] rotary_auto_ammo_box_he,
+---@field [54] rotary_auto_ammo_box_he_frag,
+---@field [55] rotary_auto_ammo_box_ap,
+---@field [56] rotary_auto_ammo_box_i,
+---@field [57] heavy_auto_ammo_box_k,
+---@field [58] heavy_auto_ammo_box_he,
+---@field [59] heavy_auto_ammo_box_he_frag,
+---@field [60] heavy_auto_ammo_box_ap,
+---@field [61] heavy_auto_ammo_box_i,
+---@field [62] battle_shell_k,
+---@field [63] battle_shell_he,
+---@field [64] battle_shell_he_frag,
+---@field [65] battle_shell_ap,
+---@field [66] battle_shell_i,
+---@field [67] artillery_shell_k,
+---@field [68] artillery_shell_he,
+---@field [69] artillery_shell_he_frag,
+---@field [70] artillery_shell_ap,
+---@field [71] artillery_shell_i,
+---@field [72] chemlight,
 
 
 
@@ -873,7 +1161,7 @@ function server.getVehicleDial(vehicle_id, dial_name) end
 --- @param vehicle_id number The unique id of the vehicle
 --- @param tank_name string The name of the tank as it appears on the vehicle. Editable using the select tool in the workbench
 --- @param amount number The amount you want to fill the tank in litres
---- @param FLUID_TYPE number Refer to FLUID_TYPE (Refer to cells "Types!A173:B173" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param FLUID_TYPE SWTankFluidTypeEnum number for fuel type
 function server.setVehicleTank(vehicle_id, tank_name, amount, FLUID_TYPE) end
 
 --- Returns the amount of liters in the tank
@@ -1145,9 +1433,9 @@ function server.getVolcanos() end
 function server.spawnExplosion(transform_matrix, magnitude) end
 
 --- Used to set game settings
---- @param GAME_SETTING string Refer to Game Settings (Refer to cells "null!A1" on https://docs.google.com/spreadsheets/d/1joiH8eu6LOE76lL0ijNoUe-3VsVDfMkAnfHY-trCt9Y)
+--- @param GameSettingString SWGameSettingEnum
 --- @param value boolean The game setting state. True or False
-function server.setGameSetting(GAME_SETTING, value) end
+function server.setGameSetting(GameSettingString, value) end
 
 --- Returns a table of the game settings indexed by the GAME_SETTING string, this can be accessed inline eg. server.getGameSettings().third_person
 --- @return SWGameSettings game_settings
@@ -1214,23 +1502,23 @@ function server.getTilePurchased(matrix) end
 --- Returns whether the object transform is within a custom zone of the selected size
 --- @param matrix_object SWMatrix The matrix of the object
 --- @param matrix_zone SWMatrix The matrix of the zone to search within
---- @param zone_size_x number The size of the zone. Refer to World Space https://cutt.ly/smc3L3C
---- @param zone_size_y number The size of the zone. Refer to World Space https://cutt.ly/smc3L3C
---- @param zone_size_z number The size of the zone. Refer to World Space https://cutt.ly/smc3L3C
+--- @param zone_size_x number The size of the zone. Refer to World Space 
+--- @param zone_size_y number The size of the zone. Refer to World Space 
+--- @param zone_size_z number The size of the zone. Refer to World Space 
 --- @return boolean is_in_area
 function server.isInTransformArea(matrix_object, matrix_zone, zone_size_x, zone_size_y, zone_size_z) end
 
 --- Returns a table of waypoints that form a path from start to end, tags should be seperated by commas with no spaces.
---- @param matrix_start SWMatrix The starting point of the path. Refer to World Space https://cutt.ly/smc3L3C
---- @param matrix_end SWMatrix The ending point of the path. Refer to World Space https://cutt.ly/smc3L3C
+--- @param matrix_start SWMatrix The starting point of the path. Refer to World Space
+--- @param matrix_end SWMatrix The ending point of the path. Refer to World Space
 --- @param required_tags string The tags a graph node must have to be used.
 --- @param avoided_tags string The tags it will avoid if a graph node has it. (To omit provide a empty string "")
 --- @return table<number, SWPathFindPoint> position_list
 function server.pathfind(matrix_start, matrix_end, required_tags, avoided_tags) end
 
 --- Returns a table of waypoints tagged with ocean_path, that form a path from start to end. This functions the same as passing "ocean_path" as a required tag to server.pathfind().
---- @param matrix_start SWMatrix The starting point of the path. Refer to World Space https://cutt.ly/smc3L3C
---- @param matrix_end SWMatrix The ending point of the path. Refer to World Space https://cutt.ly/smc3L3C
+--- @param matrix_start SWMatrix The starting point of the path. World Space 
+--- @param matrix_end SWMatrix The ending point of the path. World Space
 --- @return table<number, SWPathFindPoint> position_list
 function server.pathfindOcean(matrix_start, matrix_end) end
 
