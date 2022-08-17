@@ -1,6 +1,10 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.31] - 17th August 2022
+** minor **
+- Fixed g_savedata getting minimized in addon lua
+
 #### [0.0.30] - 8th July 2022
 ** minor **
 - Fixed globalization issue in Simulator, affecting people using it in certain countries (sliders & buttons weren't functioning for some users)

@@ -20,7 +20,7 @@ LifeBoatAPI.Tools.ParsingConstantsLoader = {
         ,"repeat"    ,"return"    ,"then"      ,"until"
         ,"while"
     };
-    _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_save_data", "pairs", "ipairs", "next", "tostring", "tonumber"};
+    _default_baseNames = {"nil", "arg", "true", "false", "type", "debug", "_ENV", "g_savedata", "pairs", "ipairs", "next", "tostring", "tonumber"};
     _vehicle_restricted_callbacks = {"onTick", "onDraw", "httpReply"};
     _mission_restricted_callbacks = {"onTick", "onCreate", "onDestroy", "onCustomCommand", "onChatMessage",
                                      "onPlayerJoin", "onPlayerSit", "onPlayerUnsit", "onCharacterSit", "onCharacterUnsit", "onPlayerRespawn",
