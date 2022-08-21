@@ -522,8 +522,8 @@ function matrix.rotationToFaceXZ(x, z) end
 --- @field location_count   number The number of locations in the addon
 
 --- @class SWLocationData
---- @field name             number The name of the location
---- @field tile             number The tile name of the location
+--- @field name             string The name of the location
+--- @field tile             string The filename of the tile location
 --- @field env_spawn_count  number The amount of environment spawns
 --- @field env_mod          boolean Whether the location is an environment mod
 --- @field component_count  number The amount of components in this location
