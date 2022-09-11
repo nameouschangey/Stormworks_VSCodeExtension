@@ -16,46 +16,60 @@ require("LifeBoatAPI.Tools.Build.ParsingConstantsLoader")
 ---@field minimizer Minimizer
 ---@field vehicle_constants ParsingConstantsLoader
 ---@field mission_constants ParsingConstantsLoader
+---@field filter string|nil lua-pattern applied against each filepath, to see if it should be built or not
 LifeBoatAPI.Tools.Builder = {
+
+    ---@param cls Builder
     ---@param outputDirectory Filepath
     ---@return Builder
-    new = function(this, rootDirs, outputDirectory, microcontrollerDoc, addonDoc)
-        this = LifeBoatAPI.Tools.Copy(this)
-        this.outputDirectory = outputDirectory
+    new = function(cls, rootDirs, outputDirectory, microcontrollerDoc, addonDoc)
+        ---@type Builder
+        local self = LifeBoatAPI.Tools.Copy(cls)
+        self.outputDirectory = outputDirectory
 
-        this.vehicle_constants = this:_setupVehicleConstants(microcontrollerDoc)
-        this.mission_constants = this:_setupMissionConstants(addonDoc)
+        self.vehicle_constants = self:_setupVehicleConstants(microcontrollerDoc)
+        self.mission_constants = self:_setupMissionConstants(addonDoc)
 
-        this.combiner = LifeBoatAPI.Tools.Combiner:new()
+        self.combiner = LifeBoatAPI.Tools.Combiner:new()
         for i=1, #rootDirs do
-            this.combiner:addRootFolder(rootDirs[i])
+            self.combiner:addRootFolder(rootDirs[i])
         end
-        return this
+        return self
     end;
 
-    ---@param this Builder
+    ---@param self Builder
     ---@param name string
     ---@param entrypointFile Filepath
-    buildMicrocontroller = function(this, name, entrypointFile, params)
-        return this:_buildScript(name, entrypointFile, params, this.vehicle_constants)
+    buildMicrocontroller = function(self, name, entrypointFile, params)
+        return self:_buildScript(name, entrypointFile, params, self.vehicle_constants)
     end;
 
-    ---@param this Builder
+    ---@param self Builder
     ---@param name string
     ---@param entrypointFile Filepath
-    buildAddonScript = function (this, name, entrypointFile, params)    
-        return this:_buildScript(name, entrypointFile, params, this.mission_constants)
+    buildAddonScript = function (self, name, entrypointFile, params)    
+        return self:_buildScript(name, entrypointFile, params, self.mission_constants)
     end;
 
-    _buildScript = function (this, name, entrypointFile, params, minimizerConstants)
+    ---@param self Builder
+    ---@param name string
+    ---@param entrypointFile Filepath
+    _buildScript = function (self, name, entrypointFile, params, minimizerConstants)
+        if self.filter then
+            -- check if we're filtering out the file
+            if not name:match(self.filter) then
+                print(name .. " skipped by build filter")
+                return
+            end
+        end
         params = params or {}
 
-        local cmbFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
-        local outFile = LifeBoatAPI.Tools.Filepath:new(this.outputDirectory:linux() .. [[/release/]] .. name, true)
+        local cmbFile = LifeBoatAPI.Tools.Filepath:new(self.outputDirectory:linux() .. [[/_intermediate/]] .. name, true)
+        local outFile = LifeBoatAPI.Tools.Filepath:new(self.outputDirectory:linux() .. [[/release/]] .. name, true)
 
         local originalText = LifeBoatAPI.Tools.FileSystemUtils.readAllText(entrypointFile)
 
-        local combinedText = this.combiner:combine(originalText)
+        local combinedText = self.combiner:combine(originalText)
         if not params.skipCombinedFileOutput then
             LifeBoatAPI.Tools.FileSystemUtils.writeAllText(cmbFile, combinedText)
         end
@@ -69,7 +83,7 @@ LifeBoatAPI.Tools.Builder = {
         return originalText, combinedText, finalText, outFile
     end;
 
-    _setupVehicleConstants = function(this, docpath)
+    _setupVehicleConstants = function(self, docpath)
         local constants = LifeBoatAPI.Tools.ParsingConstantsLoader:new()
         constants:addRestrictedKeywords(constants._vehicle_restricted_callbacks)  -- select from _vehicle_restricted and _mission_restricted
         constants:loadLibrary("table")
@@ -79,7 +93,7 @@ LifeBoatAPI.Tools.Builder = {
         return constants
     end;
 
-    _setupMissionConstants = function (this, docpath)
+    _setupMissionConstants = function (self, docpath)
         local constants = LifeBoatAPI.Tools.ParsingConstantsLoader:new()
         constants:addRestrictedKeywords(constants._mission_restricted_callbacks)
         constants:loadLibrary("table")

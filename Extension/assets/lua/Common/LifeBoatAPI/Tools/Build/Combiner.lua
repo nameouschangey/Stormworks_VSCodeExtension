@@ -56,15 +56,15 @@ LifeBoatAPI.Tools.Combiner = {
         local keepSearching = true
         while keepSearching do
             keepSearching = false
-            local requires = data:gmatch("\n%s-require%([\"'](..-)[\"']%)")
-            for require in requires do
+            local require = data:match("\n%s-require%([\"'](..-)[\"']%)")
+            if require then
+                keepSearching = true
                 local fullstring = "\n%s-require%([\"']"..require.."[\"']%)%s-"
                 if(requiresSeen[require]) then
                     -- already seen this, so we just cut it from the file
                     data = data:gsub(fullstring, "")
                 else
                     -- valid require to be replaced with the file contents
-                    keepSearching = true
                     requiresSeen[require] = true
 
                     if(this.filesByRequire[require]) then
