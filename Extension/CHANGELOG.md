@@ -1,6 +1,11 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.32] - 11th September 2022
+** minor **
+- Fixed issue with requires order for combiner in some cases
+- Added new "builder.filter" property for _buildactions.lua, now simplifies only building "some" files from a project; uses lua-pattern matching against the require-name of the file to be built
+
 #### [0.0.31] - 17th August 2022
 ** minor **
 - Fixed g_savedata getting minimized in addon lua
