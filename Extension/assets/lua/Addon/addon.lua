@@ -896,6 +896,15 @@ function server.spawnCreature(matrix, creature_type, size_multiplier) end
 --- @return boolean is_success if the creatures next path was successfully set
 function server.setCreatureMoveTarget(object_id, matrix) end
 
+--- Spawns a dropped equipment item at the specified matrix, with the ability to set some settings of the item
+--- @param matrix SWMatrix the matrix to spawn the equipment at
+--- @param EQUIPMENT_ID SWEquipmentTypeEnum the equipment type to spawn
+--- @param int integer for setting the int data for this object.
+--- @param float number for setting the float data for this object, such as charge level, ammo, etc.
+--- @return number object_id the object_id of the spawned equipment
+--- @return boolean is_success true if the equipment was successsfully spawned, false if it failed.
+function server.spawnEquipment(matrix, EQUIPMENT_ID, int, float) end
+
 --- Despawns objects. Can be used on characters and animals.
 --- @param object_id number The unique id of the object/character/animal to be despawned
 --- @param is_instant boolean If the object should be despawned instantly (true) or when no one is near (false)
@@ -980,7 +989,6 @@ function server.setCharacterItem(object_id, slot, EQUIPMENT_ID, is_active, integ
 --- @param SLOT_NUMBER SWSlotNumberEnum number
 --- @return number equipment_id, boolean is_success
 function server.getCharacterItem(object_id, SLOT_NUMBER) end
-
 
 
 ---@class SWOutfitTypeEnum : number
