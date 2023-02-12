@@ -1,6 +1,12 @@
 # Change Log
 Issue tracker: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues 
 
+#### [0.0.33] - 12th February 2023
+** minor **
+- Fixed issue with screen and input intellisense
+- Updated addon lua-docs by Toastery
+
+
 #### [0.0.32] - 11th September 2022
 ** minor **
 - Fixed issue with requires order for combiner in some cases
