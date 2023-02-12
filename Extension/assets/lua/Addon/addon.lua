@@ -68,6 +68,29 @@ function onCharacterSit(object_id, vehicle_id, seat_name) end
 --- @param seat_name string The name of the seat
 function onCharacterUnsit(object_id, vehicle_id, seat_name) end
 
+--- Called whenever any character (including players) picks up a character (including players).
+--- @param object_id_actor number the object id of the one who picked up the other
+--- @param object_id_target number the object id of who was picked up
+function onCharacterPickup(object_id_actor, object_id_target) end
+
+--- Called when a character (including players) picks up an equipment item
+--- @param character_object_id number the object_id of the character
+--- @param equipment_object_id number the object_id of the equipment item
+--- @param EQUIPMENT_ID SWEquipmentTypeEnum the equipment_id of the item which was picked up.
+function onEquipmentPickup(character_object_id, equipment_object_id, EQUIPMENT_ID) end
+
+--- Called when a character (including players) drops an equipment item
+--- @param character_object_id number the object_id of the character
+--- @param equipment_object_id number the object_id of the equipment item
+--- @param EQUIPMENT_ID SWEquipmentTypeEnum the equipment_id of the item which was dropped.
+function onEquipmentDrop(character_object_id, equipment_object_id, EQUIPMENT_ID) end
+
+--- Called whenever any character (including players) picks up any creature.
+--- @param character_object_id number the object id of the character
+--- @param creature_object_id number the object id of the creature
+--- @param CREATURE_TYPE SWCreatureTypeEnum the type of creature that was picked up.
+function onCharacterPickup(character_object_id, creature_object_id, CREATURE_TYPE) end
+
 --- Called whenever a player respawns.
 --- @param peer_id number The peer ID of the player who respawned
 function onPlayerRespawn(peer_id) end
@@ -379,6 +402,7 @@ function matrix.rotationToFaceXZ(x, z) end
 ---@field [69] coal,
 ---@field [70] meteorite,
 ---@field [71] glowstick,
+---@field [72] creature
 
 ---@class SWAddonComponentDataTypeEnum : number
 ---@field [0] zone
@@ -402,6 +426,20 @@ function matrix.rotationToFaceXZ(x, z) end
 ---@field [5] oil,
 ---@field [6] seawater,
 ---@field [7] steam,
+
+---@class SWOreTypeEnum : number
+---@field [0] coal,
+---@field [1] iron,
+---@field [2] aluminium,
+---@field [3] gold,
+---@field [4] gold_dirt,
+---@field [5] uranium,
+---@field [6] ingot_iron,
+---@field [7] ingot_steel,
+---@field [8] ingot_aluminium,
+---@field [9] ingot_gold_impure,
+---@field [10] ingot_gold,
+---@field [11] ingot_uranium
 
 
 ---@class SWGameSettingEnum : string
@@ -501,14 +539,21 @@ function matrix.rotationToFaceXZ(x, z) end
 -- ADDON
 ------------------------------------------------------------------------------
 
+--- @class SWZoneTypeEnum
+--- @field [0] box,
+--- @field [1] sphere,
+--- @field [2] radius
+
 --- @class SWZone
 --- @field tags         table<number, string> The tags on the zone
 --- @field tags_full    string
 --- @field name         string The name of the zone
 --- @field transform    SWMatrix The location of the zone
---- @field size         number The size of the zone
+--- @field size         SWZoneSize size of the zone
 --- @field radius       number The radius of the zone
---- @field type         number The shape of the zone (0 = box/1 = sphere/2 = radius)
+--- @field type         SWZoneTypeEnum The shape of the zone
+--- @field parent_vehicle_id number the parent's vehicle_id
+--- @field parent_relative_transform SWMatrix the matrix relative to the parent
 
 --- @class SWZoneSize
 --- @field x number The world X coordinate
@@ -564,6 +609,13 @@ function server.getLocationIndex(addon_index, name) end
 --- @param name string 
 --- @return boolean is_success
 function server.spawnThisAddonLocation(name) end
+
+--- Directly spawn a location by a name from the current addon, optional matrix parameter
+--- @param name string the name of the location in the current addon
+--- @param matrix SWMatrix? optional param, leaving blank will result in it spawning at the first tile of the location type, matrix in global space.
+--- @return number location_index the index of the location which was spawned.
+--- @return boolean is_success true if it successfully spawned the location, false if it failed 
+function server.spawnNamedAddonLocation(name, matrix) end
 
 --- Spawn a mission location at the given matrix
 --- @param matrix SWMatrix Matrix the mission location should spawn at. 0,0,0 matrix will spawn at a random location of the tile's type.
@@ -668,7 +720,11 @@ function server.removeMapID(peer_id, ui_id) end
 --- @param label string The text that appears when mousing over the icon. Appears like a title
 --- @param radius number The radius of the red dashed circle. Only applies if MARKER_TYPE = 8
 --- @param hover_label string The text that appears when mousing over the icon. Appears like a subtitle or description
-function server.addMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label) end
+--- @param r number? the amount of red, range is 0-255
+--- @param g number? the amount of green, range is 0-255
+--- @param b number? the amount of blue, range is 0-255
+--- @param a number? the alpha of the object, range is 0-255
+function server.addMapObject(peer_id, ui_id, position_type, marker_type, x, z, parent_local_x, parent_local_z, vehicle_id, object_id, label, radius, hover_label, r, g, b, a) end
 
 --- 
 --- @param peer_id number The peer id of the affected player. -1 affects all players
@@ -695,7 +751,11 @@ function server.removeMapLabel(peer_id, ui_id) end
 --- @param start_matrix SWMatrix Line start position. worldspace
 --- @param end_matrix SWMatrix Line stop position
 --- @param width number Line width
-function server.addMapLine(peer_id, ui_id, start_matrix, end_matrix, width) end
+--- @param r number? the amount of red, range is 0-255
+--- @param g number? the amount of green, range is 0-255
+--- @param b number? the amount of blue, range is 0-255
+--- @param a number? the alpha of the line, range is 0-255
+function server.addMapLine(peer_id, ui_id, start_matrix, end_matrix, width, r, g, b, a) end
 
 --- 
 --- @param peer_id number The peer id of the affected player
@@ -752,12 +812,16 @@ function server.removePopup(peer_id, ui_id) end
 --- @field auth boolean Whether the player has auth
 --- @field steam_id number The player's Steam ID (convert to string as soon as possible to prevent loss of data)
 
---- @class SWCharacterData
---- @field hp number The character's health points
---- @field incapacitated boolean Whether the character is incapacitated
---- @field dead boolean Whether the character is dead
---- @field interactible boolean Whether the character is interactible
---- @field ai boolean Whether the character is AI or not
+--- @class SWObjectData object here is interchangable with "character"
+--- @field hp number The objects's health points
+--- @field incapacitated boolean Whether the object is incapacitated
+--- @field dead boolean Whether the object is dead
+--- @field interactible boolean Whether the object is interactible
+--- @field ai boolean Whether the object is AI or not
+--- @field name string the name of the object
+--- @field creature_type SWCreatureTypeEnum the creature type of the object
+--- @field scale number the scale of the object.
+
 
 --- @return table<number, SWPlayer> players
 function server.getPlayers() end
@@ -811,12 +875,35 @@ function server.spawnFire(matrix, size, magnitude, is_lit, is_explosive, parent_
 --- @return number object_id, boolean is_success
 function server.spawnCharacter(matrix, outfit_id) end
 
---- Spawns an animal (penguin, shark, etc.)
+--- Spawns an animal (whale, shark, kraken.)
 --- @param matrix SWMatrix The matrix the animal will be spawned at
 --- @param animal_type SWAnimalTypeEnum number
 --- @param size_multiplier number The scale multiplier of the animal
 --- @return number object_id, boolean is_success
 function server.spawnAnimal(matrix, animal_type, size_multiplier) end
+
+--- Requires Industrial Frontier DLC, Spawns a specified creature.
+--- @param matrix SWMatrix The matrix the creature will be spawned at
+--- @param creature_type SWCreatureTypeEnum the creature type to spawn
+--- @param size_multiplier number the scale multiplier of the animal
+--- @return number object_id the object_id of the spawned creature
+--- @return boolean is_success if the creature was successfully spawned
+function server.spawnCreature(matrix, creature_type, size_multiplier) end
+
+--- Requires Industrial Frontier DLC, sets the next target matrix for the creature to path to.
+--- @param object_id number the object_id of the creature that will be pathing to the matrix
+--- @param matrix SWMatrix The matrix the creature will path to
+--- @return boolean is_success if the creatures next path was successfully set
+function server.setCreatureMoveTarget(object_id, matrix) end
+
+--- Spawns a dropped equipment item at the specified matrix, with the ability to set some settings of the item
+--- @param matrix SWMatrix the matrix to spawn the equipment at
+--- @param EQUIPMENT_ID SWEquipmentTypeEnum the equipment type to spawn
+--- @param int integer for setting the int data for this object.
+--- @param float number for setting the float data for this object, such as charge level, ammo, etc.
+--- @return number object_id the object_id of the spawned equipment
+--- @return boolean is_success true if the equipment was successsfully spawned, false if it failed.
+function server.spawnEquipment(matrix, EQUIPMENT_ID, int, float) end
 
 --- Despawns objects. Can be used on characters and animals.
 --- @param object_id number The unique id of the object/character/animal to be despawned
@@ -860,16 +947,20 @@ function server.killCharacter(object_id) end
 --- @param object_id number The unique object_id of the character you want to revive
 function server.reviveCharacter(object_id) end
 
---- Makes the provided character sit in the first seat found that has a matching name to that which is provided. Can seat player characters
+--- Makes the provided character sit in the first seat found that has a matching name or matching voxel position to that which is provided. Can seat player characters
+--- @overload fun(object_id: number, vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
 --- @param object_id number The unique object_id of the character you want to seat
 --- @param vehicle_id number The vehicle that the seat is a part of
---- @param seat_name string The name of the seat as it appears on the vehicle. Editable using the select tool in the workbench.
+--- @param seat_name string The name of the seat of which you want to set the character seated in.
 function server.setCharacterSeated(object_id, vehicle_id, seat_name) end
 
---- Returns the various parameters of the provided character
+--- Get object/character data of the specified object_id, aliased to server.getCharacterData
 --- @param object_id number The unique object_id of the character you want to get data on
---- @return SWCharacterData character_data
-function server.getCharacterData(object_id) end
+--- @return SWObjectData character_data SWCharacterData if success, nil if failed.
+function server.getObjectData(object_id) end
+
+--- Get character data for the specified object_id, alias of server.getObjectData
+server.getCharacterData = server.getObjectData
 
 --- Get the current vehicle_id for a specified character object
 --- @param object_id number The unique id of the character
@@ -900,7 +991,6 @@ function server.setCharacterItem(object_id, slot, EQUIPMENT_ID, is_active, integ
 function server.getCharacterItem(object_id, SLOT_NUMBER) end
 
 
-
 ---@class SWOutfitTypeEnum : number
 ---@field [0] none,
 ---@field [1] worker,
@@ -919,8 +1009,106 @@ function server.getCharacterItem(object_id, SLOT_NUMBER) end
 ---@class SWAnimalTypeEnum : number
 ---@field [0] shark,
 ---@field [1] whale,
----@field [2] seal,
----@field [3] penguin
+---@field [4] kraken
+
+---@class SWCreatureTypeEnum : number
+---@field [0] badger_common,
+---@field [1] bear_grizzly,
+---@field [2] bear_black,
+---@field [3] bear_polar,
+---@field [4] chicken_barnevelder,
+---@field [5] chicken_marans,
+---@field [6] chicken_orpington_fowl,
+---@field [7] chicken_sussex_fowl,
+---@field [8] cow_angus,
+---@field [9] cow_hereford,
+---@field [10] cow_highland,
+---@field [11] cow_holstein,
+---@field [12] sasquatch,
+---@field [13] yeti 
+---@field [14] deer_red_f,
+---@field [15] deer_red_m,
+---@field [16] deer_sika_f,
+---@field [17] deer_sika_m,
+---@field [18] dog_beagle,
+---@field [19] dog_border_collie,
+---@field [20] dog_boxer,
+---@field [21] dog_corgi,
+---@field [22] dog_dachschund,
+---@field [23] dog_dalmatian,
+---@field [24] dog_dobermann,
+---@field [25] dog_german_shepherd,
+---@field [26] dog_greyhound,
+---@field [27] dog_jack_russell,
+---@field [28] dog_labrador,
+---@field [29] dog_newfoundland,
+---@field [30] dog_pug,
+---@field [31] dog_shiba,
+---@field [32] dog_siberian_husky,
+---@field [33] dog_st_bernard,
+---@field [34] dog_vizsla,
+---@field [35] dog_yorkshire_terrier,
+---@field [36] fox_red,
+---@field [37] fox_arctic,
+---@field [38] goat_alpine,
+---@field [39] goat_bengal,
+---@field [40] goat_oberhasli,
+---@field [41] goat_saanen,
+---@field [42] hare_arctic,
+---@field [43] hare_irish,
+---@field [44] hare_mountain,
+---@field [45] horse_clydesdale,
+---@field [46] horse_friesian,
+---@field [47] horse_haflinger,
+---@field [48] horse_welara,
+---@field [49] muntjac_f,
+---@field [50] muntjac_m,
+---@field [51] penguin_gentoo,
+---@field [52] pig_angeln_saddleback,
+---@field [53] pig_old_spot,
+---@field [54] pig_tamworth,
+---@field [55] pig_yorkshire,
+---@field [56] seal_polar,
+---@field [57] sheep_black_nose,
+---@field [58] sheep_highlander,
+---@field [59] sheep_mule,
+---@field [60] wildcat_scottish,
+---@field [61] wolf_arctic,
+---@field [62] wolf_costal,
+---@field [63] wolf_plains,
+---@field [64] zombie_male,
+---@field [65] zombie_male_a,
+---@field [66] zombie_male_b,
+---@field [67] zombie_male_c,
+---@field [68] zombie_male_d,
+---@field [69] zombie_male_e,
+---@field [70] zombie_male_f,
+---@field [71] zombie_male_g,
+---@field [72] zombie_male_nurse,
+---@field [73] zombie_male_arctic,
+---@field [74] zombie_male_firefighter,
+---@field [75] zombie_male_pilot,
+---@field [76] zombie_male_police,
+---@field [77] zombie_male_ranger,
+---@field [78] zombie_male_scuba,
+---@field [79] zombie_male_tree_surgeon,
+---@field [80] zombie_female,
+---@field [81] zombie_female_a,
+---@field [82] zombie_female_b,
+---@field [83] zombie_female_c,
+---@field [84] zombie_female_d,
+---@field [85] zombie_female_e,
+---@field [86] zombie_female_f,
+---@field [87] zombie_female_arctic,
+---@field [88] zombie_female_firefighter,
+---@field [89] zombie_female_hazmat,
+---@field [90] zombie_female_pilot,
+---@field [91] zombie_female_pirate,
+---@field [92] zombie_female_police,
+---@field [93] zombie_female_safari,
+---@field [94] zombie_female_sar,
+---@field [95] zombie_female_scuba,
+---@field [96] zombie_female_surgeon
 
 
 ---@class SWSlotNumberEnum : number
@@ -928,8 +1116,12 @@ function server.getCharacterItem(object_id, SLOT_NUMBER) end
 ---@field [2] Small_Equipment_Slot, 
 ---@field [3] Small_Equipment_Slot, 
 ---@field [4] Small_Equipment_Slot, 
----@field [5] Small_Equipment_Slot, 
----@field [6] Outfit_Slot
+---@field [5] Small_Equipment_Slot,
+---@field [6] Small_Equipment_Slot, 
+---@field [7] Small_Equipment_Slot, 
+---@field [8] Small_Equipment_Slot, 
+---@field [9] Small_Equipment_Slot, 
+---@field [10] Outfit_Slot
 
 
 ---@class SWEquipmentTypeEnum
@@ -939,7 +1131,7 @@ function server.getCharacterItem(object_id, SLOT_NUMBER) end
 ---@field [3] scuba,
 ---@field [4] parachute, [int = {0 = deployed, 1 = ready}]
 ---@field [5] arctic,
----@field [29] hazmat
+---@field [29] hazmat,
 ---@field [6] binoculars,
 ---@field [7] cable,
 ---@field [8] compass,
@@ -1005,7 +1197,13 @@ function server.getCharacterItem(object_id, SLOT_NUMBER) end
 ---@field [69] artillery_shell_he_frag,
 ---@field [70] artillery_shell_ap,
 ---@field [71] artillery_shell_i,
----@field [72] chemlight,
+---@field [72] glowstick,
+---@field [73] dog_whistle,
+---@field [74] bomb_disposal,
+---@field [75] chest_rig,
+---@field [76] black_hawk_vest
+---@field [77] plate_vest,
+---@field [78] armor_vest
 
 
 
@@ -1013,6 +1211,71 @@ function server.getCharacterItem(object_id, SLOT_NUMBER) end
 ---------------------------------------------------------------------------------------------------------------------
 -- Vehicles
 ---------------------------------------------------------------------------------------------------------------------
+
+--- @class SWVoxelPos the voxel position of the component (as set in the editor, is not updated with its current position in game)
+--- @field x number voxel_x position
+--- @field y number voxel_y position
+--- @field z number voxel_z position
+
+--- @class SWVehicleSignData
+--- @field name string the name of the sign
+--- @field pos SWVoxelPos the voxel position of the sign
+
+--- @class SWVehicleSeatData
+--- @field name string the name of the seat
+--- @field pos SWVoxelPos the voxel position of the seat
+--- @field seated_id integer the character id of who is in the seat
+
+--- @class SWVehicleButtonData
+--- @field name string the name of the button
+--- @field pos SWVoxelPos the voxel position of the button
+--- @field on boolean is the button on or off
+
+--- @class SWVehicleDialData
+--- @field name string the name of the dial
+--- @field pos SWVoxelPos the voxel position of the dial
+--- @field value number the first value of the dial
+--- @field value2 number the second value of the dial (eg: Guage Display)
+
+--- @class SWVehicleTankData
+--- @field name string the name of the tank
+--- @field pos SWVoxelPos the voxel position of the tank
+--- @field value number total amount of fluid in the tank
+--- @field values table<SWTankFluidTypeEnum, number> a table indexed by the fluid id, with the value being the amount of that fluid inside this fluid tank
+--- @field capacity number total capacity of the tank
+--- @field fluid_type number as set in the vehicle's properties.
+
+--- @class SWVehicleBatteryData
+--- @field name string the name of the battery
+--- @field pos SWVoxelPos the voxel position of the battery
+--- @field charge number current charge
+
+--- @class SWVehicleHopperData
+--- @field name string the name of the hopper
+--- @field pos SWVoxelPos the voxel position of the hopper
+--- @field values table<SWOreTypeEnum, number> a table indexed by the ore id, with the value being the amount of that ore inside this hopper
+--- @field capacity number total capacity of the hopper
+
+--- @class SWVehicleWeaponData
+--- @field name string the name of the weapon/ammo container
+--- @field pos SWVoxelPos the voxel position of the weapon/ammo container
+--- @field ammo number the amount of ammo in the weapon/ammo container
+--- @field capacity number total capacity of the weapon/ammo container
+
+--- @class SWVehicleRopeHookData
+--- @field name string the name of the rope anchor
+--- @field pos SWVoxelPos the voxel position of the rope anchor
+
+--- @class SWVehicleComponents
+--- @field signs table<integer, SWVehicleSignData>
+--- @field seats table<integer, SWVehicleSeatData>
+--- @field buttons table<integer, SWVehicleButtonData>
+--- @field dials table<integer, SWVehicleDialData>
+--- @field tanks table<integer, SWVehicleTankData>
+--- @field batteries table<integer, SWVehicleBatteryData>
+--- @field hoppers table<integer, SWVehicleHopperData>
+--- @field guns table<integer, SWVehicleWeaponData>
+--- @field rope_hooks table<integer, SWVehicleRopeHookData>
 
 --- @class SWVehicleData
 --- @field tags_full string The tags as a string (ex. "tag1,tag2,tag3")
@@ -1024,37 +1287,14 @@ function server.getCharacterItem(object_id, SLOT_NUMBER) end
 --- @field voxels number The voxel count of the vehicle
 --- @field editable boolean Is the vehicle editable at workbenches
 --- @field invulnerable boolean Is the vehicle invulnerable
+--- @field static boolean Is the vehicle static
+--- @field components SWVehicleComponents the vehicle's components
 
---- @class SWVehicleButtonData
---- @field on boolean is the button on or off
-
---- @class SWVector3
---- @field x number
---- @field y number
---- @field z number
-
---- @class SWVehicleSignData
---- @field pos SWVector3
-
---- @class SWVehicleDialData
---- @field value number
---- @field value2 number
-
---- @class SWVehicleTankData
---- @field value number current level
---- @field capacity number total capacity
---- @field fluid_type number 
-
---- @class SWVehicleHopperData
---- @field value number current level
---- @field capacity number total capacity
-
---- @class SWVehicleBatteryData
---- @field charge number current charge
-
---- @class SWVehicleWeaponData
---- @field ammo number
---- @field capacity number
+--- @class SWRopeTypeEnum
+--- @field [0] rope,
+--- @field [1] hose,
+--- @field [2] electric_cable,
+--- @field [3] suspension_cable
 
 --- Spawns a vehicle that is in an addon
 --- @param matrix SWMatrix The matrix the vehicle should be spawned at
@@ -1102,10 +1342,73 @@ function server.resetVehicleState(vehicle_id) end
 --- @return string name, boolean is_success
 function server.getVehicleName(vehicle_id) end
 
---- Returns info on a vehicle
---- @param vehicle_id number The unique if of the vehicle
+--- Returns a vehicle's data (warning: using in onVehicleDamaged() may produce short freezes whenever something is damaged.)
+--- @param vehicle_id number The unique id of the vehicle
 --- @return SWVehicleData vehicle_data, boolean is_success
 function server.getVehicleData(vehicle_id) end
+
+--- Gets a vehicle's sign data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique ID of the vehicle to get the sign on
+--- @param sign_name number The name of the sign to get
+--- @return SWVehicleSignData data, boolean is_success
+function server.getVehicleSign(vehicle_id, sign_name) end
+
+--- Gets a vehicle's seat data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique ID of the vehicle to get the seat on
+--- @param seat_name number The name of the seat to get
+--- @return SWVehicleSeatData data, boolean is_success
+function server.getVehicleSeat(vehicle_id, seat_name) end
+
+--- Returns the button data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique id of the vehicle
+--- @param button_name string The name of the button as it appears on the vehicle. Editable using the select tool in the workbench
+--- @return SWVehicleButtonData data, boolean is_success
+function server.getVehicleButton(vehicle_id, button_name) end
+
+--- Returns the dial data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique id of the vehicle
+--- @param dial_name string The name of the dial as it appears on the vehicle. Editable using the select tool in the workbench
+--- @return SWVehicleDialData value, boolean is_success
+function server.getVehicleDial(vehicle_id, dial_name) end
+
+--- Returns the tank data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique id of the vehicle
+--- @param tank_name string The name of the fuel tank as it appears on the vehicle. Editable using the select tool in the workbench
+--- @return SWVehicleTankData data, boolean is_success
+function server.getVehicleTank(vehicle_id, tank_name) end
+
+--- Returns the battery data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique id of the vehicle
+--- @param battery_name string The name of the battery as it appears on the vehicle. Editable using the select tool in the workbench
+--- @return SWVehicleBatteryData data, boolean is_success
+function server.getVehicleBattery(vehicle_id, battery_name) end
+
+--- Returns the hopper data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The vehicle ID to get the hopper from
+--- @param hopper_name string The name of the hopper to get
+--- @return SWVehicleHopperData data, boolean is_success
+function server.getVehicleHopper(vehicle_id, hopper_name) end
+
+--- Returns the weapon vehicle data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique id of the vehicle
+--- @param weapon_name string The name of the weapon as it appears on the vehicle. Editable using the select tool in the workbench
+--- @return SWVehicleWeaponData data, boolean is_success
+function server.getVehicleWeapon(vehicle_id, weapon_name) end
+
+--- Returns the vehicle's rope anchor data
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
+--- @param vehicle_id number The unique id of the vehicle
+--- @param name string The name of the rope anchor as it appears on the vehicle. Editable using the select tool in the workbench
+--- @return SWVehicleRopeHookData data, boolean is_success
+function server.getVehicleRopeHook(vehicle_id, name) end
 
 --- Removes all vehicles from the world
 function server.cleanVehicles() end
@@ -1114,6 +1417,7 @@ function server.cleanVehicles() end
 function server.clearRadiation() end
 
 --- Allows direct inputs to a chair from addon Lua
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number, axis_ws: number, axis_da: number, axis_ud: number, axis_rl: number, button_1: boolean, button_2: boolean, button_3: boolean, button_4: boolean, button_5: boolean, button_6: boolean, trigger: boolean)
 --- @param vehicle_id number The unique id of the vehicle
 --- @param seat_name string The name of the seat as it apears on the vehicle. Editable using the select tool in the workbench
 --- @param axis_ws number The W/S axis as it appears on the chair
@@ -1126,85 +1430,64 @@ function server.clearRadiation() end
 --- @param button_4 boolean The chair button 4 state
 --- @param button_5 boolean The chair button 5 state
 --- @param button_6 boolean The chair button 6 state
-function server.setVehicleSeat(vehicle_id, seat_name, axis_ws, axis_da, axis_ud, axis_rl, button_1, button_2, button_3, button_4, button_5, button_6) end
+--- @param trigger boolean The chair trigger state
+function server.setVehicleSeat(vehicle_id, seat_name, axis_ws, axis_da, axis_ud, axis_rl, button_1, button_2, button_3, button_4, button_5, button_6, trigger) end
 
 --- Presses a button on a vehicle. Warning, can cause massive lag. LAG BUG REPORT Also note: Static vehicles can output values even when not powered BUG REPORT
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number)
 --- @param vehicle_id number The unique id of the vehicle
 --- @param button_name string The name of the button as it appears on the vehicle. Editable using the select tool in the workbench
 function server.pressVehicleButton(vehicle_id, button_name) end
 
---- Returns the state of a vehicle button
---- @param vehicle_id number The unique id of the vehicle
---- @param button_name string The name of the button as it appears on the vehicle. Editable using the select tool in the workbench
---- @return SWVehicleButtonData data, boolean is_success
-function server.getVehicleButton(vehicle_id, button_name) end
-
---- Gets a vehicle's sign voxel location
---- @param vehicle_id number The unique ID of the vehicle to get the sign on
---- @param sign_name number The name of the sign to get
---- @return SWVehicleSignData data, boolean is_success
-function server.getVehicleSign(vehicle_id, sign_name) end
-
 --- Sets a keypad's value
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number, value: number)
 --- @param vehicle_id number The unique id of the vehicle
 --- @param keypad_name string The name of the keypad as it appears on the vehicle. Editable using the select tool in the workbench
 --- @param value number The value you want to set the keypad to
 function server.setVehicleKeypad(vehicle_id, keypad_name, value) end
 
---- Returns the value of the specified dial
---- @param vehicle_id number The unique id of the vehicle
---- @param dial_name string The name of the dial as it appears on the vehicle. Editable using the select tool in the workbench
---- @return SWVehicleDialData value, boolean is_success
-function server.getVehicleDial(vehicle_id, dial_name) end
-
 --- Fills a fluid tank with the specified liquid
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number, amount: number, FLUID_TYPE: SWTankFluidTypeEnum)
 --- @param vehicle_id number The unique id of the vehicle
 --- @param tank_name string The name of the tank as it appears on the vehicle. Editable using the select tool in the workbench
 --- @param amount number The amount you want to fill the tank in litres
 --- @param FLUID_TYPE SWTankFluidTypeEnum number for fuel type
 function server.setVehicleTank(vehicle_id, tank_name, amount, FLUID_TYPE) end
 
---- Returns the amount of liters in the tank
---- @param vehicle_id number The unique id of the vehicle
---- @param tank_name string The name of the fuel tank as it appears on the vehicle. Editable using the select tool in the workbench
---- @return SWVehicleTankData data, boolean is_success
-function server.getVehicleTank(vehicle_id, tank_name) end
-
---- Sets the number of coal objects inside a hopper
---- @param vehicle_id number The vehicle ID to set the hopper on
---- @param hopper_name string The name of the hopper to set
---- @param amount number The amount to set the hopper to
-function server.setVehicleHopper(vehicle_id, hopper_name, amount) end
-
---- Returns the coal count for the specified hopper
---- @param vehicle_id number The vehicle ID to get the hopper from
---- @param hopper_name string The name of the hopper to get
---- @return SWVehicleHopperData data, boolean is_success
-function server.getVehicleHopper(vehicle_id, hopper_name) end
-
 --- Sets the charge level of the battery
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number, amount: number)
 --- @param vehicle_id number The unique id of the vehicle
 --- @param battery_name string The name of the battery as it appears on the vehicle. Editable using the select tool in the workbench
 --- @param amount number The amount you want to fill the battery to
 function server.setVehicleBattery(vehicle_id, battery_name, amount) end
 
---- Returns the charge level of the battery
---- @param vehicle_id number The unique id of the vehicle
---- @param battery_name string The name of the battery as it appears on the vehicle. Editable using the select tool in the workbench
---- @return SWVehicleBatteryData data, boolean is_success
-function server.getVehicleBattery(vehicle_id, battery_name) end
+--- Sets the number of coal objects inside a hopper
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number, amount: number, ORE_TYPE: SWOreTypeEnum)
+--- @param vehicle_id number The vehicle ID to set the hopper on
+--- @param hopper_name string The name of the hopper to set
+--- @param amount number The amount to set the hopper to
+--- @param ORE_TYPE SWOreTypeEnum The ore type to set inside the hopper
+function server.setVehicleHopper(vehicle_id, hopper_name, amount, ORE_TYPE) end
 
 --- Sets the charge level of the weapon
+--- @overload fun(vehicle_id: number, voxel_x: number, voxel_y: number, voxel_z: number, amount: number)
 --- @param vehicle_id number The unique id of the vehicle
 --- @param weapon_name string The name of the weapon as it appears on the vehicle. Editable using the select tool in the workbench
 --- @param amount number The amount you want to fill the ammo to
 function server.setVehicleWeapon(vehicle_id, weapon_name, amount) end
 
---- Returns the charge level of the weapon
---- @param vehicle_id number The unique id of the vehicle
---- @param weapon_name string The name of the weapon as it appears on the vehicle. Editable using the select tool in the workbench
---- @return SWVehicleWeaponData data, boolean is_success
-function server.getVehicleWeapon(vehicle_id, weapon_name) end
+--- Spawns a rope of the specified type between two rope anchors specified on the vehicles at their specified voxel position
+--- @param vehicle_id_1 number the first vehicle's id
+--- @param voxel_x_1 number the x position of the first vehicle's rope anchor
+--- @param voxel_y_1 number the y position of the first vehicle's rope anchor
+--- @param voxel_z_1 number the z position of the first vehicle's rope anchor
+--- @param vehicle_id_2 number the second vehicle's id
+--- @param voxel_x_2 number the x position of the second vehicle's rope anchor
+--- @param voxel_y_2 number the y position of the second vehicle's rope anchor
+--- @param voxel_z_2 number the z position of the second vehicle's rope anchor
+--- @param length number the length of the rope
+--- @param ROPE_TYPE SWRopeTypeEnum the type of the rope
+function server.spawnVehicleRope(vehicle_id_1, voxel_x_1, voxel_y_1, voxel_z_1, vehicle_id_2, voxel_x_2, voxel_y_2, voxel_z_2, length, ROPE_TYPE) end
 
 --- Returns the amount of surfaces that are on fire
 --- @param vehicle_id number The unique id of the vehicle
@@ -1217,7 +1500,7 @@ function server.getVehicleFireCount(vehicle_id) end
 --- @return boolean is_success
 function server.setVehicleTooltip(vehicle_id, text) end
 
---- Applies impact damage to a vehicle at the specified voxel location
+--- Applies impact damage to a vehicle at the specified voxel location (cannot use negative values, so cannot repair.)
 --- @param vehicle_id number The ID of the vehicle to apply damage to
 --- @param amount number The amount of damage to apply (0-100)
 --- @param voxel_x number The voxel's X position to apply damage to
@@ -1369,6 +1652,7 @@ function server.setAITargetVehicle(object_id, target_vehicle_id) end
 --- @field settings_menu_lock       boolean Checkbox (un)checks properly for all players but players can still edit the settings regardless of the state set here.
 --- @field despawn_on_leave         boolean despawn players when they leave the server
 --- @field unlock_all_components    boolean 
+--- @field override_weather         boolean
 
 --- @class SWVolcano
 --- @field x number
@@ -1395,6 +1679,24 @@ function server.setAITargetVehicle(object_id, target_vehicle_id) end
 --- @field x number tile x
 --- @field y number tile y
 --- @field z number tile z
+
+--- @class SWAudioMoodEnum
+--- @field [0] none, (cannot be set)
+--- @field [1] main_menu, (cannot be set)
+--- @field [2] mood_normal,
+--- @field [3] mood_mission_mid,
+--- @field [4] mood_mission_high
+
+--- Sets the custom weather override values (0-1).
+--- @param fog number the amount of global fog (0-1)
+--- @param rain number the amount of global rain (0-1)
+--- @param wind number the amount of global wind (0-1)
+function server.setWeather(fog, rain, wind) end
+
+--- Sets the target audio mood. Mood naturally decreases over time
+--- @param peer_id integer the target peer, -1 for all peers
+--- @param AUDIO_MOOD SWAudioMoodEnum the selected audio mood (Going below 0 or above 4 will cause CTD)
+function server.setAudioMood(peer_id, AUDIO_MOOD) end
 
 --- @param transform_matrix SWMatrix
 --- @param magnitude number magnitude 0->1
@@ -1499,6 +1801,23 @@ function server.getStartTile() end
 --- @return boolean is_purchased
 function server.getTilePurchased(matrix) end
 
+--- Returns the current inventory amounts for the tile resource depot.
+--- @param matrix SWMatrix the matrix of the target tile to get the inventory of
+--- @return number coal the amount of coal in this tile's inventory
+--- @return number uranium the amount of uranium in this tile's inventory
+--- @return number diesel the amount of diesel in this tile's inventory
+--- @return number jet_fuel the amount of jet_fuel in this tile's inventory
+function server.getTileInventory(matrix) end
+
+--- Sets the inventory amounts for the tile resource depot.
+--- @param matrix SWMatrix the matrix of the target tile to set the inventory of
+--- @param coal number the amount of coal to set in this tile's inventory
+--- @param uranium number the amount of uranium to set in this tile's inventory
+--- @param diesel number the amount of diesel to set in this tile's inventory
+--- @param jet_fuel number the amount of jet_fuel to set in this tile's inventory
+function server.setTileInventory(matrix, coal, uranium, diesel, jet_fuel) end
+
+
 --- Returns whether the object transform is within a custom zone of the selected size
 --- @param matrix_object SWMatrix The matrix of the object
 --- @param matrix_zone SWMatrix The matrix of the zone to search within
@@ -1533,6 +1852,11 @@ function server.pathfindOcean(matrix_start, matrix_end) end
 ---------------------------------------------------------------------------------------------------------------------
 -- MISC
 ---------------------------------------------------------------------------------------------------------------------
+
+--- @class SWEventIDEnum
+--- @field [0] NONE,
+--- @field [1] Halloween,
+--- @field [2] Christmas
 
 --- Adds a checkbox to the settings of the addon
 --- @param text string The text to show on the checkbox
@@ -1601,9 +1925,17 @@ function server.getVideoTutorial() end
 --- @return boolean is_dev
 function server.isDev() end
 
---- Returns true if the server has the weapons DLC active.
+--- Returns true if the server has the Search and Destroy DLC active.
 --- @return boolean is_enabled
 function server.dlcWeapons() end
+
+--- Returns true if the server has the Industrial Frontier DLC active.
+--- @return boolean is_enabled
+function server.dlcArid() end
+
+--- Returns the ID of the currently active seasonal event.
+--- @return SWEventIDEnum EVENT_ID the id of the current event.
+function server.getSeasonalEvent() end
 
 --- Log a message to the console output
 --- @param message string The string to log
