@@ -1572,7 +1572,7 @@ function server.setVehicleShowOnMap(vehicle_id, is_show_on_map) end
 
 --- @class SWPathFindPoint
 --- @field x number The X coordinate of the pathfinding point
---- @field y number The Y coordinate of the pathfinding point
+--- @field z number The Z coordinate of the pathfinding point
 
 --- @class SWTargetData
 --- @field character number target object id
