@@ -179,6 +179,20 @@ function screen.setMapColorSand(r, g, b, a) end
 --- @param a number|nil The alpha (transparency) value of the color (0 - 255)
 function screen.setMapColorSnow(r, g, b, a) end
 
+--- Sets the color of the rock on the drawn map
+--- @param r number The red value of the color (0 - 255)
+--- @param g number The green value of the color (0 - 255)
+--- @param b number The blue value of the color (0 - 255)
+--- @param a number|nil The alpha (transparency) value of the color (0 - 255)
+function screen.setMapColorRock(r, g, b, a) end
+
+--- Sets the color of the gravel on the drawn map
+--- @param r number The red value of the color (0 - 255)
+--- @param g number The green value of the color (0 - 255)
+--- @param b number The blue value of the color (0 - 255)
+--- @param a number|nil The alpha (transparency) value of the color (0 - 255)
+function screen.setMapColorGravel(r, g, b, a) end
+
 --- Gets the width of the screen (pixels)
 --- @return number width
 function screen.getWidth() end
