@@ -654,8 +654,9 @@ function server.getAddonData(addon_index) end
 --- @param addon_index number The index of the addon as it is found in the missions folder. There is no set order and it may not be the same next execution.
 --- @param location_index number The unique index of the location that the component is in
 --- @param component_index number The index of the component that can be read from the COMPONENT_DATA table using server.getLocationComponentData()
+--- @param parent_vehicle_id number? optional id of the vehicle to parent the fire or zone component to,
 --- @return SWAddonComponentSpawned component, boolean is_success
-function server.spawnAddonComponent(matrix, addon_index, location_index, component_index) end
+function server.spawnAddonComponent(matrix, addon_index, location_index, component_index, parent_vehicle_id) end
 
 --- Returns data on a specific location in the addon
 --- @param addon_index number The index of the addon as it is found in the missions folder. There is no set order and it may not be the same next execution. INDEX STARTS AT 0
@@ -768,12 +769,12 @@ function server.removeMapLine(peer_id, ui_id) end
 --- @param name string ? Appears to do nothing. Can be left as an empty string: ""
 --- @param is_show boolean If the popup is currently being shown
 --- @param text string The text inside the popup. You can fit 13 characters in a line before it will wrap.
---- @param x number X position of the popup. worldspace
---- @param y number Y position of the popup. worldspace
---- @param z number Z position of the popup. worldspace
+--- @param x number X position of the popup. worldspace (if vehicle_parent_id or object_parent_id is specified, this will become a relative position)
+--- @param y number Y position of the popup. worldspace (if vehicle_parent_id or object_parent_id is specified, this will become a relative position)
+--- @param z number Z position of the popup. worldspace (if vehicle_parent_id or object_parent_id is specified, this will become a relative position)
 --- @param render_distance number The distance the popup will be viewable from in meters
---- @param vehicle_parent_id number The vehicle to attach the popup to
---- @param object_parent_id number The object to attach the popup to
+--- @param vehicle_parent_id number? (optional) The vehicle to attach the popup to
+--- @param object_parent_id number? (optional) The object to attach the popup to
 function server.setPopup(peer_id, ui_id, name, is_show, text, x, y, z, render_distance, vehicle_parent_id, object_parent_id) end
 
 --- Creates a popup that appears on the player's screen, regardless of their look direction and location in the world.
@@ -1315,11 +1316,12 @@ function server.spawnVehicle(matrix, save_name) end
 --- @return boolean is_success
 function server.despawnVehicle(vehicle_id, is_instant) end
 
---- Returns the position of the vehicle as a matrix
+--- Returns the position of the vehicle as a matrix NOTE: returned matrix is not relative to any sub-bodies, its only relative to the main body of the vehicle.
+--- @overload fun(vehicle_id) end
 --- @param vehicle_id number The unique id of the vehicle
---- @param voxel_x number 0,0,0 is the center of the vehicle (viewable with the move tool). Each "block" or 0.25m is a different voxel. 0,0.25,0 is one block above the start point.
---- @param voxel_y number 
---- @param voxel_z number 
+--- @param voxel_x number 0 is the center of the vehicle (viewable with the move tool). Each "block" or 0.25m is a different voxel. 0.25 is one block right of the start point.
+--- @param voxel_y number 0 is the center of the vehicle (viewable with the move tool). Each "block" or 0.25m is a different voxel. 0.25 is one block above the start point.
+--- @param voxel_z number 0 is the center of the vehicle (viewable with the move tool). Each "block" or 0.25m is a different voxel. 0.25 is one block forwards of the start point.
 --- @return SWMatrix matrix, boolean is_success
 function server.getVehiclePos(vehicle_id, voxel_x, voxel_y, voxel_z) end
 
@@ -1570,7 +1572,7 @@ function server.setVehicleShowOnMap(vehicle_id, is_show_on_map) end
 
 --- @class SWPathFindPoint
 --- @field x number The X coordinate of the pathfinding point
---- @field y number The Y coordinate of the pathfinding point
+--- @field z number The Z coordinate of the pathfinding point
 
 --- @class SWTargetData
 --- @field character number target object id
@@ -1586,22 +1588,22 @@ function server.setAIState(object_id, AI_STATE) end
 
 --- Sets the target destination for the AI
 --- @param object_id number The unique id of the character
---- @param matrix_destination SWMatrix The matrix that the AI will try to reach
+--- @param matrix_destination SWMatrix|nil The matrix that the AI will try to reach, set nil to clear its target
 function server.setAITarget(object_id, matrix_destination) end
 
 --- Gets the target destination for an AI
 --- @param object_id number The unique ID of the character object ID
---- @return SWTargetData data
+--- @return SWTargetData|nil data the data of the AI target, returns nil if fails.
 function server.getAITarget(object_id) end
 
 --- Sets the target charcter for an AI. Different AIs use this data for their unique tasks
 --- @param object_id number The unique id of the character
---- @param target_object_id number
+--- @param target_object_id number|nil target object_id to go target, set nil to clear its target
 function server.setAITargetCharacter(object_id, target_object_id) end
 
 --- Sets the target vehicle for an AI. Different AIs use this data for their unique tasks
 --- @param object_id number The unique id of the character
---- @param target_vehicle_id number
+--- @param target_vehicle_id number|nil target vehicle id to go target, set nil to clear its target
 function server.setAITargetVehicle(object_id, target_vehicle_id) end
 
 
@@ -1858,24 +1860,24 @@ function server.pathfindOcean(matrix_start, matrix_end) end
 --- @field [1] Halloween,
 --- @field [2] Christmas
 
---- Adds a checkbox to the settings of the addon
---- @param text string The text to show on the checkbox
---- @param default_value boolean The default value of the checkbox
+--- Adds a checkbox to the settings of the addon NOTE: to default true with a setting below, this must be declared as a variable outside of any function, and the default_value param must be "true", and then later stored in g_savedata in onCreate(is_world_create).
+--- @param text string The text to show on the checkbox. NOTE: cannot contain commas, and will not work with variables.
+--- @param default_value boolean|string The default value of the checkbox. NOTE: will not work with variables.
 --- @return boolean value
 function property.checkbox(text, default_value) end
 
 --- Adds a slider to the settings of the addon
---- @param text string The text to show on the checkbox
---- @param min number The min value of the slider
---- @param max number The max value of the slider
---- @param increment number The increment of the slider (step size)
---- @param default_value number The default value of the slider
+--- @param text string The text to show on the checkbox. NOTE: cannot contain commas, and will not work with variables.
+--- @param min number The min value of the slider. NOTE: will not work with variables.
+--- @param max number The max value of the slider. NOTE: will not work with variables.
+--- @param increment number The increment of the slider (step size). NOTE: will not work with variables.
+--- @param default_value number The default value of the slider. NOTE: will not work with variables.
 --- @return number value
 function property.slider(text, min, max, increment, default_value) end
 
---- Limited to one request per 2 ticks (32 requests/s). Any additional requests will be queued
+--- Limited to one request per 2 ticks (32 requests/s). Any additional requests will be queued, (requests to port 0 will result in a return to all addons, with the request sent, on the next tick.)
 --- @param port number The port you are making the request on
---- @param request string The URL to make the request to.
+--- @param request string The URL to make the request to. (4082 chars maximum)
 function server.httpGet(port, request) end
 
 --- Bans a player from your server. There is no way to unban players from that save, choose wisely! A new save will have to be created before a banned player can rejoin.
