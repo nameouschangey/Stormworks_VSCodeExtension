@@ -18,7 +18,6 @@ require("LifeBoatAPI.Tools.Utils.FileSystemUtils")
 ---@field filesByRequire table<string,string> table of require names -> filenames
 ---@field loadedFileData table<string,string> table of require names -> filecontents
 LifeBoatAPI.Tools.Combiner = {
-
     ---@param cls Combiner
     ---@return Combiner
     new = function(cls)
@@ -57,6 +56,13 @@ LifeBoatAPI.Tools.Combiner = {
         while keepSearching do
             keepSearching = false
             local require = data:match("\n%s-require%([\"'](..-)[\"']%)")
+
+            -- God knows why, but - and + fuck with gsub in a way I cannot explain
+            -- Make this better when someone figures that out
+            if require:match("-") or require:match("+") then
+                error("Characters '+' and '-' are not permitted in module names!")
+            end
+
             if require then
                 keepSearching = true
                 local fullstring = "\n%s-require%([\"']"..require.."[\"']%)%s-"
