@@ -57,13 +57,13 @@ LifeBoatAPI.Tools.Combiner = {
             keepSearching = false
             local require = data:match("\n%s-require%([\"'](..-)[\"']%)")
 
-            -- God knows why, but - and + fuck with gsub in a way I cannot explain
-            -- Make this better when someone figures that out
-            if require:match("-") or require:match("+") then
-                error("Characters '+' and '-' are not permitted in module names!")
-            end
-
             if require then
+                -- God knows why, but - and + fuck with gsub in a way I cannot explain
+                -- Make this better when someone figures that out
+                if require:match("-") or require:match("+") then
+                    error("Characters '+' and '-' are not permitted in module names!")
+                end
+
                 keepSearching = true
                 local fullstring = "\n%s-require%([\"']"..require.."[\"']%)%s-"
                 if(requiresSeen[require]) then
