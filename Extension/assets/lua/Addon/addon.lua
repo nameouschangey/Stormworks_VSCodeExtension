@@ -1447,6 +1447,11 @@ function server.cleanVehicles() end
 --- Cleans up fallout zones
 function server.clearRadiation() end
 
+--- Returns the vehicle_ids in the specified group.
+--- @param group_id number The id of the group
+--- @return table<integer, integer> vehicle_ids, boolean is_success
+function server.getVehicleGroup(group_id) end
+
 --- Returns a vehicle's data
 --- @param vehicle_id number The unique id of the vehicle
 --- @return SWVehicleData vehicle_data, boolean is_success
