@@ -72,73 +72,91 @@ LifeBoatAPI.Tools.Minimizer = {
     ---@param text string text to be minimized
     ---@param this Minimizer
     ---@return string minimized
+	---@return integer sizeWithoutBoilerplate size of the minimized text without boilerplate
     minimize = function(this, text, boilerplate)
         boilerplate = boilerplate or ""
 
         -- insert space at the start prevents issues where the very first character in the file, is part of a variable name
         text = " " .. text .. "\n\n"
 
-        -- remove all redundant strings and comments, avoid these confusing the parse
-        local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
-        local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
-        text = parser:removeStringsAndComments(text,
+		-- if anything should be minimized.
+		local minimize_anything = (
+			this.params.removeComments or
+			this.params.reduceAllWhitespace or
+			this.params.reduceNewlines or
+			this.params.removeRedundancies or
+			this.params.shortenVariables or
+			this.params.shortenGlobals or
+			this.params.shortenNumbers or
+			this.params.shortenStringDuplicates
+		)
+
+
+		-- if anything needs to be minimized.
+		if minimize_anything then
+			-- remove all redundant strings and comments, avoid these confusing the parse
+			local variableRenamer = LifeBoatAPI.Tools.VariableRenamer:new(this.constants)
+			local parser = LifeBoatAPI.Tools.StringCommentsParser:new(not this.params.removeComments, LifeBoatAPI.Tools.StringReplacer:new(variableRenamer))
+			text = parser:removeStringsAndComments(text,
                                                 function(i,text)
                                                     return text:sub(i, i+10) == "---@section" or
                                                            text:sub(i, i+13) == "---@endsection"
                                                 end)
+		
+		
 
-        -- remove all redudant code sections (will become exponentially slower as the codebase gets bigger)
-        if(this.params.removeRedundancies) then
-            local remover = LifeBoatAPI.Tools.RedundancyRemover:new()
-            text = remover:removeRedundantCode(text)
-        end
+			-- remove all redudant code sections (will become exponentially slower as the codebase gets bigger)
+			if(this.params.removeRedundancies) then
+				local remover = LifeBoatAPI.Tools.RedundancyRemover:new()
+				text = remover:removeRedundantCode(text)
+			end
 
-        -- re-parse to remove all code-section comments now we're done with them
-        text = parser:removeStringsAndComments(text)
+			-- re-parse to remove all code-section comments now we're done with them
+			text = parser:removeStringsAndComments(text)
 
+			-- rename variables so everything is consistent (if creating new globals happens, it's important they have unique names)
+			if(this.params.shortenVariables) then
+				local shortener = LifeBoatAPI.Tools.VariableShortener:new(variableRenamer, this.constants)
+				text = shortener:shortenVariables(text)
+			end
 
-        -- rename variables so everything is consistent (if creating new globals happens, it's important they have unique names)
-        if(this.params.shortenVariables) then
-            local shortener = LifeBoatAPI.Tools.VariableShortener:new(variableRenamer, this.constants)
-            text = shortener:shortenVariables(text)
-        end
+			-- final step still todo, replace all external globals if they're used more than once
+			if(this.params.shortenGlobals) then
+				local globalShortener = LifeBoatAPI.Tools.GlobalVariableReducer:new(variableRenamer, this.constants)
+				text = globalShortener:shortenGlobals(text)
+			end
 
-        -- final step still todo, replace all external globals if they're used more than once
-        if(this.params.shortenGlobals) then
-            local globalShortener = LifeBoatAPI.Tools.GlobalVariableReducer:new(variableRenamer, this.constants)
-            text = globalShortener:shortenGlobals(text)
-        end
+			-- fix hexadecimals
+			local hexadecimalFixer = LifeBoatAPI.Tools.HexadecimalConverter:new()
+			text = hexadecimalFixer:fixHexademicals(text)
 
-        -- fix hexadecimals
-        local hexadecimalFixer = LifeBoatAPI.Tools.HexadecimalConverter:new()
-        text = hexadecimalFixer:fixHexademicals(text)
-
-        -- reduce numbers
-        if(this.params.shortenNumbers) then
-            local numberShortener = LifeBoatAPI.Tools.NumberLiteralReducer:new(variableRenamer)
-            text = numberShortener:shortenNumbers(text)
-        end
-
-
-        -- rename variables as short as we can get (second pass)
-        -- New renamer, so everything gets a new name again - now we can do it regarding frequency of use
-        if(this.params.shortenVariables) then
-            local shortener = LifeBoatAPI.Tools.VariableShortener:new(LifeBoatAPI.Tools.VariableRenamer:new(this.constants), this.constants)
-            text = shortener:shortenVariables(text)
-        end
+			-- reduce numbers
+			if(this.params.shortenNumbers) then
+				local numberShortener = LifeBoatAPI.Tools.NumberLiteralReducer:new(variableRenamer)
+				text = numberShortener:shortenNumbers(text)
+			end
 
 
-        -- remove all unnecessary whitespace, etc. (a real minifier will do a better job, but this gets close enough for us)
-        if(this.params.reduceNewlines) then
-            text = LifeBoatAPI.Tools.StringUtils.subAll(text, "\n%s*\n%s*\n", "\n\n") -- remove empty lines
-        end
+			-- rename variables as short as we can get (second pass)
+			-- New renamer, so everything gets a new name again - now we can do it regarding frequency of use
+			if(this.params.shortenVariables) then
+				local shortener = LifeBoatAPI.Tools.VariableShortener:new(LifeBoatAPI.Tools.VariableRenamer:new(this.constants), this.constants)
+				text = shortener:shortenVariables(text)
+			end
 
-        if(this.params.reduceAllWhitespace) then
-            text = this:_reduceWhitespace(text)
-        end
 
-        -- repopulate the original string data now it's safe
-        text = parser:repopulateStrings(text, this.params.shortenStringDuplicates)
+			-- remove all unnecessary whitespace, etc. (a real minifier will do a better job, but this gets close enough for us)
+			if(this.params.reduceNewlines) then
+				text = LifeBoatAPI.Tools.StringUtils.subAll(text, "\n%s*\n%s*\n", "\n\n") -- remove empty lines
+			end
+
+			if(this.params.reduceAllWhitespace) then
+				text = this:_reduceWhitespace(text)
+			end
+
+			-- repopulate the original string data now it's safe
+			text = parser:repopulateStrings(text, this.params.shortenStringDuplicates)
+		end
 
         local sizeWithoutBoilerplate = #text
 

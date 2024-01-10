@@ -61,8 +61,8 @@ if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Fi
                     relativePath = relativePath.substr(1);
                 }
 
-                let buildLine = isMC ? `local combinedText, outText, outFile = _builder:buildMicrocontroller([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`
-                                     : `local combinedText, outText, outFile = _builder:buildAddonScript([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`;
+                let buildLine = isMC ? `combinedText, outText, outFile = _builder:buildMicrocontroller([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`
+                                     : `combinedText, outText, outFile = _builder:buildAddonScript([[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), params)`;
                 content += `\nif onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]]), [[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]])) end\n`
                          + `\n${buildLine}`
                          + `\nif onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]]), [[${relativePath}]], LifeBoatAPI.Tools.Filepath:new([[${file.fsPath}]]), outFile, combinedText, outText) end\n`;
