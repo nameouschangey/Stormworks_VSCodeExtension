@@ -44,6 +44,8 @@ end
 
 local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)
 
+local combinedText, outText, outFile
+
 if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[${workspace.fsPath}]])) end
 `;
 
